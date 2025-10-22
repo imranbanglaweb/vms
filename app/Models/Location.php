@@ -1,25 +1,11 @@
 <?php
-
 namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Location extends Model
 {
-    use HasFactory;
-
-        protected $table ='locations';
-
-        protected $fillable = [
-        'id',
-        'location_name',
-        'address',
-        'unit_id',
-        'company_id',
-        'location_oder',
-        'remarks',
-        'status',
-        'created_by',
-    ];
+    use SoftDeletes;
+    protected $fillable = ['unit_id','location_name','location_code','address','city','district','country','latitude','longitude','remarks','status','created_by','updated_by'];
+    public function unit(){ return $this->belongsTo(Unit::class); }
 }

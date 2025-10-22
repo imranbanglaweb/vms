@@ -1,0 +1,69 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateDriversTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('drivers', function (Blueprint $table) {
+            $table->id();
+
+            // Relationships
+            $table->unsignedBigInteger('company_id');
+            $table->unsignedBigInteger('department_id');
+            $table->unsignedBigInteger('unit_id');
+
+            // Driver Details
+            $table->string('driver_name');
+            $table->string('license_number')->unique();
+            $table->string('nid')->nullable();
+            $table->string('employee_nid')->nullable();
+            $table->string('license_type')->nullable();
+            $table->date('license_issue_date')->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->date('joining_date')->nullable();
+
+            // Address & Contact
+            $table->string('present_address')->nullable();
+            $table->string('permanent_address')->nullable();
+            $table->string('mobile')->nullable();
+
+            // Work & Leave
+            $table->string('working_time_slot')->nullable();
+            $table->boolean('leave_status')->default(0);
+
+            // Media
+            $table->string('photograph')->nullable();
+
+            // Common Fields
+            $table->tinyInteger('status')->default(1);
+            $table->unsignedInteger('created_by');
+            $table->unsignedInteger('updated_by')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+
+            // Foreign Keys
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
+            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('drivers');
+    }
+}

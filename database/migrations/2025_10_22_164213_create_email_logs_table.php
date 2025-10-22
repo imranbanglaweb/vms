@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDepartmentsTable extends Migration
+class CreateEmailLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateDepartmentsTable extends Migration
      */
     public function up()
     {
-    Schema::create('departments', function (Blueprint $table) {
+        Schema::create('email_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('unit_id');
-            $table->string('department_name');
-            $table->string('department_code')->unique();
-            $table->string('department_short_name')->nullable();
-            $table->string('location')->nullable();
-            $table->text('description')->nullable();
+            $table->foreignId('requisition_id')->nullable()->constrained('requisitions');
+            $table->string('recipient_email');
+            $table->string('subject');
+            $table->text('body');
+            $table->enum('status', ['Pending', 'Sent', 'Failed'])->default('Pending');
+            $table->timestamp('sent_at')->nullable();
 
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
@@ -28,9 +28,6 @@ class CreateDepartmentsTable extends Migration
             $table->softDeletes();
 
             $table->timestamps();
-
-            // Relationship
-            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
         });
     }
 
@@ -41,6 +38,6 @@ class CreateDepartmentsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('email_logs');
     }
 }

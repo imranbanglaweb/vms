@@ -14,19 +14,28 @@ class CreateLocationsTable extends Migration
     public function up()
     {
         Schema::create('locations', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
-            $table->increments('id')->index();
-            $table->string('location_name',300)->index();
-            $table->text('address')->nullable();
-            $table->integer('unit_id')->nullable();
-            $table->integer('company_id')->nullable();
-            $table->integer('location_oder')->default(1);
-            $table->string('remarks',250)->nullable();
+            $table->id();
+            $table->unsignedBigInteger('unit_id'); // belongs to unit
+
+            $table->string('location_name');
+            $table->string('location_code')->unique();
+            $table->string('address')->nullable();
+            $table->string('city')->nullable();
+            $table->string('district')->nullable();
+            $table->string('country')->default('Bangladesh');
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->text('remarks')->nullable();
+
+            // Common fields
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();
             $table->timestamps();
+
+            // Relationship
+            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
         });
     }
 
@@ -39,6 +48,4 @@ class CreateLocationsTable extends Migration
     {
         Schema::dropIfExists('locations');
     }
-
-
 }
