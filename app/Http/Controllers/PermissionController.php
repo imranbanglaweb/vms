@@ -89,7 +89,7 @@ class PermissionController extends Controller
         $role = Permission::create($data);
         // $role->syncPermissions($request->input('permission'));
     
-        return redirect()->route('permissions.index')
+        return redirect()->route('permissions.create')
                         ->with('success','Permission Added Successfully');
     }
 

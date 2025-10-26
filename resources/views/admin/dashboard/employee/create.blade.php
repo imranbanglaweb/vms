@@ -2,7 +2,7 @@
 
 
 @section('main_content')
-<section role="main" class="content-body">
+<section role="" class="content-body">
 <div class="row">
     <div class="col-lg-12 margin-tb">
         <div class="pull-left">
@@ -27,78 +27,22 @@
 @endif
 
 
-{!! Form::open(array('method'=>'POST','enctype'=>'multipart/form-data', 'id'=>'employee_add')) !!}
-<div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12">
-       
-        <div class="form-group">
-            <strong>Unit  Name:</strong>
-           <select class="form-control unit_wise_company unit_id" name="unit_id">
-             <option value="">Unit Name</option>
-             @foreach($units as $unit)
-             <option value="{{ $unit->id}}">{{ $unit->unit_name}}</option>
-             @endforeach
-           </select>
+<!-- Include the professional form partial -->
+<section class="panel">
+    <header class="panel-heading d-flex align-items-center justify-content-between">
+        <div>
+            <h2 class="panel-title"><i class="fa fa-user-plus mr-2"></i> Add Employee</h2>
+            <p class="text-muted">Fill in employee details. Required fields are validated via AJAX.</p>
         </div>
-        <div class="form-group">
-            <strong>Company  Name:</strong>
-           <select class="form-control company_name" name="company_id">
-           </select>
+        <div>
+            <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left"></i> Back to list</a>
         </div>
+    </header>
 
-        <div class="form-group">
-            <strong>Department  Name:</strong>
-           <select class="form-control department_name" name="department_id">
-            
-           
-           </select>
-        </div>
-
-        <div class="form-group">
-            <strong>Location  Name:</strong>
-           <select class="form-control location_name" name="location_id">
-           </select>
-        </div>
-
-
-        <div class="form-group">
-            <strong>Employee ID:</strong>
-            {!! Form::number('employee_id', null, array('placeholder' => 'Employee ID','class' => 'form-control employee_id')) !!}
-        </div>
-        <div class="form-group">
-            <strong>Employee Name:</strong>
-            {!! Form::text('employee_name', null, array('placeholder' => 'Employee Name','class' => 'form-control employee_name')) !!}
-        </div>
-        <div class="form-group">
-            <strong>Employee Description:</strong>
-            {!! Form::textarea('employee_description', null, array('placeholder' => 'Enter Description','class' => 'form-control employee_description')) !!}
-        </div>
-
-        <div class="form-group">
-            <strong>Employee Status</strong>
-           <select name="status" class="form-control">
-               <option value="1">Active</option>
-               <option value="0">In Active</option>
-           </select>
-        </div>
+    <div class="panel-body">
+        @include('admin.dashboard.employee._form')
     </div>
-{{--     <div class="col-xs-12 col-sm-12 col-md-12">
-        <div class="form-group">
-            <strong>Permission:</strong>
-            <br/>
-            @foreach($permission as $value)
-                <label>{{ Form::checkbox('permission[]', $value->id, false, array('class' => 'name')) }}
-                {{ $value->name }}</label>
-            <br/>
-            @endforeach
-        </div>
-    </div> --}}
-    <div class="col-xs-12 col-sm-12 col-md-12 text-center">
-      <br>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-</div>
-{!! Form::close() !!}
+</section>
 </section>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -111,6 +55,27 @@
 // In your Javascript (external.js resource or <script> tag)
 $(document).ready(function() {
     $('.select2').select2();
+    // Initialize CKEditor for any textarea marked as rich-editor
+    window._richEditors = [];
+    $('.rich-editor').each(function(){
+        var id = $(this).attr('id');
+        try {
+            if (CKEDITOR.instances[id]) {
+                CKEDITOR.instances[id].destroy(true);
+            }
+        } catch(e) { }
+        CKEDITOR.replace(id, {
+            // small toolbar to keep UI clean
+            toolbar: [
+                { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline' ] },
+                { name: 'paragraph', items: [ 'NumberedList', 'BulletedList' ] },
+                { name: 'links', items: [ 'Link', 'Unlink' ] },
+                { name: 'undo', items: [ 'Undo', 'Redo' ] }
+            ],
+            height: 120
+        });
+        window._richEditors.push(id);
+    });
 });
 </script>
 <script>
@@ -121,199 +86,146 @@ $(document).ready(function() {
         }
     });
 
-  // daagnumbers_with_land_quantity
+// unit wise company (populate companies when unit changes)
 $(".unit_wise_company").change(function () {
+    var unit_id = $(this).val();
 
-            var unit_id = $(this).val();
-
-// alert(unit_id);
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('departments.unit-wise-company')}}",
-                data: { unit_id: unit_id},
-// alert(JSON.stringify(data));
-                dataType: 'json',
-                success: function (data) {     
-                // alert(data.RsDaagNumber);              
-
-                 $(".company_name").empty();
-
-        $('.company_name').prepend("<option value=''>" +'Please Select'+"</option>");
-
-                    $.each(data['company_list'], function (key, company_list) {
-
-            $('.company_name').append("<option value='" + company_list.id + "'>" + company_list.company_name +"</option>");
-
-                    });
-
-           
-                 
-
-// $('.landcategory').val("<option value='"+data.cat_id+"'>" + data.category +"</option>");
-           
-                },
-                error: function (_response) {
-                    alert("error");
-                }
-
+    // populate companies
+    $.ajax({
+        type: 'GET',
+        url: "{{ route('departments.unit-wise-company') }}",
+        data: { unit_id: unit_id },
+        dataType: 'json',
+        success: function (data) {
+            $(".company_name").empty();
+            $('.company_name').append("<option value=''>Please Select</option>");
+            $.each(data['company_list'], function (key, company) {
+                $('.company_name').append("<option value='" + company.id + "'>" + company.company_name + "</option>");
             });
+            $('.company_name').trigger('change');
+        },
+        error: function () {
+            // noop
+        }
+    });
+
+    // populate departments
+    $.ajax({
+        type: 'GET',
+        url: "{{ route('unit-wise-department')}}",
+        data: { unit_id: unit_id},
+        dataType: 'json',
+        success: function (data) {
+            $(".department_name").empty();
+            $('.department_name').append("<option value=''>Please Select</option>");
+            $.each(data['department_list'], function (key, department_list) {
+                $('.department_name').append("<option value='" + department_list.id + "'>" + department_list.department_name +"</option>");
+            });
+            $('.department_name').trigger('change');
+        },
+        error: function () {
+            // noop
+        }
+    });
 
 });
 
-  // unit wise department
-$(".unit_wise_company").change(function () {
-
-            var unit_id = $(this).val();
-
-// alert(unit_id);
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('unit-wise-department')}}",
-                data: { unit_id: unit_id},
-// alert(JSON.stringify(data));
-                dataType: 'json',
-                success: function (data) {     
-                // alert(data.RsDaagNumber);              
-
-                 $(".department_name").empty();
-
-        $('.department_name').prepend("<option value=''>" +'Please Select'+"</option>");
-
-                    $.each(data['department_list'], function (key, department_list) {
-
-            $('.department_name').append("<option value='" + department_list.id + "'>" + department_list.department_name +"</option>");
-
-                    });
-
-// $('.landcategory').val("<option value='"+data.cat_id+"'>" + data.category +"</option>");
-           
-                },
-                error: function (_response) {
-                    alert("error");
-                }
-
-            });
-
-});
-
-  // unit wise location
-$(".unit_wise_company").change(function () {
-
-            var unit_id = $(this).val();
-
-// alert(unit_id);
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('unit-wise-location')}}",
-                data: { unit_id: unit_id},
-// alert(JSON.stringify(data));
-                dataType: 'json',
-                success: function (data) {     
-                // alert(data.RsDaagNumber);              
-
-                 $(".location_name").empty();
-
-        $('.location_name').prepend("<option value=''>" +'Please Select'+"</option>");
-
-                    $.each(data['location_list'], function (key, location_list) {
-
-            $('.location_name').append("<option value='" + location_list.id + "'>" + location_list.location_name +"</option>");
-
-                    });
-
-// $('.landcategory').val("<option value='"+data.cat_id+"'>" + data.category +"</option>");
-           
-                },
-                error: function (_response) {
-                    alert("error");
-                }
-
-            });
-
+// photo preview
+$(document).on('change', '#photo-input', function(e){
+    const [file] = this.files;
+    if (file) {
+        const url = URL.createObjectURL(file);
+        $('#photo-preview').attr('src', url);
+    }
 });
 
 
-   $('#employee_add').submit(function(e) {
+    $('#employee_add').submit(function(e) {
 
-       e.preventDefault();
+        e.preventDefault();
 
-       var unit_id  = $('.unit_id').val();
-       var project_name  = $('.project_name').val();
-       // alert(company_name);
+    // clear previous validation states
+        $(this).find('.is-invalid').removeClass('is-invalid');
+        $(this).find('.invalid-feedback').addClass('d-none').text('');
 
-       if (unit_id  == '') {
+        var unit_id  = $('.unit_id').val();
+        var name  = $('input[name="name"]').val();
+
+        if (unit_id  == '') {
             Swal.fire({
-              type: 'warning',
-              title: 'Please Enter Unit Name',
-              icon: 'warning',
-              // showCloseButton: true,
-              // showCancelButton: true,
-              focusConfirm: false,
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-
+                title: 'Please select a Unit',
+                icon: 'warning',
+                focusConfirm: true,
             })
-       }
+            return;
+        }
 
-       else if (project_name  == '') {
+        if (name  == '') {
             Swal.fire({
-              type: 'warning',
-              title: 'Please Enter Project Name',
-              icon: 'warning',
-              // showCloseButton: true,
-              // showCancelButton: true,
-              focusConfirm: false,
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-
+                title: 'Please enter employee name',
+                icon: 'warning',
+                focusConfirm: true,
             })
-       }
-       let formData = new FormData(this);
-       $('#image-input-error').text('');
+            return;
+        }
 
-       $.ajax({
-          type:'POST',
+        // ensure CKEditor instances update their textarea elements
+        if (window._richEditors && window._richEditors.length) {
+            window._richEditors.forEach(function(id){
+                if (CKEDITOR.instances[id]) {
+                    CKEDITOR.instances[id].updateElement();
+                }
+            });
+        }
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            type:'POST',
             url:"{{ route('employees.store') }}",
-           data: formData,
-           contentType: false,
-           processData: false,
-           success: (response) => {
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: (response) => {
+                Swal.fire({
+                    title: 'Employee Added',
+                    html: '<span class="text-success">Information added successfully.</span>',
+                    icon: 'success',
+                    timer: 1800,
+                    showConfirmButton: false,
+                }).then(() => location.reload());
+            },
+            error: function(response){
+                console.log(response);
+                if (response.status === 422 && response.responseJSON && response.responseJSON.errors) {
+                    const errors = response.responseJSON.errors;
+                    // show a summary alert
+                    const firstKey = Object.keys(errors)[0];
+                    Swal.fire({title: 'Validation error', text: errors[firstKey][0], icon: 'error'});
 
-             Swal.fire({
-            html: '<span style="color:green">Information Added</span>',
-            icon: 'success',
-             type: 'success',
-              title: 'Employee Added',
-              // showCloseButton: true,
-              // showCancelButton: true,
-              focusConfirm: false,
-              allowOutsideClick: false,
-                allowEscapeKey: false,
-             
-            }).then((data) => {
-                   if(data){
-                     // Do Stuff here for success
-                     location.reload();
-                   }else{
-                    // something other stuff
-                   }
-
-                })
-
-
-         
-               $('.saved').html('Saved');
-               
-           },
-           error: function(response){
-              console.log(response);
-                $('#image-input-error').text(response.responseJSON.errors.file);
-           }
-       });
-  });
+                    // mark fields and show inline messages
+                    Object.keys(errors).forEach(function(field){
+                        const messages = errors[field];
+                        // try to find matching input/select/textarea
+                        const $el = $('[name="'+field+'"]');
+                        if ($el.length) {
+                            $el.addClass('is-invalid');
+                            // find invalid-feedback with matching data-field
+                            const $fb = $('.invalid-feedback[data-field="'+field+'"]');
+                            if ($fb.length) {
+                                $fb.removeClass('d-none').text(messages[0]);
+                            } else {
+                                // append a feedback element
+                                $el.after('<div class="invalid-feedback d-block">'+messages[0]+'</div>');
+                            }
+                        }
+                    });
+                } else {
+                    Swal.fire({title: 'Error', text: 'An unexpected error occurred.', icon: 'error'});
+                }
+            }
+        });
+    });
 
 </script>
 @endsection

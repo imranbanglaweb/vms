@@ -21,8 +21,6 @@ class CreateEmailLogsTable extends Migration
             $table->text('body');
             $table->enum('status', ['Pending', 'Sent', 'Failed'])->default('Pending');
             $table->timestamp('sent_at')->nullable();
-
-            $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();

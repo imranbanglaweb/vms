@@ -45,6 +45,25 @@ class UnitController extends Controller
     }
 
     /**
+     * Server-side data for DataTables
+     */
+    public function data(Request $request)
+    {
+        $query = Unit::select(['id','unit_name','unit_code','remarks']);
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('action', function($row){
+                $edit = route('units.edit', $row->id);
+                $btn = "<a class='btn btn-sm btn-primary' href='{$edit}'><i class='fa fa-edit'></i></a> ";
+                $btn .= "<button class='btn btn-sm btn-danger deleteUser' data-uid='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
+                return $btn;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -129,7 +148,7 @@ class UnitController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function show(Category $category)
+    public function show(Request $request)
     {
         //
     }
@@ -146,24 +165,8 @@ class UnitController extends Controller
         return view('admin.dashboard.unit.edit',compact('unit_edit'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Category $category)
-    {
-        //
-    }
+ 
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
   public function destroy($id,Request $request)
     {
         $unit_id = $request->u_id;

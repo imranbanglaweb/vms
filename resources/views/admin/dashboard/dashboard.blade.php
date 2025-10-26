@@ -21,52 +21,108 @@
 													</div>
 												</div>
 
-        <!-- Stats Cards -->
+        <!-- Vehicle Management 3D Stats -->
         <div class="row">
-            <!-- Total Documents -->
-            <div class="col-xl-3 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-primary">
-                        <i class="fa fa-file"></i>
+            <!-- Total Vehicles -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stat-card vehicle-3d">
+                    <div class="stat-card__icon-wrapper bg-gradient-1">
+                        <i class="fa fa-car"></i>
                     </div>
                     <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($totalDocuments) }}</h3>
-                        <p class="stat-card__title">Total Documents</p>
-														</div>
-														</div>
-													</div>
+                        <h3 class="stat-card__number">{{ number_format($totalVehicles ?? 0) }}</h3>
+                        <p class="stat-card__title">Total Vehicles</p>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Pending Documents -->
-            <div class="col-xl-3 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-warning">
-                        <i class="fa fa-times-circle"></i>
-                        @if($pendingDocuments >= 0)
+            <!-- Active Drivers -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stat-card vehicle-3d">
+                    <div class="stat-card__icon-wrapper bg-gradient-2">
+                        <i class="fa fa-user-tie"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <h3 class="stat-card__number">{{ number_format($driversCount ?? 0) }}</h3>
+                        <p class="stat-card__title">Drivers</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Maintenance -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stat-card vehicle-3d">
+                    <div class="stat-card__icon-wrapper bg-gradient-3">
+                        <i class="fa fa-tools"></i>
+                        @if(($upcomingMaintenance ?? 0) > 0)
                             <span class="pulse-ring"></span>
                         @endif
                     </div>
                     <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($pendingDocuments) }}</h3>
-                        <p class="stat-card__title">Pending Documents</p>
-													</div>
-												</div>
-											</div>
+                        <h3 class="stat-card__number">{{ number_format($upcomingMaintenance ?? 0) }}</h3>
+                        <p class="stat-card__title">Upcoming Maintenance (30d)</p>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Returned Documents -->
-            <div class="col-xl-3 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-info">
-                        <i class="fa fa-undo"></i>
-										</div>
+            <!-- Inactive Vehicles -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stat-card vehicle-3d">
+                    <div class="stat-card__icon-wrapper bg-gradient-4">
+                        <i class="fa fa-ban"></i>
+                    </div>
                     <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($returnedDocuments) }}</h3>
-                        <p class="stat-card__title">Returned Documents</p>
-								</div>
-													</div>
-												</div>
+                        <h3 class="stat-card__number">{{ number_format($inactiveVehicles ?? 0) }}</h3>
+                        <p class="stat-card__title">Inactive Vehicles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-       
-														</div>
+        <!-- Recent Vehicle Maintenances -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">Recent Vehicle Maintenances</h3>
+                        <small class="text-muted">Showing last 6 maintenance records</small>
+                    </div>
+                    <div class="card-body">
+                        @if(!empty($recentMaintenances) && $recentMaintenances->count())
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vehicle</th>
+                                        <th>Maintenance Date</th>
+                                        <th>Type</th>
+                                        <th>Provider</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($recentMaintenances as $m)
+                                    <tr>
+                                        <td>{{ optional($m->vehicle)->registration_no ?? '—' }} ({{ optional($m->vehicle)->vehicle_code ?? '' }})</td>
+                                        <td>{{ \Carbon\Carbon::parse($m->maintenance_date)->format('Y-m-d') }}</td>
+                                        <td>{{ $m->maintenance_type }}</td>
+                                        <td>{{ $m->service_provider }}</td>
+                                        <td>{{ $m->cost ? number_format($m->cost,2) : '-' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                            <div class="empty-state">
+                                <i class="fa fa-tools opacity-50"></i>
+                                <p class="mt-2">No recent maintenance records found.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Approval Stats (Show only for super-admin) -->
         @if(auth()->user()->hasRole('Super Admin'))
@@ -201,10 +257,10 @@
     /* Stat Cards */
     .stat-card {
         background: #fff;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease;
+        box-shadow: 0 8px 20px rgba(7,12,24,0.18), inset 0 -6px 12px rgba(0,0,0,0.03);
+        transition: transform 0.35s cubic-bezier(.25,.8,.25,1), box-shadow 0.35s ease;
     }
 
     .stat-card:hover {
@@ -221,6 +277,18 @@
         margin-bottom: 15px;
         position: relative;
     }
+
+    /* 3D card variants */
+    .vehicle-3d { perspective: 800px; }
+    .vehicle-3d .stat-card__icon-wrapper { box-shadow: 0 8px 18px rgba(14,30,60,0.12); }
+    .vehicle-3d:hover { transform: translateY(-10px) rotateX(3deg); box-shadow: 0 18px 40px rgba(7,12,24,0.28); }
+
+    .bg-gradient-1 { background: linear-gradient(135deg, #4f46e5, #06b6d4); }
+    .bg-gradient-2 { background: linear-gradient(135deg, #06b6d4, #10b981); }
+    .bg-gradient-3 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .bg-gradient-4 { background: linear-gradient(135deg, #9ca3af, #374151); }
+
+    .stat-card__icon-wrapper i { font-size: 26px; }
 
     .stat-card__icon-wrapper i {
         color: #fff;

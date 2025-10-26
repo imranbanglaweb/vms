@@ -52,6 +52,27 @@ class LocationController extends Controller
     }
 
     /**
+     * Server-side data endpoint for locations
+     */
+    public function data(Request $request)
+    {
+        $query = DB::table('locations')
+            ->leftJoin('units','locations.unit_id','=','units.id')
+            ->select('locations.id as id','locations.location_name','locations.address','units.unit_name');
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('action', function($row){
+                $edit = route('locations.edit', $row->id);
+                $btn = "<a class='btn btn-sm btn-primary' href='{$edit}'><i class='fa fa-edit'></i></a> ";
+                $btn .= "<button class='btn btn-sm btn-danger deleteUser' data-lid='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
+                return $btn;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response

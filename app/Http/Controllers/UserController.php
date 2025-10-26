@@ -80,7 +80,7 @@ class UserController extends Controller
         $company_lists = Company::orderBy('id','DESC')->get();
         // $department_lists = Department::orderBy('id','DESC')->get();
         $location_lists = Location::orderBy('id','DESC')->get();
-        $employee_lists = Employee::orderBy('employee_oder','ASC')->get();
+        $employee_lists = Employee::orderBy('employee_order','ASC')->get();
         return view('admin.dashboard.users.create',
             compact(
                 'roles',
@@ -273,7 +273,7 @@ class UserController extends Controller
         $user = User::find($id);
         $roles = Role::pluck('name','name')->all();
         $userRole = $user->roles->pluck('name','name')->all();
-        $employee_lists = Employee::orderBy('employee_oder','ASC')->get();
+        $employee_lists = Employee::orderBy('employee_order','ASC')->get();
     
         return view('admin.dashboard.users.edit',compact(
             'user','roles',

@@ -235,6 +235,88 @@
 	</style>
 
 	@stack('styles')
+	<style>
+		/* Custom professional sidebar theme */
+		.sidebar-left {
+			background: linear-gradient(180deg, #0b1220 0%, #07101a 100%);
+			border-right: 1px solid rgba(255,255,255,0.03);
+		}
+
+		/* Sidebar header */
+		.sidebar-left .sidebar-header {
+			padding: 18px 16px;
+			background: transparent;
+			border-bottom: 1px solid rgba(255,255,255,0.03);
+		}
+
+		.sidebar-left .sidebar-title a {
+			color: #ffffff;
+			font-weight: 600;
+			letter-spacing: 0.2px;
+			text-transform: none;
+		}
+
+		/* Main nav links */
+		.sidebar-left .nav-main .nav > li > a {
+			color: #cbd5e1;
+			padding: 10px 18px;
+			display: flex;
+			align-items: center;
+			transition: background-color .15s ease, color .15s ease;
+		}
+
+		.sidebar-left .nav-main .nav > li > a i {
+			color: #60a5fa; /* icon primary color */
+			width: 22px;
+			text-align: center;
+			margin-right: 10px;
+			font-size: 14px;
+		}
+
+		/* Active / hover state */
+		.sidebar-left .nav-main .nav > li.active > a,
+		.sidebar-left .nav-main .nav > li > a:hover,
+		.sidebar-left .nav-main .nav > li > a:focus {
+			background: rgba(96,165,250,0.08);
+			color: #ffffff;
+			border-left: 3px solid #60a5fa;
+		}
+
+		.sidebar-left .nav-main .nav > li.active > a i,
+		.sidebar-left .nav-main .nav > li > a:hover i {
+			color: #ffffff; /* icon white on active/hover */
+		}
+
+		/* Submenu style */
+		.sidebar-left .nav-main .nav .nav-children {
+			background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+			margin-left: 6px;
+			padding-left: 6px;
+			border-left: 1px solid rgba(255,255,255,0.02);
+		}
+
+		.sidebar-left .nav-main .nav .nav-children li a {
+			color: #98a6bb;
+			padding-left: 36px;
+			font-size: 14px;
+		}
+
+		.sidebar-left .nav-main .nav .nav-children li a:hover {
+			color: #ffffff;
+			background: rgba(255,255,255,0.02);
+		}
+
+		/* Small polish */
+		.sidebar-left .nav-main .nav .fa { opacity: 0.95; }
+		.sidebar-left .sidebar-toggle i { color: #cbd5e1; }
+		.nano .nano-content { padding-top: 8px; }
+
+		/* Ensure selected submenu stands out */
+		.sidebar-left .nav-main .nav .sub-nav-active {
+			color: #ffffff !important;
+			background: rgba(96,165,250,0.06) !important;
+		}
+	</style>
 </head>
 <body>
 	<!-- Loading Overlay -->
@@ -259,10 +341,11 @@
 	<!-- Core JS Files - Use only one version of jQuery -->
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery/jquery.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js') }}"></script>
-	<script src="{{ asset('public/admin_resource/assets/vendor/popper/umd/popper.min.js') }}"></script>
+	<!-- Popper (CDN; integrity removed because some installs reported SRI mismatch). If CDN fails, fallback to local copy. -->
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous" onerror="(function(){var s=document.createElement('script');s.src='{{ asset('public/admin_resource/assets/vendor/popper/popper.min.js') }}';s.crossOrigin='anonymous';document.head.appendChild(s);})();"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-	<script src="{{ asset('public/admin_resource/assets/vendor/common/common.js') }}"></script>
+	<!-- theme's common.js not found in some installs; rely on theme.js below. If you need custom common utilities, add public/admin_resource/assets/vendor/common/common.js -->
 	<script src="{{ asset('public/admin_resource/assets/vendor/nanoscroller/nanoscroller.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/magnific-popup/magnific-popup.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery-placeholder/jquery.placeholder.js') }}"></script>

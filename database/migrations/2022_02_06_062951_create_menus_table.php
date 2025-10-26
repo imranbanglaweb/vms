@@ -15,17 +15,17 @@ class CreateMenusTable extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->engine = 'InnoDB';
-            $table->increments('id')->index();
+            $table->id();
             $table->integer('menu_parent')->default(0);
-            $table->string('menu_name',150)->index();
-            $table->string('menu_slug',100)->index();
-            $table->string('menu_type',100)->nullable();
-            $table->string('menu_location',100)->nullable();
-            $table->string('remarks',250)->nullable();
-            $table->string('menu_icon',250)->nullable();
-            $table->string('menu_url',250)->nullable();
+            $table->string('menu_name', 150);
+            $table->string('menu_slug', 100);
+            $table->string('menu_type', 100)->nullable();
+            $table->string('menu_location', 100)->nullable();
+            $table->string('remarks', 250)->nullable();
+            $table->string('menu_icon', 250)->nullable();
+            $table->string('menu_url', 250)->nullable();
             $table->integer('parent_id')->nullable();
-            $table->integer('menu_order')->default(0)->after('parent_id');
+            $table->integer('menu_order')->default(0); // REMOVED: after `parent_id`
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();

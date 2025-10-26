@@ -29,25 +29,38 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('employees', EmployeeController::class);
-    Route::apiResource('drivers', DriverController::class);
-    Route::apiResource('vehicles', VehicleController::class);
+    // Register API resources only if the corresponding controller classes exist.
+    if (class_exists(\App\Http\Controllers\Api\EmployeeController::class)) {
+        Route::apiResource('employees', \App\Http\Controllers\Api\EmployeeController::class);
+    }
 
-    // Requisition routes
-    Route::get('requisitions', [RequisitionController::class,'index']);
-    Route::get('requisitions/{id}', [RequisitionController::class,'show']);
-    Route::post('requisitions', [RequisitionController::class,'store']);
-    Route::put('requisitions/{id}', [RequisitionController::class,'update']);
-    Route::delete('requisitions/{id}', [RequisitionController::class,'destroy']);
+    if (class_exists(\App\Http\Controllers\Api\DriverController::class)) {
+        Route::apiResource('drivers', \App\Http\Controllers\Api\DriverController::class);
+    }
 
-    // Approval endpoints
-    Route::post('requisitions/{id}/approve/manager', [RequisitionController::class,'approveByManager']);
-    Route::post('requisitions/{id}/approve/officer', [RequisitionController::class,'approveByOfficer']);
-    Route::post('requisitions/{id}/assign', [RequisitionController::class,'assignVehicleAndDriver']);
-    Route::post('requisitions/{id}/complete', [RequisitionController::class,'completeTrip']);
+    if (class_exists(\App\Http\Controllers\Api\VehicleController::class)) {
+        Route::apiResource('vehicles', \App\Http\Controllers\Api\VehicleController::class);
+    }
 
-    // Notifications
-    Route::get('notifications', [NotificationController::class,'index']);
-    Route::post('notifications/mark-read/{id}', [NotificationController::class,'markRead']);
+    // Requisition routes (guarded)
+    if (class_exists(\App\Http\Controllers\Api\RequisitionController::class)) {
+        Route::get('requisitions', [\App\Http\Controllers\Api\RequisitionController::class,'index']);
+        Route::get('requisitions/{id}', [\App\Http\Controllers\Api\RequisitionController::class,'show']);
+        Route::post('requisitions', [\App\Http\Controllers\Api\RequisitionController::class,'store']);
+        Route::put('requisitions/{id}', [\App\Http\Controllers\Api\RequisitionController::class,'update']);
+        Route::delete('requisitions/{id}', [\App\Http\Controllers\Api\RequisitionController::class,'destroy']);
+
+        // Approval endpoints
+        Route::post('requisitions/{id}/approve/manager', [\App\Http\Controllers\Api\RequisitionController::class,'approveByManager']);
+        Route::post('requisitions/{id}/approve/officer', [\App\Http\Controllers\Api\RequisitionController::class,'approveByOfficer']);
+        Route::post('requisitions/{id}/assign', [\App\Http\Controllers\Api\RequisitionController::class,'assignVehicleAndDriver']);
+        Route::post('requisitions/{id}/complete', [\App\Http\Controllers\Api\RequisitionController::class,'completeTrip']);
+    }
+
+    // Notifications (guarded)
+    if (class_exists(\App\Http\Controllers\Api\NotificationController::class)) {
+        Route::get('notifications', [\App\Http\Controllers\Api\NotificationController::class,'index']);
+        Route::post('notifications/mark-read/{id}', [\App\Http\Controllers\Api\NotificationController::class,'markRead']);
+    }
 });
 

@@ -19,6 +19,8 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RoomServiceController;
+use App\Http\Controllers\DriverController;
+use App\Http\Controllers\LicneseTypeController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
@@ -95,28 +97,47 @@ Route::any('/contactlistviewdelete/{id}', [FrontendController::class, 'contactli
     Route::resource('supports', SupportController::class);
 Route::any('emergency-task', [SupportController::class,'emergencytask'])->name('emergency-task');
 Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name('pendingsupport');
-    Route::resource('support-details',SupportdetailController::class);
+    // Support details routes (guard against missing controller)
+    if (class_exists(\App\Http\Controllers\SupportdetailController::class)) {
+        Route::resource('support-details', \App\Http\Controllers\SupportdetailController::class);
 
-// export to excel
-Route::post('task-entry-export-button', [SupportdetailController::class, 'exportButton'])->name('task-entry.export-button');
+        // export to excel
+        Route::post('task-entry-export-button', [\App\Http\Controllers\SupportdetailController::class, 'exportButton'])->name('task-entry.export-button');
 
-
-Route::get('/support-details/{id}', [SupportdetailController::class, 'show']);
-Route::get('/support-details/history/{id}', [SupportdetailController::class, 'history'])->name('support-details.history');
+        Route::get('/support-details/{id}', [\App\Http\Controllers\SupportdetailController::class, 'show']);
+        Route::get('/support-details/history/{id}', [\App\Http\Controllers\SupportdetailController::class, 'history'])->name('support-details.history');
+    }
 
     Route::resource('issueregisterlog',IssueregisterLogController::class);
-    Route::resource('support_type', SupportTypeController::class);
+    // Support type routes (guarded)
+    if (class_exists(\App\Http\Controllers\SupportTypeController::class)) {
+        Route::resource('support_type', \App\Http\Controllers\SupportTypeController::class);
+    }
     Route::get('user-profile', [UserController::class,'userprofile'])->name('user-profile');
     Route::post('profile-update', [UserController::class,'profileupdate'])->name('profile-update');
     Route::post('profile-password-update', [UserController::class,'profilepasswordupdate'])->name('profile-password-update');
     Route::resource('units', UnitController::class);
+    // Server-side data endpoints for AJAX tables
+    Route::get('units/data', [UnitController::class, 'data'])->name('units.data');
     Route::resource('company', CompanyController::class);
     Route::resource('departments', DepartmentController::class);
+    Route::get('departments/data', [DepartmentController::class, 'data'])->name('departments.data');
+    // AJAX helpers for unit-wise selects used by employee create/edit forms
+    Route::get('departments/unit-wise-company', [DepartmentController::class, 'unitWiseCompany'])->name('departments.unit-wise-company');
+    Route::get('unit-wise-department', [DepartmentController::class, 'unitWiseDepartment'])->name('unit-wise-department');
     Route::resource('locations', LocationController::class);
+    Route::get('locations/data', [LocationController::class, 'data'])->name('locations.data');
     Route::resource('projects', ProjectController::class);
     Route::resource('lands', LandController::class);
     // Route::resource('document-types', DocumentTypeController::class);
     Route::resource('employees', EmployeeController::class);
+    Route::resource('drivers', DriverController::class);
+    Route::resource('license-types', LicneseTypeController::class);
+
+    // Categories resource (some views expect routes like categories.index)
+    if (class_exists(\App\Http\Controllers\CategoryController::class)) {
+        Route::resource('categories', \App\Http\Controllers\CategoryController::class);
+    }
 
 // import
     Route::post('import', [EmployeeController::class, 'import'])->name('employee.import');
@@ -148,7 +169,7 @@ Route::post('menus/reorder', [MenuController::class, 'menuoder'])->name('menus.r
     Route::get('settings', [SettingController::class,'index'])->name('settings');
     Route::post('settings/store', [SettingController::class,'store'])->name('settings.store');
 
-    Route::get('users/search', 'UserController@search')->name('users.search');
+    Route::get('users/search', [\App\Http\Controllers\UserController::class, 'search'])->name('users.search');
     // Route::delete('users/{id}', 'UserController@destroy')->name('users.destroy');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 

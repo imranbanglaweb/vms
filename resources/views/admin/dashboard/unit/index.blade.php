@@ -63,36 +63,29 @@
                                
                             </header>
                             <div class="panel-body">
-    <table class="table table-bordered table-striped mb-none" id="datatable-default">
-<thead>
+  <div class="d-flex justify-content-between mb-2">
+    <div>
+      <input id="table-search" class="form-control" placeholder="Search units..." style="min-width:260px;">
+    </div>
+    <div>
+      @can('unit-create')
+      <a class="btn btn-success" href="{{ route('units.create') }}"> <i class="fa fa-plus"></i> Add Unit</a>
+      @endcan
+    </div>
+  </div>
+
+  <table class="table table-hover table-striped" id="units-table" style="width:100%">
+    <thead>
       <tr>
-     <th>No</th>
-     <th>Unit Name</th>
-     <th>Unit Code</th>
-     <th>Unit Description</th>
-     <th width="15%">Action</th>
-  </tr>
-</thead>
-  <tbody id="menu_list" class="" >
-    @foreach ($units as $key => $unit)
-    <tr  id="{{ $unit->id }}">
-        <td>{{ ++$key }}</td>
-        <td >{{ $unit->unit_name }}</td>
-        <td >{{ $unit->unit_code }}</td>
-        <td >{{ $unit->remarks }}</td>
-        <td>
-             @can('unit-edit')
-                <a class="btn btn-primary" href="{{ route('units.edit',$unit->id) }}"><i class="fa fa-edit"></i> </a>
-            @endcan
-             @can('unit-delete')
-     <button class="btn btn-danger deleteUser" data-uid="{{$unit->id}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
-        
-              @endcan
-        </td>
-    </tr>
-    @endforeach
-  </tbody>
-</table>
+        <th>#</th>
+        <th>Unit Name</th>
+        <th>Unit Code</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </section>
 </div>
 </div>
@@ -100,59 +93,74 @@
 </section>
 <div id="applicantDeleteModal" class="modal modal-danger fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog" style="width:55%;">
-        <div class="modal-content">
+            <div class="modal-content">
 
+                    <form id="deleteUnitForm" method="POST" action="" style="display:inline">
+                        @csrf
+                        @method('DELETE')
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title text-center" id="custom-width-modalLabel">
+                        Delete Unit</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h4 class="text-center text-danger">Are You Sure Delete Unit</h4>
+                        <input type="hidden" name="u_id" id="u_id">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger waves-effect remove-data-from-delete-form">Delete</button>
+                    </div>
 
-                {!! Form::open(['method' => 'DELETE','route' => ['units.destroy', $unit->id],'style'=>'display:inline']) !!}
-                    {{-- <i class="fa fa-trash-o"></i>  --}}
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title text-center" id="custom-width-modalLabel">
-                    Delete Unit</h4>
-                </div>
-                <div class="modal-body">
-                    <h4 class="text-center text-danger">Are You Sure Delete Unit</h4>
-                    <input type="hidden" name="u_id" id="u_id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger waves-effect remove-data-from-delete-form">Delete</button>
-                </div>
-
-             {!! Form::close() !!}
+                    </form>
+            </div>
         </div>
-    </div>
 </div>
 </section>
-{{-- <script  src="{{ asset('js/')}}/function.js"></script> --}}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+<style>
+    #units-table thead th { font-weight:600; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 <script>
-
-$(document).on('click','.deleteUser',function(){
-    var u_id=$(this).attr('data-uid');
-    $('#u_id').val(u_id); 
-    $('#applicantDeleteModal').modal('show'); 
-});
-
-
-    $(".myElem").show().delay(5000).fadeOut();
-    $(function(){
-      $("#menu_list").sortable({
-        stop: function(){
-          $.map($(this).find('tr'), function(el) {
-            var itemID = el.id;
-            var itemIndex = $(el).index();
-            // alert(itemIndex);
-            $.ajax({
-              url:'{{URL::to("order-menu")}}',
-              type:'GET',
-              dataType:'json',
-              data: {itemID:itemID, itemIndex: itemIndex},
-            })
-          });
-        }
-      });
+$(function(){
+    var table = $('#units-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{!! route('units.data') !!}',
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable:false, searchable:false },
+            { data: 'unit_name', name: 'unit_name' },
+            { data: 'unit_code', name: 'unit_code' },
+            { data: 'remarks', name: 'remarks' },
+            { data: 'action', name: 'action', orderable:false, searchable:false }
+        ],
+        order: [[1, 'asc']],
+        responsive: true,
+        lengthChange: true,
+        pageLength: 10
     });
-  </script>
+
+    $('#table-search').on('keyup change', function(){
+        table.search(this.value).draw();
+    });
+
+    // delete handler: open generic modal, set id and form action
+    $(document).on('click', '.deleteUser', function(){
+        var uid = $(this).data('uid') || $(this).attr('data-uid');
+        if(!uid) uid = $(this).data('uid');
+        $('#u_id').val(uid);
+        // set the delete form action to /units/{id}
+        var base = "{{ url('units') }}";
+        $('#deleteUnitForm').attr('action', base + '/' + uid);
+        $('#applicantDeleteModal').modal('show');
+    });
+});
+</script>
+@endpush
 @endsection

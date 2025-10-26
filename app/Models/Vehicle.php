@@ -1,24 +1,77 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Vehicle extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
-      'company_id','unit_id','department_id','vehicle_number','registration_date','vehicle_type_id',
-      'brand','model','capacity','color','fuel_type','engine_number','chassis_number','registration_certificate',
-      'availability','status','purchase_date','last_service_date','next_service_due','insurance_expiry','photo',
-      'remarks','created_by','updated_by'
+        'vehicle_code',
+        'registration_no',
+        'registration_date',
+        'brand',
+        'model',
+        'type',
+        'capacity',
+        'color',
+        'fuel_type',
+        'purchase_date',
+        'status_id',
+
+        'company_id',
+        'unit_id',
+        'department_id',
+        'location_id',
+        'driver_id',
+
+        'status',
+        'created_by',
+        'updated_by'
     ];
 
-    protected $casts = ['registration_date'=>'date','purchase_date'=>'date','last_service_date'=>'date','next_service_due'=>'date','insurance_expiry'=>'date'];
+    // ✅ Relationships
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 
-    public function company(){ return $this->belongsTo(Company::class); }
-    public function unit(){ return $this->belongsTo(Unit::class); }
-    public function department(){ return $this->belongsTo(Department::class); }
-    public function vehicleType(){ return $this->belongsTo(VehicleType::class); }
-    public function maintenance(){ return $this->hasMany(VehicleMaintenanceRecord::class); }
-    public function trips(){ return $this->hasMany(Requisition::class,'vehicle_id'); }
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class);
+    }
+
+    public function trips()
+    {
+        return $this->hasMany(Trip::class);
+    }
+
+    public function fuelLogs()
+    {
+        return $this->hasMany(FuelLog::class);
+    }
+
+    public function maintenanceRecords()
+    {
+        return $this->hasMany(Maintenance::class);
+    }
 }

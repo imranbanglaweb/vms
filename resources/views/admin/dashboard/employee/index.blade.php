@@ -92,6 +92,12 @@
                                     <a href="#" class="fa fa-caret-down"></a>
                                     <a href="#" class="fa fa-times"></a>
                                 </div>
+                {{-- Add Employee button in panel header for quick access --}}
+                @can('employee-create')
+                  <div style="float:right; margin-top:-30px;">
+                    <a class="btn btn-success" href="{{ route('employees.create') }}"> <i class="fa fa-plus"></i> Add Employee</a>
+                  </div>
+                @endcan
                         
                                
                             </header>
@@ -137,29 +143,29 @@
 </div>
 </section>
 <div id="applicantDeleteModal" class="modal modal-danger fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog" style="width:55%;">
-        <div class="modal-content">
+  <div class="modal-dialog" style="width:55%;">
+    <div class="modal-content">
 
-
-                {!! Form::open(['method' => 'DELETE','route' => ['employees.destroy', $list->emp_id],'style'=>'display:inline']) !!}
-                    {{-- <i class="fa fa-trash-o"></i>  --}}
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title text-center" id="custom-width-modalLabel">
-                    Delete Employee</h4>
-                </div>
-                <div class="modal-body">
-                    <h4 class="text-center text-danger">Are You Sure Delete Employee</h4>
-                    <input type="hidden" name="e_id" id="e_id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger waves-effect remove-data-from-delete-form">Delete</button>
-                </div>
-
-             {!! Form::close() !!}
+      {{-- Use a simple form and set its action dynamically in JS to avoid referencing $list outside the loop --}}
+      <form id="applicantDeleteForm" method="POST" action="{{ route('employees.destroy', ['employee' => 'EMPID']) }}" style="display:inline">
+        @csrf
+        @method('DELETE')
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h4 class="modal-title text-center" id="custom-width-modalLabel">
+          Delete Employee</h4>
         </div>
+        <div class="modal-body">
+          <h4 class="text-center text-danger">Are You Sure Delete Employee</h4>
+          <input type="hidden" name="e_id" id="e_id">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger waves-effect remove-data-from-delete-form">Delete</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 </section>
 {{-- <script  src="{{ asset('js/')}}/function.js"></script> --}}
@@ -189,9 +195,13 @@
   <script>
 
 $(document).on('click','.deleteUser',function(){
-    var e_id=$(this).attr('data-eid');
-    $('#e_id').val(e_id); 
-    $('#applicantDeleteModal').modal('show'); 
+  var e_id = $(this).attr('data-eid');
+  $('#e_id').val(e_id);
+  // Build the delete URL by replacing the EMPID placeholder in the Blade-generated template
+  var urlTemplate = '{{ route("employees.destroy", ["employee" => "EMPID"]) }}';
+  var url = urlTemplate.replace('EMPID', e_id);
+  $('#applicantDeleteForm').attr('action', url);
+  $('#applicantDeleteModal').modal('show');
 });
 
 

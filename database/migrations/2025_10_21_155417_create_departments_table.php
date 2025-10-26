@@ -21,16 +21,11 @@ class CreateDepartmentsTable extends Migration
             $table->string('department_short_name')->nullable();
             $table->string('location')->nullable();
             $table->text('description')->nullable();
-
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();
-
             $table->timestamps();
-
-            // Relationship
-            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
         });
     }
 

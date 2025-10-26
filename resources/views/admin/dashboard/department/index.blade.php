@@ -63,37 +63,29 @@
    
 </header>
                             <div class="panel-body">
-    <table class="table table-bordered table-striped mb-none" id="myTable">
-<thead>
-      <tr>
-     <th>No</th>
-     <th>Department Name</th>
-     <th>Department Description</th>
-     <th width="15%">Action</th>
-  </tr>
-</thead>
-  <tbody id="menu_list">
-    @foreach ($departments as $key => $department)
-    <tr  id="{{ $department->id }}">
-        <td>{{ ++$key }}</td>
-        <td >{{ $department->department_name }}</td>
-        <td >{{ $department->department_name }}</td>
-        <td>
-  
-           @can('department-edit')
-        <a class="btn btn-primary" href="{{ route('departments.edit',$department->id) }}">
-          <i class="fa fa-edit"></i> 
-        </a>
-           @endcan
-           @can('department-delete')
-   <button class="btn btn-danger deleteUser" data-did="{{$department->id}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
-            @endcan
+  <div class="d-flex justify-content-between mb-2">
+    <div>
+      <input id="table-search" class="form-control" placeholder="Search departments..." style="min-width:260px;">
+    </div>
+    <div>
+      @can('department-create')
+      <a class="btn btn-success" href="{{ route('departments.create') }}"> <i class="fa fa-plus"></i> Add Department</a>
+      @endcan
+    </div>
+  </div>
 
-        </td>
-    </tr>
-    @endforeach
-  </tbody>
-</table>
+  <table class="table table-hover table-striped" id="departments-table" style="width:100%">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Department</th>
+        <th>Code</th>
+        <th>Unit</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </section>
 </div>
 </div>
@@ -126,34 +118,37 @@
 </div>
 </section>
 {{-- <script  src="{{ asset('js/')}}/function.js"></script> --}}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+@endpush
+
+@push('scripts')
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 <script>
-$(document).on('click','.deleteUser',function(){
-    var d_id=$(this).attr('data-did');
-
-    // alert(d_id);
-    $('#d_id').val(d_id); 
-    $('#applicantDeleteModal').modal('show'); 
-});
-
-    $(".myElem").show().delay(5000).fadeOut();
-    $(function(){
-      $("#menu_list").sortable({
-        stop: function(){
-          $.map($(this).find('tr'), function(el) {
-            var itemID = el.id;
-            var itemIndex = $(el).index();
-            // alert(itemIndex);
-            $.ajax({
-              url:'{{URL::to("order-menu")}}',
-              type:'GET',
-              dataType:'json',
-              data: {itemID:itemID, itemIndex: itemIndex},
-            })
-          });
-        }
-      });
+$(function(){
+    var table = $('#departments-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{!! route('departments.data') !!}',
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable:false, searchable:false },
+            { data: 'department_name', name: 'department_name' },
+            { data: 'department_code', name: 'department_code' },
+            { data: 'unit_name', name: 'unit_name' },
+            { data: 'action', name: 'action', orderable:false, searchable:false }
+        ],
+        order: [[1,'asc']]
     });
-  </script>
+
+    $('#table-search').on('keyup change', function(){ table.search(this.value).draw(); });
+
+    $(document).on('click','.deleteUser', function(){
+        var did = $(this).data('did') || $(this).attr('data-did');
+        $('#d_id').val(did);
+        $('#applicantDeleteModal').modal('show');
+    });
+});
+</script>
+@endpush
 @endsection

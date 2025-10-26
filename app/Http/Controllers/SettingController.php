@@ -70,7 +70,7 @@ class SettingController extends Controller
                     // "site_description" => "required",
         ]);
 
-          // return dd($request->site_title);
+        //   return dd($request->site_title);
 
         // if ($validator->fails()) {
         //       return redirect()->back()->withErrors($validator->errors());

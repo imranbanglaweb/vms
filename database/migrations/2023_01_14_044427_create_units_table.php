@@ -14,25 +14,17 @@ class CreateUnitsTable extends Migration
     public function up()
     {
         Schema::create('units', function (Blueprint $table) {
-           table->id();
+            $table->id();
             $table->unsignedBigInteger('location_id');
             $table->unsignedBigInteger('department_id');
-
             $table->string('unit_name');
             $table->string('unit_code')->nullable();
-            $table->string('location_id')->nullable();
             $table->text('description')->nullable();
-
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();
-
             $table->timestamps();
-
-            // Relationships
-            $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
-            $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
             
         });
     }

@@ -15,9 +15,8 @@ class CreateVehiclesTable extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->nullable()->constrained('companies');
-            $table->foreignId('unit_id')->nullable()->constrained('units');
-            $table->foreignId('department_id')->nullable()->constrained('departments');
+            $table->unsignedBigInteger('unit_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
 
             $table->string('vehicle_number', 100)->unique();
             $table->string('vehicle_type')->nullable();
@@ -35,8 +34,13 @@ class CreateVehiclesTable extends Migration
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();
-
             $table->timestamps();
+        });
+
+        // Add foreign key constraints after table creation
+        Schema::table('vehicles', function (Blueprint $table) {
+            $table->foreign('unit_id')->references('id')->on('units');
+            $table->foreign('department_id')->references('id')->on('departments');
         });
     }
 
@@ -47,6 +51,11 @@ class CreateVehiclesTable extends Migration
      */
     public function down()
     {
+        Schema::table('vehicles', function (Blueprint $table) {
+            $table->dropForeign(['unit_id']);
+            $table->dropForeign(['department_id']);
+        });
+        
         Schema::dropIfExists('vehicles');
     }
 }

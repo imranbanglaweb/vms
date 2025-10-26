@@ -49,11 +49,6 @@ class CreateDriversTable extends Migration
             $table->unsignedInteger('updated_by')->nullable();
             $table->softDeletes();
             $table->timestamps();
-
-            // Foreign Keys
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-            $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
-            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
         });
     }
 

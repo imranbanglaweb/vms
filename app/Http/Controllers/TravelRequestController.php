@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\IssueRegister;
+use App\Models\TravelRequest;
 use Illuminate\Http\Request;
-use App\Models\Employee;
-class IssueRegisterController extends Controller
-{
-    
 
-   public function __construct()
-    {
-        $this->middleware('auth');
-    }
-    
+class TravelRequestController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
-        $sidebar_menus = Menu::orderBy('menu_oder','ASC')->where('menu_parent',0)->get();
-         
-        return view('admin.dashboard.dashboard',compact('sidebar_menus'));
+        //
     }
 
     /**
@@ -28,9 +24,7 @@ class IssueRegisterController extends Controller
      */
     public function create()
     {
-         $employee_lists = Employee::orderBy('employee_oder','ASC')->get();
-         
-        return view('admin.dashboard.support.create',compact('employee_lists'));
+        //
     }
 
     /**
@@ -47,10 +41,10 @@ class IssueRegisterController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\IssueRegister  $issueRegister
+     * @param  \App\Models\TravelRequest  $travelRequest
      * @return \Illuminate\Http\Response
      */
-    public function show(IssueRegister $issueRegister)
+    public function show(TravelRequest $travelRequest)
     {
         //
     }
@@ -58,10 +52,10 @@ class IssueRegisterController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\IssueRegister  $issueRegister
+     * @param  \App\Models\TravelRequest  $travelRequest
      * @return \Illuminate\Http\Response
      */
-    public function edit(IssueRegister $issueRegister)
+    public function edit(TravelRequest $travelRequest)
     {
         //
     }
@@ -70,10 +64,10 @@ class IssueRegisterController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\IssueRegister  $issueRegister
+     * @param  \App\Models\TravelRequest  $travelRequest
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, IssueRegister $issueRegister)
+    public function update(Request $request, TravelRequest $travelRequest)
     {
         //
     }
@@ -81,10 +75,10 @@ class IssueRegisterController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\IssueRegister  $issueRegister
+     * @param  \App\Models\TravelRequest  $travelRequest
      * @return \Illuminate\Http\Response
      */
-    public function destroy(IssueRegister $issueRegister)
+    public function destroy(TravelRequest $travelRequest)
     {
         //
     }

@@ -33,17 +33,30 @@ class HomeController extends Controller
             // Document statistics
             $data = [
                 'totalDocuments' => Document::where('created_by',Auth::id())->count(),
-            'pendingDocuments' => Document::where('status', 'pending')
-            ->where('created_by',Auth::id())
-            ->count(),
+                'pendingDocuments' => Document::where('status', 'pending')
+                    ->where('created_by',Auth::id())
+                    ->count(),
                 'returnedDocuments' => Document::where('status', 'returned')
-                ->where('created_by',Auth::id())->count(),
+                    ->where('created_by',Auth::id())->count(),
                 'withdrawnDocuments' => Document::where('status', 'withdrawn')
-                ->where('created_by',Auth::id())->count(),
+                    ->where('created_by',Auth::id())->count(),
                 'pendingApprovals' => Document::where('approval_status', 'pending')->where('created_by',Auth::id())->count(),
                 'approvedDocuments' => Document::where('approval_status', 'approved')->where('created_by',Auth::id())->count(),
                 'rejectedDocuments' => Document::where('approval_status', 'rejected')->where('created_by',Auth::id())->count(),
             ];
+
+            // Vehicle management statistics (for the vehicle management dashboard)
+            $today = \Carbon\Carbon::today();
+            $in30 = $today->copy()->addDays(30);
+
+            $data['totalVehicles'] = \App\Models\Vehicle::count();
+            // vehicles with any maintenance scheduled in next 30 days
+            $data['upcomingMaintenance'] = \App\Models\VehicleMaintenence::whereBetween('maintenance_date', [$today->toDateString(), $in30->toDateString()])->count();
+            // recent maintenance records (last 30 days)
+            $data['recentMaintenances'] = \App\Models\VehicleMaintenence::whereBetween('maintenance_date', [$today->copy()->subDays(30)->toDateString(), $today->toDateString()])->with('vehicle')->take(6)->get();
+            $data['driversCount'] = \App\Models\Driver::count();
+            // vehicles currently marked inactive (status 0 or 'inactive') — try both
+            $data['inactiveVehicles'] = \App\Models\Vehicle::where(function($q){ $q->where('status', 0)->orWhere('status', 'inactive'); })->count();
 
             // Add recent documents for all users
             $data['recentDocuments'] = Document::with(['project', 'land', 'documentType'])

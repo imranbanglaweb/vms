@@ -15,31 +15,23 @@ class CreateEmployeesTable extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('unit_id');
-            $table->unsignedBigInteger('department_id');
-            $table->string('employee_code')->unique();
-            $table->string('emp_code')->nullable();
+            $table->foreignId('company_id')->nullable()->constrained('companies');
+            $table->foreignId('unit_id')->nullable()->constrained('units');
+            $table->foreignId('department_id')->nullable()->constrained('departments');
+            $table->string('employee_code', 50)->unique()->nullable();
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('phone', 50)->nullable();
-            $table->enum('employee_type', ['Permanent', 'Contract', 'Intern','Provition'])->nullable();
-            $table->string('designation')->nullable();
+            $table->enum('employee_type', ['Permanent', 'Contract', 'Intern'])->nullable();
+            $table->string('designation', 100)->nullable();
             $table->string('blood_group', 10)->nullable();
             $table->string('nid', 50)->nullable();
             $table->string('photo')->nullable();
             $table->text('present_address')->nullable();
             $table->text('permanent_address')->nullable();
             $table->date('join_date')->nullable();
-            $table->tinyInteger('status')->default(1);
-            $table->unsignedInteger('created_by');
-            $table->unsignedInteger('updated_by')->nullable();
-            $table->softDeletes();
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->timestamps();
-            // Relationships
-            // $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
-            $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
         });
     }
 
