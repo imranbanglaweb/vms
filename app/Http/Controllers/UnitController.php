@@ -30,11 +30,10 @@ Use Session;
 
 class UnitController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+     public function __construct()
+    {
+        $this->middleware('auth');
+    }
     public function index()
     {
 
@@ -49,37 +48,39 @@ class UnitController extends Controller
      */
     public function data(Request $request)
     {
-        $query = Unit::select(['id','unit_name','unit_code','remarks']);
+        Log::info('UnitController@data called', ['url' => $request->fullUrl(), 'ajax' => $request->ajax()]);
 
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('action', function($row){
-                $edit = route('units.edit', $row->id);
-                $btn = "<a class='btn btn-sm btn-primary' href='{$edit}'><i class='fa fa-edit'></i></a> ";
-                $btn .= "<button class='btn btn-sm btn-danger deleteUser' data-uid='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
-                return $btn;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+        if ($request->has('test')) {
+            return response()->json(['ok' => true, 'message' => 'test payload']);
+        }
+
+        try {
+            $query = Unit::select(['id','unit_name','unit_code']);
+
+            $dt = DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $editBtn = "<button class='btn btn-sm btn-primary editUnit' data-id='".$row->id."' data-name='".htmlspecialchars($row->unit_name, ENT_QUOTES)."' data-code='".htmlspecialchars($row->unit_code, ENT_QUOTES)."' title='Edit'><i class='fa fa-edit'></i></button> ";
+                    $deleteBtn = "<button class='btn btn-sm btn-danger deleteUser' data-uid='".$row->id."' title='Delete'><i class='fa fa-minus-circle'></i></button>";
+                    return $editBtn . $deleteBtn;
+                })
+                ->rawColumns(['action']);
+
+            return $dt->make(true);
+        } catch (\Exception $e) {
+            Log::error('UnitController@data exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Server error while generating table data'], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function create()
     {
          $units = Unit::get();
         return view('admin.dashboard.unit.create',compact('units'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function store(Request $request)
     {
 
@@ -109,7 +110,6 @@ class UnitController extends Controller
         [
         'unit_name'      => $request->unit_name,
         'unit_code'   => $request->unit_code,
-        'remarks'     => $request->remarks,
         'created_by' => Auth::id(),
         ],
      
@@ -123,7 +123,6 @@ class UnitController extends Controller
         [
         'unit_name'      => $request->unit_name,
         'unit_code'   => $request->unit_code,
-        'remarks'     => $request->remarks,
         'created_by' => Auth::id(),
         ],
      
@@ -135,19 +134,11 @@ class UnitController extends Controller
 
 
         return response()->json('Unit Added Successfully');
-
-
-        // /////////////////////////////////
         
 
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
+
     public function show(Request $request)
     {
         //
@@ -169,10 +160,55 @@ class UnitController extends Controller
 
   public function destroy($id,Request $request)
     {
-        $unit_id = $request->u_id;
-                       Unit::find($unit_id)->delete();
+        // prefer explicit id param, fall back to form value
+        $unit_id = $id ?: $request->input('u_id');
+        $unit = Unit::find($unit_id);
+        if ($unit) {
+            $unit->delete();
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Unit deleted successfully']);
+        }
+
         return redirect()->route('units.index')
                         ->with('danger','Unit Deleted successfully');
+    }
+
+
+    /**
+     * Debug endpoint: same as data() but accessible when APP_DEBUG is true.
+     * This is intentionally restricted so it won't be exposed in production.
+     */
+    public function dataDebug(Request $request)
+    {
+        if (!config('app.debug')) {
+            return response()->json(['error' => 'Not allowed'], 403);
+        }
+
+        Log::info('UnitController@dataDebug called', ['url' => $request->fullUrl(), 'ajax' => $request->ajax()]);
+
+        if ($request->has('test')) {
+            return response()->json(['ok' => true, 'message' => 'debug test payload']);
+        }
+
+        try {
+            $query = Unit::select(['id','unit_name','unit_code']);
+
+            $dt = DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $editBtn = "<button class='btn btn-sm btn-primary editUnit' data-id='".$row->id."' data-name='".htmlspecialchars($row->unit_name, ENT_QUOTES)."' data-code='".htmlspecialchars($row->unit_code, ENT_QUOTES)."' title='Edit'><i class='fa fa-edit'></i></button> ";
+                    $deleteBtn = "<button class='btn btn-sm btn-danger deleteUser' data-uid='".$row->id."' title='Delete'><i class='fa fa-minus-circle'></i></button>";
+                    return $editBtn . $deleteBtn;
+                })
+                ->rawColumns(['action']);
+
+            return $dt->make(true);
+        } catch (\Exception $e) {
+            Log::error('UnitController@dataDebug exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Server error while generating table data (debug)'], 500);
+        }
     }
 
 

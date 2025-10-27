@@ -6,7 +6,10 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Unit;
-
+use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 class DepartmentController extends Controller
 {
     /**
@@ -16,7 +19,8 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        //
+        $units = Unit::orderBy('unit_name')->get();
+        return view('admin.dashboard.department.index', compact('units'));
     }
 
     /**
@@ -31,9 +35,9 @@ class DepartmentController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
             ->addColumn('action', function($row){
-                $edit = route('departments.edit', $row->id);
-                $btn = "<a class='btn btn-sm btn-primary' href='{$edit}'><i class='fa fa-edit'></i></a> ";
-                $btn .= "<button class='btn btn-sm btn-danger deleteUser' data-did='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
+                $editBtn = "<button class='btn btn-sm btn-primary editDepartment' data-id='".$row->id."' data-name='".htmlspecialchars($row->department_name, ENT_QUOTES)."' data-code='".htmlspecialchars($row->department_code, ENT_QUOTES)."' data-unit='".htmlspecialchars($row->unit_name, ENT_QUOTES)."'><i class='fa fa-edit'></i></button> ";
+                $delBtn = "<button class='btn btn-sm btn-danger deleteUser' data-did='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
+                $btn = $editBtn . $delBtn;
                 return $btn;
             })
             ->rawColumns(['action'])
@@ -58,7 +62,26 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'unit_id' => 'required',
+            'department_name' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()->all()], 400);
+        }
+
+        $department = Department::updateOrCreate([
+            'id' => $request->id
+        ], [
+            'unit_id' => $request->unit_id,
+            'department_name' => $request->department_name,
+            'department_code' => $request->department_code,
+            'description' => $request->description,
+               'created_by'     => Auth::id(),
+        ]);
+
+        return response()->json('Department saved successfully');
     }
 
     /**
@@ -80,7 +103,8 @@ class DepartmentController extends Controller
      */
     public function edit(Department $department)
     {
-        //
+        $units = Unit::orderBy('unit_name')->get();
+        return view('admin.dashboard.department.edit', compact('department','units'));
     }
 
     /**
@@ -103,7 +127,12 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        //
+        $department->delete();
+        if (request()->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Department deleted']);
+        }
+
+        return redirect()->route('departments.index')->with('danger', 'Department deleted');
     }
 
     /**

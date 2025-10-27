@@ -68,9 +68,9 @@
       <input id="table-search" class="form-control" placeholder="Search departments..." style="min-width:260px;">
     </div>
     <div>
-      @can('department-create')
-      <a class="btn btn-success" href="{{ route('departments.create') }}"> <i class="fa fa-plus"></i> Add Department</a>
-      @endcan
+            @can('department-create')
+            <a class="btn btn-success" href="javascript:void(0)" id="openCreateModal"> <i class="fa fa-plus"></i> Add Department</a>
+            @endcan
     </div>
   </div>
 
@@ -91,32 +91,67 @@
 </div>
 </div>
 </section>
-<div id="applicantDeleteModal" class="modal modal-danger fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+<div id="applicantDeleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true">
     <div class="modal-dialog" style="width:55%;">
         <div class="modal-content">
-
-
-                {!! Form::open(['method' => 'DELETE','route' => ['departments.destroy', $department->id],'style'=>'display:inline']) !!}
-                    {{-- <i class="fa fa-trash-o"></i>  --}}
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title text-center" id="custom-width-modalLabel">
-                    Delete Department</h4>
-                </div>
-                <div class="modal-body">
-                    <h4 class="text-center text-danger">Are You Sure Delete Department</h4>
-                    <input type="hidden" name="d_id" id="d_id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger waves-effect remove-data-from-delete-form">Delete</button>
-                </div>
-
-             {!! Form::close() !!}
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title text-center" id="custom-width-modalLabel">Delete Department</h4>
+            </div>
+            <div class="modal-body">
+                <h4 class="text-center text-danger">Are You Sure Delete Department</h4>
+                <input type="hidden" name="d_id" id="d_id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" id="confirmDeleteDept" class="btn btn-danger">Delete</button>
+            </div>
         </div>
     </div>
 </div>
 </section>
+<!-- Create / Edit modal for departments -->
+<div id="departmentModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="departmentModalTitle">Create Department</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form id="departmentForm">
+                <div class="modal-body">
+                    <input type="hidden" id="department_id" name="id">
+                    <div class="form-group">
+                        <label for="department_name">Department Name</label>
+                        <input type="text" id="department_name" name="department_name" class="form-control">
+                        <div class="invalid-feedback" id="err_department_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="department_code">Code</label>
+                        <input type="text" id="department_code" name="department_code" class="form-control">
+                        <div class="invalid-feedback" id="err_department_code"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="unit_id">Unit</label>
+                        <select id="unit_id" name="unit_id" class="form-control">
+                            <option value="">-- Select Unit --</option>
+                            @if(!empty($units))
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}">{{ $u->unit_name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div class="invalid-feedback" id="err_unit_id"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="saveDepartmentBtn" class="btn btn-primary"><i class="fa fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {{-- <script  src="{{ asset('js/')}}/function.js"></script> --}}
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
@@ -127,6 +162,7 @@
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 <script>
 $(function(){
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'X-Requested-With': 'XMLHttpRequest' } });
     var table = $('#departments-table').DataTable({
         processing: true,
         serverSide: true,
@@ -143,11 +179,46 @@ $(function(){
 
     $('#table-search').on('keyup change', function(){ table.search(this.value).draw(); });
 
+    // delete via AJAX when confirm in modal
+    var deptDeleteUrl = null;
+    var csrfToken = $('meta[name="csrf-token"]').attr('content');
     $(document).on('click','.deleteUser', function(){
         var did = $(this).data('did') || $(this).attr('data-did');
         $('#d_id').val(did);
+        deptDeleteUrl = '{{ url('departments') }}' + '/' + did;
         $('#applicantDeleteModal').modal('show');
     });
+
+    $('#confirmDeleteDept').on('click', function(e){
+        e.preventDefault();
+        var did = $('#d_id').val();
+        if (!did || !deptDeleteUrl) return;
+        $(this).prop('disabled', true).text('Deleting...');
+        $.ajax({ url: deptDeleteUrl, method: 'POST', data: { _method: 'DELETE', _token: csrfToken }, success: function(res){
+            $('#applicantDeleteModal').modal('hide');
+            $('#confirmDeleteDept').prop('disabled', false).text('Delete');
+            // show danger-styled toast per UX
+            showToast('Deleted', res.message || 'Department deleted', 'danger');
+            table.ajax.reload(null,false);
+        }, error: function(xhr){
+            $('#confirmDeleteDept').prop('disabled', false).text('Delete');
+            var msg = 'Delete failed';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+            showToast('Error', msg, 'error');
+        } });
+    });
+
+    // open create modal
+    $('#openCreateModal').on('click', function(){ clearDeptForm(); $('#departmentModalTitle').text('Create Department'); $('#departmentModal').modal('show'); });
+
+    // open edit modal (from editDepartment button generated by server)
+    $(document).on('click', '.editDepartment', function(){ clearDeptForm(); var id = $(this).data('id'); var name = $(this).data('name'); var code = $(this).data('code'); var unit = $(this).data('unit'); $('#department_id').val(id); $('#department_name').val(name); $('#department_code').val(code); $('#unit_id').val(''); if(unit){ $('#unit_id option').filter(function(){ return $(this).text()===unit; }).prop('selected', true); } $('#departmentModalTitle').text('Edit Department'); $('#departmentModal').modal('show'); });
+
+    // submit create/edit via AJAX
+    $('#departmentForm').on('submit', function(e){ e.preventDefault(); clearDeptErrors(); $('#saveDepartmentBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>'); var data = { id: $('#department_id').val(), department_name: $('#department_name').val(), department_code: $('#department_code').val(), unit_id: $('#unit_id').val() }; $.ajax({ url: '{!! route('departments.store') !!}', method: 'POST', data: data, success: function(res){ $('#departmentModal').modal('hide'); $('#saveDepartmentBtn').prop('disabled', false).html('<i class="fa fa-save"></i> Save'); table.ajax.reload(null,false); }, error: function(xhr){ $('#saveDepartmentBtn').prop('disabled', false).html('<i class="fa fa-save"></i> Save'); if(xhr.status===422||xhr.status===400){ var errors = xhr.responseJSON.errors || xhr.responseJSON; if(Array.isArray(errors)){ alert(errors.join('\n')); } else { $.each(errors, function(i,v){ $('#err_'+i).html(v).show(); $('#'+i).addClass('is-invalid'); }); } } else { alert('Save failed'); } } }); });
+
+    function clearDeptForm(){ $('#departmentForm')[0].reset(); $('#department_id').val(''); clearDeptErrors(); }
+    function clearDeptErrors(){ $('.invalid-feedback').empty().hide(); $('.form-control').removeClass('is-invalid'); }
 });
 </script>
 @endpush

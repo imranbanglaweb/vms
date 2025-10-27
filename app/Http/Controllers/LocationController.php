@@ -45,8 +45,10 @@ class LocationController extends Controller
             $location_lists = DB::table('locations')
                         ->select('locations.id as l_id','locations.location_name','locations.address','units.unit_name')
                         ->leftJoin('units','locations.unit_id','=','units.id')
+                        ->whereNull('locations.deleted_at')
                         ->get();
-        return view('admin.dashboard.location.index',compact('location_lists'));
+        $units = Unit::orderBy('unit_name')->get();
+        return view('admin.dashboard.location.index',compact('location_lists','units'));
 
 
     }
@@ -58,15 +60,19 @@ class LocationController extends Controller
     {
         $query = DB::table('locations')
             ->leftJoin('units','locations.unit_id','=','units.id')
-            ->select('locations.id as id','locations.location_name','locations.address','units.unit_name');
+            ->select('locations.id as id','locations.location_name','locations.address','locations.location_code','units.unit_name')
+            ->whereNull('locations.deleted_at');
 
         return DataTables::of($query)
             ->addIndexColumn()
             ->addColumn('action', function($row){
-                $edit = route('locations.edit', $row->id);
-                $btn = "<a class='btn btn-sm btn-primary' href='{$edit}'><i class='fa fa-edit'></i></a> ";
-                $btn .= "<button class='btn btn-sm btn-danger deleteUser' data-lid='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
-                return $btn;
+                // emit buttons compatible with the client-side modal-based editor
+                $ln = htmlspecialchars($row->location_name ?? '', ENT_QUOTES);
+                $addr = htmlspecialchars($row->address ?? '', ENT_QUOTES);
+                $unit = htmlspecialchars($row->unit_name ?? '', ENT_QUOTES);
+                $editBtn = "<button class=\"btn btn-sm btn-primary editLocation\" data-id=\"{$row->id}\" data-name=\"{$ln}\" data-address=\"{$addr}\" data-unit=\"{$unit}\"> <i class=\"fa fa-edit\"></i></button>";
+                $deleteBtn = "<button class=\"btn btn-sm btn-danger deleteUser\" data-lid=\"{$row->id}\"><i class=\"fa fa-minus-circle\"></i></button>";
+                return $editBtn . ' ' . $deleteBtn;
             })
             ->rawColumns(['action'])
             ->make(true);
@@ -112,44 +118,40 @@ class LocationController extends Controller
         // }
 
            if ($validator->fails()) {
+            Log::info('LocationController@store validation failed', ['payload' => $request->all(), 'errors' => $validator->errors()->all()]);
             return response()->json(['errors' => $validator->errors()->all()], 400);
         }
+
+        Log::info('LocationController@store called', ['payload' => $request->all()]);
 
 // return dd($request);
 
 
-           if (!empty($request->unit_id)) {
-                $location = Location::updateOrCreate(
-
-        ['id'   => $request->id],
-        [
-        'unit_id'           => $request->unit_id,
-        'location_name'     => $request->location_name,
-        'address'           => $request->address,
-        'department_oder'   => 1,
-        'remarks'           => $request->remarks,
-        'status'            => 1,
-        'created_by'        => Auth::id(),
-        ],
-     
-        );
+        // derive location_code from the selected unit's name (if available)
+        $locationCode = null;
+        if (!empty($request->unit_id)) {
+            $unit = Unit::find($request->unit_id);
+            if ($unit) {
+                // set location_code to the unit's name; adjust if you prefer a slug or id-based code
+                $locationCode = $unit->unit_name;
+            }
         }
-        else{
-               $event = Location::updateOrCreate(
 
-        ['id'   => $request->id],
-        [
-        'unit_id'            => $request->unit_id,
-        'location_name'      => $request->location_name,
-        'address'            => $request->address,
-        'department_oder'    => 1,
-        'remarks'            => $request->remarks,
-        'status'             => 1,
-        'created_by'         => Auth::id(),
-        ],
-     
-        );
-        }
+        $dataPayload = [
+            'unit_id'        => $request->unit_id,
+            'location_name'  => $request->location_name,
+            'address'        => $request->address,
+            'location_code'  => $locationCode,
+            'status'         => 1,
+            'created_by'     => Auth::id(),
+        ];
+
+        // preserve remarks/department_oder if present
+        if ($request->filled('remarks')) { $dataPayload['remarks'] = $request->remarks; }
+        if ($request->filled('department_oder')) { $dataPayload['department_oder'] = $request->department_oder; }
+
+    $location = Location::updateOrCreate(['id' => $request->id], $dataPayload);
+    Log::info('LocationController@store saved', ['location_id' => $location->id, 'payload' => $dataPayload]);
 
         // $setting->path = '/storage/'.$path;
         return response()->json('Location Added Successfully');
@@ -199,9 +201,20 @@ class LocationController extends Controller
      */
     public function destroy($id)
     {
-                       Unit::find($id)->delete();
-        return redirect()->route('locations.index')
-                        ->with('danger','Location Deleted successfully');
+        Log::info('LocationController@destroy called', ['id' => $id, 'user_id' => Auth::id()]);
+        $location = Location::find($id);
+        $deleted = false;
+        if ($location) {
+            $location->delete();
+            $deleted = true;
+        }
+        Log::info('LocationController@destroy result', ['id' => $id, 'deleted' => $deleted]);
+
+        // If AJAX, return JSON so front-end can handle it
+        if (request()->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Location deleted successfully']);
+        }
+
     }
 
 

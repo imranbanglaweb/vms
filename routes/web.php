@@ -86,6 +86,23 @@ Route::redirect('/', 'login');
   
   
 Route::group(['middleware' => ['prevent-back-history']], function() {
+ // Server-side data endpoints for AJAX tables
+    Route::get('units/data', [UnitController::class, 'data'])->name('units.data');
+    Route::get('locations/data', [LocationController::class, 'data'])->name('locations.data');
+Route::get('departments/data', [DepartmentController::class, 'data'])->name('departments.data');
+    Route::get('drivers/data', [DriverController::class, 'data'])->name('drivers.data');
+
+
+
+    // Route::get('/', [DriverController::class, 'index'])->name('drivers.index');
+    // Route::post('drivers/store', [DriverController::class, 'store'])->name('drivers.store');
+    Route::get('drivers/list', [DriverController::class, 'list'])->name('drivers.list');
+    Route::resource('drivers', DriverController::class);
+
+
+    
+    Route::get('/get-departments-by-unit', [DriverController::class, 'getDepartmentsByUnit'])->name('getDepartmentsByUnit');
+Route::get('/get-employee-info', [DriverController::class, 'getEmployeeInfo'])->name('getEmployeeInfo');
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/contactlistview', [HomeController::class, 'contactlistview'])->name('contactlistview');
@@ -117,21 +134,27 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
     Route::post('profile-update', [UserController::class,'profileupdate'])->name('profile-update');
     Route::post('profile-password-update', [UserController::class,'profilepasswordupdate'])->name('profile-password-update');
     Route::resource('units', UnitController::class);
-    // Server-side data endpoints for AJAX tables
-    Route::get('units/data', [UnitController::class, 'data'])->name('units.data');
+   
+
+    // Debug-only endpoint: returns same payload as units.data but only when APP_DEBUG=true.
+    // Useful to verify the JSON output without auth redirects during local troubleshooting.
+    if (config('app.debug')) {
+        Route::get('units/data-debug', [UnitController::class, 'dataDebug'])->name('units.data.debug');
+    }
     Route::resource('company', CompanyController::class);
     Route::resource('departments', DepartmentController::class);
-    Route::get('departments/data', [DepartmentController::class, 'data'])->name('departments.data');
+    
     // AJAX helpers for unit-wise selects used by employee create/edit forms
     Route::get('departments/unit-wise-company', [DepartmentController::class, 'unitWiseCompany'])->name('departments.unit-wise-company');
     Route::get('unit-wise-department', [DepartmentController::class, 'unitWiseDepartment'])->name('unit-wise-department');
     Route::resource('locations', LocationController::class);
-    Route::get('locations/data', [LocationController::class, 'data'])->name('locations.data');
+    
     Route::resource('projects', ProjectController::class);
     Route::resource('lands', LandController::class);
     // Route::resource('document-types', DocumentTypeController::class);
     Route::resource('employees', EmployeeController::class);
-    Route::resource('drivers', DriverController::class);
+
+
     Route::resource('license-types', LicneseTypeController::class);
 
     // Categories resource (some views expect routes like categories.index)
@@ -210,64 +233,5 @@ Route::get('/dashboard/recent-documents', [HomeController::class, 'getRecentDocu
 Route::get('/dashboard/pending-approvals', [HomeController::class, 'getPendingApprovals'])
     ->name('dashboard.pending-approvals');
 
-Route::get('/test-email', function() {
-    try {
-        \Mail::raw('Test email from Document Register System', function($message) {
-            $message->to('md.imran1200@gmail.com')
-                   ->subject('Test Email')
-                   ->from('md.imran1200@gmail.com', 'Document Register System');
-        });
-        
-        return 'Email sent successfully! Please check your inbox and spam folder.';
-    } catch (\Exception $e) {
-        \Log::error('Email Error: ' . $e->getMessage());
-        return 'Error: ' . $e->getMessage();
-    }
-});
-
-Route::get('/test-approval-email', function() {
-    $document = \App\Models\Document::first();
-    $user = \App\Models\User::first();
-    
-    try {
-        // Add debug information
-        \Log::info('Testing approval email', [
-            'document_id' => $document->id,
-            'user_email' => $user->email
-        ]);
-        
-        $user->notify(new \App\Notifications\DocumentApproved($document));
-        return "Email sent successfully! Check logs for details.";
-    } catch (\Exception $e) {
-        \Log::error('Test email failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        return "Error: " . $e->getMessage();
-    }
-});
-
-Route::get('/test-custom-mail', function() {
-    try {
-        $document = \App\Models\Document::first();
-        $user = \App\Models\User::first();
-        
-        \Log::info('Testing custom mail template', [
-            'user_email' => $user->email,
-            'document_id' => $document->id,
-            'template' => 'emails.documents.approved'
-        ]);
-        
-        $user->notify(new \App\Notifications\DocumentApproved($document));
-        
-        return "Custom template mail sent. Check logs and your inbox.";
-    } catch (\Exception $e) {
-        \Log::error('Custom mail test failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        return "Error: " . $e->getMessage();
-    }
-});
 
 
