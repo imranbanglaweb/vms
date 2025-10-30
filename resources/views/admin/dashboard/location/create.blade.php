@@ -99,44 +99,40 @@ $(document).ready(function() {
         }
     });
 
-  // daagnumbers_with_land_quantity
-$(".unit_wise_department").change(function () {
+// unit change: populate departments for location forms
+$(document).ready(function(){
+    $(document).on('change', '.unit_wise_department', function () {
+        var unit_id = $(this).val();
 
-            var unit_id = $(this).val();
+        if (!unit_id) {
+            $('.department_lists').empty().append("<option value=''>Please Select</option>");
+            return;
+        }
 
-alert(unit_id);
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('departments.unit-wise-company')}}",
-                data: { unit_id: unit_id},
-// alert(JSON.stringify(data));
-                dataType: 'json',
-                success: function (data) {     
-                // alert(data.RsDaagNumber);              
-
-                 $(".department_lists").empty();
-
-        $('.department_lists').prepend("<option value=''>" +'Please Select'+"</option>");
-
-                    $.each(data['department_lists'], function (key, department_lists) {
-
-            $('.department_lists').append("<option value='" + department_lists.id + "'>" + department_lists.department_name +"</option>");
-
-                    });
-
-           
-                 
-
-// $('.landcategory').val("<option value='"+data.cat_id+"'>" + data.category +"</option>");
-           
-                },
-                error: function (_response) {
-                    alert("error");
+        $.ajax({
+            type: 'GET',
+            url: "{{ route('unit-wise-department') }}",
+            data: { unit_id: unit_id },
+            dataType: 'json',
+            success: function (data) {
+                console.log('unit-wise-department (location.create) response:', data);
+                if ($('.department_lists').data('select2')) {
+                    try { $('.department_lists').select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
                 }
-
-            });
-
+                var previous = $('.department_lists').val();
+                $(".department_lists").empty();
+                $('.department_lists').append("<option value=''>Please Select</option>");
+                $.each(data['department_list'] || [], function (key, d) {
+                    $('.department_lists').append("<option value='" + d.id + "'>" + d.department_name + "</option>");
+                });
+                if (previous) { $('.department_lists').val(previous); }
+                $('.department_lists').trigger('change');
+            },
+            error: function (xhr, status, err) {
+                console.error('Error loading departments for unit', unit_id, status, err);
+            }
+        });
+    });
 });
 
 

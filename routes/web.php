@@ -145,7 +145,7 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
     Route::resource('departments', DepartmentController::class);
     
     // AJAX helpers for unit-wise selects used by employee create/edit forms
-    Route::get('departments/unit-wise-company', [DepartmentController::class, 'unitWiseCompany'])->name('departments.unit-wise-company');
+    // Note: removed 'departments/unit-wise-company' as it's not used and caused routing conflicts
     Route::get('unit-wise-department', [DepartmentController::class, 'unitWiseDepartment'])->name('unit-wise-department');
     Route::resource('locations', LocationController::class);
     

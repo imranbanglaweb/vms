@@ -86,48 +86,46 @@ $(document).ready(function() {
         }
     });
 
-// unit wise company (populate companies when unit changes)
-$(".unit_wise_company").change(function () {
-    var unit_id = $(this).val();
+// unit wise company (populate companies and departments when unit changes)
+$(document).ready(function() {
+    $(document).on('change', '.unit_wise_company', function () {
+        var unit_id = $(this).val();
 
-    // populate companies
-    $.ajax({
-        type: 'GET',
-        url: "{{ route('departments.unit-wise-company') }}",
-        data: { unit_id: unit_id },
-        dataType: 'json',
-        success: function (data) {
-            $(".company_name").empty();
-            $('.company_name').append("<option value=''>Please Select</option>");
-            $.each(data['company_list'], function (key, company) {
-                $('.company_name').append("<option value='" + company.id + "'>" + company.company_name + "</option>");
-            });
-            $('.company_name').trigger('change');
-        },
-        error: function () {
-            // noop
-        }
+        // populate departments
+        $.ajax({
+            type: 'GET',
+            url: "{{ route('unit-wise-department')}}",
+            data: { unit_id: unit_id},
+            dataType: 'json',
+            success: function (data) {
+                console.log('unit-wise-department response:', data);
+                // If department was previously initialized with Select2, destroy it to update options reliably
+                if ($('.department_name').data('select2')) {
+                    try { $('.department_name').select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
+                }
+
+                // preserve existing selection (useful in edit form)
+                var previous = $('.department_name').val();
+
+                $(".department_name").empty();
+                // $('.department_name').append("<option value=''>Please Select</option>");
+                $.each(data['department_list'] || [], function (key, department_list) {
+                    $('.department_name').append("<option value='" + department_list.id + "'>" + department_list.department_name +"</option>");
+                });
+
+                // restore selection if still present
+                if (previous) {
+                    $('.department_name').val(previous);
+                }
+
+                // trigger normal change so any listeners update
+                $('.department_name').trigger('change');
+            },
+            error: function (xhr, status, err) {
+                console.error('Error loading departments for unit', unit_id, status, err);
+            }
+        });
     });
-
-    // populate departments
-    $.ajax({
-        type: 'GET',
-        url: "{{ route('unit-wise-department')}}",
-        data: { unit_id: unit_id},
-        dataType: 'json',
-        success: function (data) {
-            $(".department_name").empty();
-            $('.department_name').append("<option value=''>Please Select</option>");
-            $.each(data['department_list'], function (key, department_list) {
-                $('.department_name').append("<option value='" + department_list.id + "'>" + department_list.department_name +"</option>");
-            });
-            $('.department_name').trigger('change');
-        },
-        error: function () {
-            // noop
-        }
-    });
-
 });
 
 // photo preview

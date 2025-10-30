@@ -9,6 +9,7 @@ use App\Models\Unit;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 class DepartmentController extends Controller
 {
@@ -152,12 +153,13 @@ class DepartmentController extends Controller
         }
 
         if ($companies->isEmpty()) {
-            $companies = Company::select('id', 'name')->orderBy('name')->get();
+            // Company model uses "company_name" column
+            $companies = Company::select('id', 'company_name')->orderBy('company_name')->get();
         }
 
-        // Normalize key expected by front-end
+        // Normalize key expected by front-end (company_name)
         $company_list = $companies->map(function ($c) {
-            return ['id' => $c->id, 'company_name' => $c->name];
+            return ['id' => $c->id, 'company_name' => $c->company_name];
         });
 
         return response()->json(['company_list' => $company_list]);
@@ -172,6 +174,13 @@ class DepartmentController extends Controller
         $departments = [];
         if ($unit_id) {
             $departments = Department::where('unit_id', $unit_id)->orderBy('department_name')->get(['id', 'department_name']);
+        }
+
+        // Log for debugging: request and result count
+        try {
+            Log::info('unitWiseDepartment called', ['unit_id' => $unit_id, 'count' => count($departments)]);
+        } catch (\Exception $e) {
+            // ignore logging errors
         }
 
         $department_list = collect($departments)->map(function ($d) {

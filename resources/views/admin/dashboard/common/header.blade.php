@@ -41,7 +41,16 @@
 		<!-- Head Libs -->
 		<script src="{{ asset('public/admin_resource/')}}/assets/vendor/modernizr/modernizr.js"></script>
 
+<style>
 
+	.logo img {
+		width: 50px !important;
+		height: 50px !important;
+		display: block;
+		text-align: center;
+		margin:0 auto
+	}
+</style>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 	</head>
 	<body>

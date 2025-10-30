@@ -95,44 +95,51 @@ $(document).ready(function() {
     });
 
 
-  // daagnumbers_with_land_quantity
-$(".unit_wise_company").change(function () {
+// unit change: populate departments (and companies if needed) for location edit form
+$(document).ready(function(){
+  $(document).on('change', '.unit_wise_company', function () {
+    var unit_id = $(this).val();
 
-            var unit_id = $(this).val();
+    // departments
+    $.ajax({
+      type: 'GET',
+      url: "{{ route('unit-wise-department') }}",
+      data: { unit_id: unit_id },
+      dataType: 'json',
+        success: function (data) {
+        console.log('unit-wise-department (location.edit) response:', data);
+        if ($('.department_lists').data('select2')) {
+          try { $('.department_lists').select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
+        }
+        if ($('.department_name').data('select2')) {
+          try { $('.department_name').select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
+        }
+        var prevLists = $('.department_lists').val();
+        var prevName = $('.department_name').val();
+        if ($('.department_lists').length) {
+          $(".department_lists").empty().append("<option value=''>Please Select</option>");
+          $.each(data['department_list'] || [], function (k, d) {
+            $('.department_lists').append("<option value='" + d.id + "'>" + d.department_name + "</option>");
+          });
+          if (prevLists) { $('.department_lists').val(prevLists); }
+          $('.department_lists').trigger('change');
+        }
+        if ($('.department_name').length) {
+          $(".department_name").empty().append("<option value=''>Please Select</option>");
+          $.each(data['department_list'] || [], function (k, d) {
+            $('.department_name').append("<option value='" + d.id + "'>" + d.department_name + "</option>");
+          });
+          if (prevName) { $('.department_name').val(prevName); }
+          $('.department_name').trigger('change');
+        }
+      },
+      error: function (xhr, status, err) {
+        console.error('Error loading departments for unit', unit_id, status, err);
+      }
+    });
 
-// alert(unit_id);
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('departments.unit-wise-company')}}",
-                data: { unit_id: unit_id},
-// alert(JSON.stringify(data));
-                dataType: 'json',
-                success: function (data) {     
-                // alert(data.RsDaagNumber);              
-
-                 $(".company_name").empty();
-
-        $('.company_name').prepend("<option value=''>" +'Please Select'+"</option>");
-
-                    $.each(data['company_list'], function (key, company_list) {
-
-            $('.company_name').append("<option value='" + company_list.id + "'>" + company_list.company_name +"</option>");
-
-                    });
-
-           
-                 
-
-// $('.landcategory').val("<option value='"+data.cat_id+"'>" + data.category +"</option>");
-           
-                },
-                error: function (_response) {
-                    alert("error");
-                }
-
-            });
-
+    // companies endpoint removed — not required in this project
+  });
 });
 
 

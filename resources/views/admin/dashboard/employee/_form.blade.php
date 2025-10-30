@@ -14,19 +14,19 @@
                         </select>
                         <div class="invalid-feedback d-none" data-field="unit_id"></div>
                     </div>
-                    <div class="form-group col-md-6">
+                    <!-- <div class="form-group col-md-6">
                         <label><strong><i class="fa fa-building text-primary mr-1"></i> Company</strong></label>
                         <select class="form-control company_name select2" name="company_id">
                             <option value="">Please select</option>
                         </select>
                         <div class="invalid-feedback d-none" data-field="company_id"></div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label><strong><i class="fa fa-layer-group text-primary mr-1"></i> Department</strong></label>
-                        <select class="form-control department_name select2" name="department_id">
+                        <select class="form-control department_name" name="department_id">
                             <option value="">Please select</option>
                         </select>
                         <div class="invalid-feedback d-none" data-field="department_id"></div>
