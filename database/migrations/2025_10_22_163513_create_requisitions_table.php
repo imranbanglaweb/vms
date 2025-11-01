@@ -15,7 +15,8 @@ class CreateRequisitionsTable extends Migration
     {
         Schema::create('requisitions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('requested_by')->constrained('employees');
+            // requested_by references employees.id — foreign key added later in a follow-up migration
+            $table->unsignedBigInteger('requested_by');
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
             $table->foreignId('driver_id')->nullable()->constrained('drivers');
 

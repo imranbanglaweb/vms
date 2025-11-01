@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Licnese_type;
 
 class Driver extends Model
 {
@@ -16,6 +17,7 @@ class Driver extends Model
         'phone',
         'license_no',
         'license_type',
+        'license_type_id',
         'license_expiry',
         'nid_no',
         'address',
@@ -31,6 +33,11 @@ class Driver extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function licenseType()
+    {
+        return $this->belongsTo(Licnese_type::class, 'license_type_id');
     }
 
     public function vehicle()

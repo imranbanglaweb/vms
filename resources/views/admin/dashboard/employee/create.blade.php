@@ -40,7 +40,9 @@
     </header>
 
     <div class="panel-body">
+        {!! Form::open(['route' => ['employees.store'], 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'employee_add']) !!}
         @include('admin.dashboard.employee._form')
+        {!! Form::close() !!}
     </div>
 </section>
 </section>
@@ -90,6 +92,8 @@ $(document).ready(function() {
 $(document).ready(function() {
     $(document).on('change', '.unit_wise_company', function () {
         var unit_id = $(this).val();
+
+     
 
         // populate departments
         $.ajax({
@@ -146,8 +150,24 @@ $(document).on('change', '#photo-input', function(e){
         $(this).find('.is-invalid').removeClass('is-invalid');
         $(this).find('.invalid-feedback').addClass('d-none').text('');
 
-        var unit_id  = $('.unit_id').val();
-        var name  = $('input[name="name"]').val();
+    // debug: inspect unit select(s) and value (helps when multiple elements share the same class)
+    var $unitByClass = $('.unit_id');
+    var $unitByName = $('[name="unit_id"]');
+    // Read unit_id from the actual <select name="unit_id"> inside the employee form to avoid Select2 container conflicts
+    var unit_id  = $('#employee_add').find('[name="unit_id"]').val() || $unitByClass.val();
+    var name  = $('input[name="name"]').val();
+
+    // detailed debug info (check in browser console)
+    // console.log('DEBUG unit select count (by .unit_id):', $unitByClass.length);
+    // if ($unitByClass.length) console.log('DEBUG first .unit_id outerHTML:', $unitByClass[0].outerHTML);
+    // console.log('DEBUG select count (by [name="unit_id"]):', $unitByName.length);
+    // if ($unitByName.length) console.log('DEBUG first [name="unit_id"] outerHTML:', $unitByName[0].outerHTML);
+    // console.log('DEBUG .unit_id.val():', unit_id);
+    // console.log('DEBUG option:selected val/text:', $unitByClass.find('option:selected').val(), $unitByClass.find('option:selected').text());
+    // console.log('DEBUG is disabled/hidden/select2?', $unitByClass.prop('disabled'), $unitByClass.is(':hidden'), !!$unitByClass.data('select2'));
+
+    // keep the small alert for quick visual feedback (remove after debugging)
+    // alert('unit_id (debug): ' + unit_id + '\n.check console for more details');
 
         if (unit_id  == '') {
             Swal.fire({

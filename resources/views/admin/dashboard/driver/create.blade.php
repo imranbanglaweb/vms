@@ -75,7 +75,7 @@
             <h5 class="section-title"><i class="bi bi-building me-1"></i> Organizational Info</h5>
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">Unit</label>
+                    <label class="form-label">Unit</label><br>
                     <select class="form-select select2" name="unit_id" id="unit_id">
                         <option value="">Select Unit</option>
                         @foreach($units as $unit)
@@ -84,17 +84,22 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Department</label>
+                    <label class="form-label">Department</label><br>
                     <select class="form-select select2" name="department_id" id="department_id">
                         <option value="">Select Department</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Employee ID</label>
-                    <select class="form-select select2" name="employee_nid" id="employee_nid">
+                    <label class="form-label">Employee ID</label><br>
+                    <select class="form-select select2" name="employee_code" id="employee_code">
                         <option value="">Select Employee</option>
                         @foreach($employees as $emp)
-                            <option value="{{ $emp->employee_nid }}">{{ $emp->employee_nid }}</option>
+                            @php
+                                $empValue = $emp->employee_code ?? $emp->employee_code ?? $emp->id;
+                                $empText = trim(($emp->name ?? '') . ' ' . ($emp->employee_code ?? $emp->employee_code ?? ''));
+                                if ($empText === '') { $empText = 'Employee ' . $emp->id; }
+                            @endphp
+                            <option value="{{ $empValue }}">{{ $empText }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -118,10 +123,21 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">License Type</label>
+                    <label class="form-label">License Type
+                        <button type="button" id="add-license-type-btn" class="btn btn-sm btn-outline-secondary ms-2" title="Add license type">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-gear-fill"></i></span>
-                        <input type="text" name="license_type" class="form-control" placeholder="e.g. Heavy / Light">
+                        <select name="license_type_id" class="form-select" id="license_type_id">
+                            <option value="">Select License Type</option>
+                            @if(!empty($licenseTypes) && $licenseTypes->count())
+                                @foreach($licenseTypes as $lt)
+                                    <option value="{{ $lt->id }}">{{ $lt->type_name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -190,17 +206,51 @@
 </div>
 </section>
 
+<!-- Modal: Add License Type -->
+<div class="modal fade" id="licenseTypeModal" tabindex="-1" aria-labelledby="licenseTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="licenseTypeModalLabel">Add License Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="licenseTypeForm">
+                    <div class="mb-3">
+                        <label class="form-label">Type Name</label>
+                        <input type="text" name="type_name" class="form-control" required />
+                        <div class="invalid-feedback d-none" id="lt-type-name-error"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="licenseTypeSaveBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Required Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+<!-- Select2, jQuery and SweetAlert are provided by the master layout; avoid re-including them here to prevent duplicate initialization/conflicts -->
 
 
+@push('scripts')
 <script>
-    // Initialize Select2
-    $('.select2').select2();
+    // Select2 is initialized globally in the master layout to avoid duplicate initializations
+    // (do not call $('.select2').select2() here)
 
     // Setup CSRF Token
     $.ajaxSetup({
@@ -211,24 +261,55 @@
     $('#unit_id').change(function () {
         let id = $(this).val();
         if (id) {
-            $.get("{{ route('getDepartmentsByUnit') }}", {unit_id: id}, function (res) {
-                $('#department_id').html(res);
+            $.getJSON("{{ route('getDepartmentsByUnit') }}", {unit_id: id}, function (data) {
+                console.log('getDepartmentsByUnit response:', data);
+                var $dept = $('#department_id');
+
+                // If select2 was initialized, destroy it first to avoid stale UI
+                if ($dept.data('select2')) {
+                    try { $dept.select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
+                }
+
+                // Build options from JSON
+                $dept.empty().append('<option value="">Select Department</option>');
+                $.each(data.department_list || [], function (i, d) {
+                    $dept.append('<option value="' + d.id + '">' + d.department_name + '</option>');
+                });
+                console.log('department options count:', $dept.find('option').length);
+
+                // Re-init Select2 if available
+                if ($.fn.select2) {
+                    try { $dept.select2({ width: '100%' }); } catch(e) { console.warn('select2 init failed', e); }
+                }
+
+                $dept.trigger('change');
+            }).fail(function(xhr){
+                console.error('Failed to load departments', xhr);
             });
         }
     });
 
-    // Employee auto-fill
-    $('#employee_nid').change(function () {
-        let nid = $(this).val();
-        if (nid) {
-            $.get("{{ route('getEmployeeInfo') }}", {employee_nid: nid}, function (data) {
-                $('#driver_name').val(data.name);
-                $('#nid').val(data.nid);
-                $('#mobile').val(data.mobile);
-                $('#present_address').val(data.present_address);
-                $('#permanent_address').val(data.permanent_address);
-            });
-        }
+    // Employee auto-fill (use the selected code value correctly)
+    $('#employee_code').on('change', function () {
+        var empCode = $(this).val();
+        if (!empCode) return;
+
+        $.get("{{ route('getEmployeeInfo') }}", { employee_code: empCode }, function (data) {
+            if (!data || data.error) {
+                console.warn('Employee info not found', data);
+                return;
+            }
+            $('#driver_name').val(data.name || '');
+            $('#nid').val(data.nid || '');
+            $('#mobile').val(data.mobile || '');
+            // populate joining date and date of birth if available
+            $('input[name="joining_date"]').val(data.joining_date || '');
+            $('input[name="date_of_birth"]').val(data.date_of_birth || '');
+            $('#present_address').val(data.present_address || '');
+            $('#permanent_address').val(data.permanent_address || '');
+        }).fail(function(xhr){
+            console.error('Failed to fetch employee info', xhr);
+        });
     });
 
     // Remove errors on input/change
@@ -245,7 +326,6 @@
         e.stopImmediatePropagation(); // Stop other handlers (fixes double submit)
 
         let formData = new FormData(this);
-        // alert(formData);
 
         // Clear previous errors
         $('.is-invalid').removeClass('is-invalid');
@@ -301,7 +381,62 @@
         });
     });
 
+    // Inline license-type modal handling
+    $('#add-license-type-btn').on('click', function(){
+        // reset form
+        $('#licenseTypeForm')[0].reset();
+        $('#lt-type-name-error').addClass('d-none').text('');
+        var modal = new bootstrap.Modal(document.getElementById('licenseTypeModal'));
+        modal.show();
+    });
+
+    $('#licenseTypeSaveBtn').on('click', function(){
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $('#lt-type-name-error').addClass('d-none').text('');
+        var formData = {
+            type_name: $('#licenseTypeForm [name="type_name"]').val(),
+            description: $('#licenseTypeForm [name="description"]').val(),
+            status: $('#licenseTypeForm [name="status"]').val(),
+        };
+
+        $.ajax({
+            url: "{{ route('license-types.store') }}",
+            method: 'POST',
+            data: formData,
+            success: function(res){
+                // expected to return JSON with type.id and type.type_name
+                var type = res.type || res;
+                if (type && type.id) {
+                    // add option to select and select it
+                    var $select = $('#license_type_id');
+                    // append new option
+                    $select.append($('<option>', { value: type.id, text: type.type_name }));
+                    // set selected
+                    $select.val(type.id).trigger('change');
+                    // close modal
+                    var modalEl = document.getElementById('licenseTypeModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                }
+                $btn.prop('disabled', false).text('Save');
+            },
+            error: function(xhr){
+                $btn.prop('disabled', false).text('Save');
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    var errors = xhr.responseJSON.errors;
+                    if (errors.type_name) {
+                        $('#lt-type-name-error').removeClass('d-none').text(errors.type_name[0]);
+                        $('#licenseTypeForm [name="type_name"]').addClass('is-invalid');
+                    }
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to save license type.' });
+                }
+            }
+        });
+    });
 </script>
+@endpush
 
 
 @endsection

@@ -102,41 +102,37 @@
                                
                             </header>
                             <div class="panel-body">
-    <table class="table table-bordered table-striped mb-none" id="myTable">
-<thead>
-      <tr>
-     <th>No</th>
-     <th> Eemployee Id</th>
-     <th> Name</th>
-     <th>Unit Name</th>
-     <th>Department Name</th>
-     <th>Location Name</th>
-     <th width="15%">Action</th>
-  </tr>
-</thead>
-  <tbody id="menu_list" class="" >
-    @foreach ($employee_lists as $key => $list)
-    <tr  id="{{ $list->id }}">
-        <td>{{ ++$key }}</td>
-        <td>{{ ++$list->employee_id }}</td>
-        <td >{{ $list->employee_name}}</td>
-        <td >{{ $list->unit_name }}</td>
-        <td >{{ $list->department_name }}</td>
-        <td >{{ $list->location_name }}</td>
-        <td>
-          {{--   <a class="btn btn-info" href="{{ route('permissions.show',$permission->id) }}"> <i class="fa fa-eye"></i> Show</a> --}}
-       @can('employee-edit')
-                <a class="btn btn-primary" href="{{ route('employees.edit',$list->emp_id) }}"><i class="fa fa-edit"></i> </a>
-            @endcan
-             @can('employee-delete')
-     <button class="btn btn-danger deleteUser" data-eid="{{$list->emp_id}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
-        
-              @endcan
-        </td>
-    </tr>
-    @endforeach
-  </tbody>
-</table>
+    <table class="table table-bordered table-striped mb-none" id="myTable" style="width:100%">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Employee Id</th>
+          <th>Name</th>
+          <th>Unit Name</th>
+          <th>Department Name</th>
+          <th>Location Name</th>
+          <th width="15%">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @isset($employee_lists)
+          @foreach ($employee_lists as $key => $list)
+            <tr id="{{ $list->id }}">
+              <td>{{ $loop->iteration }}</td>
+              <td>{{ $list->employee_id }}</td>
+              <td>{{ $list->employee_name }}</td>
+              <td>{{ $list->unit_name }}</td>
+              <td>{{ $list->department_name }}</td>
+              <td>{{ $list->location_name }}</td>
+              <td>
+                <a class="btn btn-primary" href="{{ route('employees.edit', $list->id) }}"><i class="fa fa-edit"></i></a>
+                <button class="btn btn-danger deleteUser" data-eid="{{ $list->id }}"><i class="fa fa-minus-circle"></i></button>
+              </td>
+            </tr>
+          @endforeach
+        @endisset
+      </tbody>
+    </table>
 </section>
 </div>
 </div>
@@ -169,8 +165,20 @@
 </div>
 </section>
 {{-- <script  src="{{ asset('js/')}}/function.js"></script> --}}
+<!-- jQuery & jQueryUI (kept) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<!-- DataTables & Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
     $(".myElem").show().delay(5000).fadeOut();
     $(function(){
@@ -208,14 +216,52 @@ $(document).on('click','.deleteUser',function(){
 $(document).ready(function(){
 
 
-    $('.select_employee_file').on('change', function(){
-      var demovalue = $(this).val(); 
-      // alert(demovalue);
-        $(".myDiv").hide();
-        $("#show"+demovalue).show();
-    });
+  $('.select_employee_file').on('change', function(){
+    var demovalue = $(this).val(); 
+    // alert(demovalue);
+    $(".myDiv").hide();
+    $("#show"+demovalue).show();
+  });
 });
 
 
+</script>
+
+<script>
+$(document).ready(function(){
+  // Initialize DataTable with server-side processing
+  var table = $('#myTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '{{ route("employees.index") }}',
+      type: 'GET'
+    },
+    columns: [
+      { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+      { data: 'employee_code', name: 'employee_code' },
+      { data: 'name', name: 'name' },
+      { data: 'unit_name', name: 'unit.unit_name' },
+      { data: 'department_name', name: 'department.department_name' },
+      { data: 'location_name', name: 'location_name', orderable: false, searchable: false },
+      { data: 'action', name: 'action', orderable: false, searchable: false }
+    ],
+    order: [[1, 'asc']],
+    dom: 'Bfrtip',
+    buttons: [
+      'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
+  });
+
+  // Rebind delete button after table draw
+  $('#myTable').on('click', '.deleteUser', function(){
+    var e_id = $(this).attr('data-eid');
+    $('#e_id').val(e_id);
+    var urlTemplate = '{{ route("employees.destroy", ["employee" => "EMPID"]) }}';
+    var url = urlTemplate.replace('EMPID', e_id);
+    $('#applicantDeleteForm').attr('action', url);
+    $('#applicantDeleteModal').modal('show');
+  });
+});
 </script>
 @endsection

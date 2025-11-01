@@ -16,7 +16,8 @@ class CreateRequisitionPassengersTable extends Migration
         Schema::create('requisition_passengers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('requisition_id')->constrained('requisitions')->cascadeOnDelete();
-            $table->foreignId('employee_id')->constrained('employees');
+            // employee_id references employees.id — foreign key added later in a follow-up migration
+            $table->unsignedBigInteger('employee_id');
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->unsignedInteger('updated_by')->nullable();

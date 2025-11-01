@@ -139,12 +139,12 @@ class MenuController extends Controller
      */
     public function edit($id)
     {
-   $pages = Page::orderBy('id','ASC')->get();
+//    $pages = Page::orderBy('id','ASC')->get();
    $permission_lists = Permission::orderBy('id','ASC')->get();
         $menu_edit = DB::table('menus')->where('id',$id)->first();
         $menus = Menu::get();
 
-             return view('admin.dashboard.menus.edit',compact('menu_edit','menus','permission_lists','pages'));
+             return view('admin.dashboard.menus.edit',compact('menu_edit','menus','permission_lists'));
     }
 
     /**

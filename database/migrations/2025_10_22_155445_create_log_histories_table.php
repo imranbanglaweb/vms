@@ -32,9 +32,9 @@ class CreateLogHistoriesTable extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            // Relationship
-            $table->foreign('user_id')->references('id')->on('employees')->onDelete('set null');
-
+            // Note: foreign key constraint to `employees` is added in a later migration
+            // to ensure the `employees` table exists before creating the FK. See
+            // 2025_11_01_000003_add_user_fk_to_log_histories_table.php
         });
     }
 

@@ -91,7 +91,7 @@ $user_type_department_head = DB::table('users')->select('user_type','id')
 
 
 
-         $sidebar_menus = Menu::orderBy('menu_oder','ASC')->where('menu_parent',0)->get();
+         $sidebar_menus = Menu::orderBy('menu_oder','DESC')->where('menu_parent',0)->get();
          
         return view('admin.dashboard.dashboard', $data);
         

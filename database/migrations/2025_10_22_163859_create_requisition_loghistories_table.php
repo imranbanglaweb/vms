@@ -16,7 +16,8 @@ class CreateRequisitionLoghistoriesTable extends Migration
         Schema::create('requisition_loghistories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('requisition_id')->constrained('requisitions')->cascadeOnDelete();
-            $table->foreignId('action_by')->constrained('employees');
+            // action_by references employees.id — FK will be added later in a follow-up migration
+            $table->unsignedBigInteger('action_by');
             $table->string('action_type', 50);
             $table->text('remarks')->nullable();
             $table->string('previous_status', 50)->nullable();

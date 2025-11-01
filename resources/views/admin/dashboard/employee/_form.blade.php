@@ -1,6 +1,5 @@
 <div class="card">
     <div class="card-body">
-        {!! Form::open(array('method'=>'POST','enctype'=>'multipart/form-data', 'id'=>'employee_add')) !!}
         <div class="row">
             <div class="col-md-8">
                 <div class="form-row">
@@ -135,6 +134,6 @@
                 </div>
             </div>
         </div>
-        {!! Form::close() !!}
+        
     </div>
 </div>

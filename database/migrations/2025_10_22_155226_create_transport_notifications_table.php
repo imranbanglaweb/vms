@@ -32,8 +32,9 @@ class CreateTransportNotificationsTable extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            // Relationships
-            $table->foreign('user_id')->references('id')->on('employees')->onDelete('set null');
+            // Note: foreign key constraint to `employees` is added in a later migration
+            // to ensure the `employees` table exists before creating the FK. See
+            // 2025_11_01_000002_add_user_fk_to_transport_notifications_table.php
         });
     }
 

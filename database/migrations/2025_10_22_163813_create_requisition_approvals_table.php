@@ -16,7 +16,8 @@ class CreateRequisitionApprovalsTable extends Migration
         Schema::create('requisition_approvals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('requisition_id')->constrained('requisitions')->cascadeOnDelete();
-            $table->foreignId('approved_by')->constrained('employees');
+            // approved_by references employees.id — FK added in later migration
+            $table->unsignedBigInteger('approved_by');
             $table->enum('approval_level', ['Line Manager', 'Transport Officer']);
             $table->enum('approval_status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->text('remarks')->nullable();

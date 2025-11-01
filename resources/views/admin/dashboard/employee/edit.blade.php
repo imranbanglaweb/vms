@@ -25,98 +25,124 @@
       </div>
   @endif
 
-  {!! Form::open(array('method'=>'POST','enctype'=>'multipart/form-data', 'id'=>'employee_edit')) !!}
-  <div class="row">
-      <div class="col-md-8">
-          <div class="form-row">
-              <div class="form-group col-md-6">
-                  <label><strong><i class="fa fa-sitemap text-primary mr-1"></i> Unit</strong></label>
-                  <select class="form-control unit_wise_company unit_id select2" name="unit_id">
-                      <option value="">Please select</option>
-                      @foreach($units as $unit)
-                          <option value="{{ $unit->id}}" @if($unit->id == $employee_edit->unit_id) selected @endif>{{ $unit->unit_name}}</option>
-                      @endforeach
-                  </select>
-              </div>
-              <div class="form-group col-md-6">
-                  <label><strong><i class="fa fa-layer-group text-primary mr-1"></i> Department</strong></label>
-                  <select class="form-control department_name" name="department_id">
-                      <option value="">Please select</option>
-                      @foreach($departments as $dep)
-                          <option value="{{ $dep->id }}" @if($dep->id == $employee_edit->department_id) selected @endif>{{ $dep->department_name }}</option>
-                      @endforeach
-                  </select>
-              </div>
-          </div>
-          <!-- other fields omitted for brevity; keep existing form fields as in create view -->
-      </div>
+    {!! Form::model($employee_edit, ['route' => ['employees.update', $employee_edit->id], 'method' => 'PUT', 'enctype'=>'multipart/form-data', 'id'=>'employee_edit']) !!}
+    @include('admin.dashboard.employee._form')
+    {!! Form::close() !!}
 
-      <div class="col-md-4">
-          <div class="card">
-              <div class="card-body text-center">
-                  <div class="form-group">
-                      <label><strong>Photo</strong></label>
-                      <div class="mb-2">
-                          <img id="photo-preview" src="{{ asset('public/uploads/default-avatar.png') }}" alt="preview" style="max-width:100%; height:150px; object-fit:cover;" />
-                      </div>
-                      {!! Form::file('photo', ['class'=>'form-control-file','id'=>'photo-input']) !!}
-                  </div>
-                  <div class="mt-3">
-                      <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-save"></i> Update Employee</button>
-                      <a href="{{ route('employees.index') }}" class="btn btn-secondary btn-block mt-2"><i class="fa fa-times"></i> Cancel</a>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
-  {!! Form::close() !!}
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-
+  <!-- Scripts are initialized in master layout; push page-specific scripts to the scripts stack -->
+  @push('scripts')
   <script>
-  $(document).ready(function(){
-      $('.select2').select2();
-
-      // delegated handler for unit change — populates department selects
-      $(document).on('change', '.unit_wise_company', function () {
-          var unit_id = $(this).val();
-
-          $.ajax({
-              type: 'GET',
-              url: "{{ route('unit-wise-department') }}",
-              data: { unit_id: unit_id },
-              dataType: 'json',
-              success: function (data) {
-                  console.log('unit-wise-department (employee.edit) response:', data);
-                  if ($('.department_name').data('select2')) {
-                      try { $('.department_name').select2('destroy'); } catch(e) { console.warn('select2 destroy failed', e); }
-                  }
-                  var previous = $('.department_name').val();
-                  $(".department_name").empty().append("<option value=''>Please Select</option>");
-                  $.each(data['department_list'] || [], function (k, d) {
-                      $('.department_name').append("<option value='" + d.id + "'>" + d.department_name + "</option>");
-                  });
-                  if (previous) { $('.department_name').val(previous); }
-                  $('.department_name').trigger('change');
-              },
-              error: function (xhr, status, err) {
-                  console.error('Error loading departments for unit', unit_id, status, err);
+  (function(){
+      // Initialize Select2 for selects inside this form only (master init may have run earlier)
+      var $form = $('#employee_edit');
+      if ($.fn.select2) {
+          $form.find('.select2').each(function(){
+              var $s = $(this);
+              // avoid double-init
+              if (!$s.data('select2')) {
+                  try { $s.select2({ width: '100%' }); } catch(e) { console.warn('select2 init failed', e); }
               }
           });
+      }
+
+      // handler for unit change — populate department select scoped to this form
+      $form.on('change', '[name="unit_id"]', function () {
+          var unit_id = $(this).val();
+          var $dept = $form.find('[name="department_id"]');
+
+          if (!unit_id) {
+              // clear departments
+              if ($dept.data('select2')) { try { $dept.select2('destroy'); } catch(e){} }
+              $dept.html('<option value="">Please select</option>');
+              if ($.fn.select2) try { $dept.select2({ width: '100%' }); } catch(e){}
+              return;
+          }
+
+          $.get("{{ route('unit-wise-department') }}", { unit_id: unit_id }, function(data){
+              console.log('unit-wise-department (employee.edit) response:', data);
+              if ($dept.data('select2')) { try { $dept.select2('destroy'); } catch(e){ console.warn(e); } }
+              var prev = $dept.val();
+              $dept.empty().append('<option value="">Please select</option>');
+              $.each(data.department_list || [], function(i, d){
+                  $dept.append('<option value="'+ d.id +'">'+ d.department_name +'</option>');
+              });
+              if (prev) { $dept.val(prev); }
+              if ($.fn.select2) try { $dept.select2({ width: '100%' }); } catch(e){ console.warn(e); }
+              $dept.trigger('change');
+          }).fail(function(xhr){ console.error('unit-wise-department failed', xhr); });
       });
 
       // photo preview
-      $(document).on('change', '#photo-input', function(e){
+      $form.on('change', '#photo-input', function(e){
           const [file] = this.files;
           if (file) {
               const url = URL.createObjectURL(file);
               $('#photo-preview').attr('src', url);
           }
       });
-  });
+
+      // AJAX submit for edit form (mirrors create behavior)
+      $form.on('submit', function(e){
+          e.preventDefault();
+
+          // clear previous validation states
+          $form.find('.is-invalid').removeClass('is-invalid');
+          $form.find('.invalid-feedback').addClass('d-none').text('');
+
+          // ensure CKEditor instances update their textarea elements
+          if (window._richEditors && window._richEditors.length) {
+              window._richEditors.forEach(function(id){
+                  if (CKEDITOR.instances[id]) {
+                      CKEDITOR.instances[id].updateElement();
+                  }
+              });
+          }
+
+          var formData = new FormData(this);
+
+          $.ajax({
+              url: $form.attr('action'),
+              type: 'POST',
+              data: formData,
+              contentType: false,
+              processData: false,
+              success: function(response){
+                  Swal.fire({
+                      title: 'Employee Updated',
+                      html: '<span class="text-success">Information updated successfully.</span>',
+                      icon: 'success',
+                      timer: 1600,
+                      showConfirmButton: false,
+                  }).then(function(){ window.location.href = '{{ route("employees.index") }}'; });
+              },
+              error: function(xhr){
+                  if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                      const errors = xhr.responseJSON.errors;
+                      const firstKey = Object.keys(errors)[0];
+                      Swal.fire({title: 'Validation error', text: errors[firstKey][0], icon: 'error'});
+
+                      Object.keys(errors).forEach(function(field){
+                          const messages = errors[field];
+                          // try to find matching input/select/textarea within this form
+                          const $el = $form.find('[name="'+field+'"]');
+                          if ($el.length) {
+                              $el.addClass('is-invalid');
+                              const $fb = $form.find('.invalid-feedback[data-field="'+field+'"]');
+                              if ($fb.length) {
+                                  $fb.removeClass('d-none').text(messages[0]);
+                              } else {
+                                  $el.after('<div class="invalid-feedback d-block">'+messages[0]+'</div>');
+                              }
+                          }
+                      });
+                  } else {
+                      Swal.fire({title: 'Error', text: 'An unexpected error occurred.', icon: 'error'});
+                  }
+              }
+          });
+      });
+  })();
   </script>
+  @endpush
 
 @endsection
