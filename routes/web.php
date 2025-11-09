@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\Issue;
 use App\Http\Controllers\SupportTypeController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\IssueregisterLogController;
 use App\Http\Controllers\SupportdetailController;
@@ -39,7 +40,8 @@ use App\Http\Controllers\Admin\LandController;
 use App\Http\Controllers\Admin\DocumentTypeController;
 use App\Http\Controllers\Admin\DocumentHistoryController;
 use Illuminate\Support\Facades\Mail;
-  
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\VehicleTypeController;
   
 
 
@@ -71,6 +73,9 @@ Route::redirect('/', 'login');
         Route::get('/export', [DocumentHistoryController::class, 'export'])->name('export');
     });
 
+
+    Route::resource('vehicles', VehicleController::class);
+Route::resource('vendors', VendorController::class);
     Route::post('documents/{id}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('documents/{id}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
     Route::get('documents/pending-approval', [DocumentController::class, 'pendingApproval'])->name('documents.pending-approval');
@@ -98,6 +103,7 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
     // Route::post('drivers/store', [DriverController::class, 'store'])->name('drivers.store');
     Route::get('drivers/list', [DriverController::class, 'list'])->name('drivers.list');
     Route::resource('drivers', DriverController::class);
+    Route::resource('vehicle-type', VehicleTypeController::class);
 
 
     

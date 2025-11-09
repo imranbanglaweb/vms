@@ -15,6 +15,8 @@ class Driver extends Model
         'driver_code',
         'name',
         'phone',
+        'driver_name',
+        'license_number',
         'license_no',
         'license_type',
         'license_type_id',
@@ -22,8 +24,8 @@ class Driver extends Model
         'nid_no',
         'address',
         'photo',
-
-        'company_id',
+        'department_id',
+        'unit_id',
         'status',
         'created_by',
         'updated_by'

@@ -4,13 +4,19 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 @endpush
+<br>
+<br>
+<br>
+<br>
 <section role="main" class="content-body">
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h3>Drivers</h3>
 	<div>
-		<button id="openCreateModal" class="btn btn-success"><i class="fa fa-plus"></i> Create Driver</button>
+		<a  href="{{ route('drivers.create') }}" class="btn btn-success"><i class="fa fa-plus"></i> Create Driver</a>
 		<button id="refresh-table" class="btn btn-secondary"><i class="fa fa-sync"></i></button>
 	</div>
+
+	
 </div>
 
 <div class="row mb-3">
@@ -24,7 +30,7 @@
 		<tr>
 			<th>#</th>
 			<th>Name</th>
-			<th>Phone</th>
+			<th>license Number</th>
 			<th>Action</th>
 		</tr>
 	</thead>
@@ -44,8 +50,8 @@ $(function(){
 		ajax: '{!! route('drivers.data') !!}',
 		columns:[
 			{data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false},
-			{data:'name', name:'name'},
-			{data:'phone', name:'phone'},
+			{data:'driver_name', name:'driver_name'},
+			{data:'license_number', name:'license_number'},
 			{data:'action', name:'action', orderable:false, searchable:false}
 		],
 		order:[[1,'asc']],

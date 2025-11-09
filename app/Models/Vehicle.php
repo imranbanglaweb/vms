@@ -22,7 +22,6 @@ class Vehicle extends Model
         'fuel_type',
         'purchase_date',
         'status_id',
-
         'company_id',
         'unit_id',
         'department_id',

@@ -10,7 +10,7 @@ use App\Models\Licnese_type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
-
+use Yajra\DataTables\Facades\DataTables;
 class DriverController extends Controller
 {
     public function index()
@@ -41,7 +41,9 @@ class DriverController extends Controller
     public function store(Request $request)
 {  
     
-    dd($request->departmnent_id);
+    
+
+
     // ✅ Validation
     $validated = $request->validate([
         'unit_id'            => 'required|exists:units,id',
@@ -62,8 +64,7 @@ class DriverController extends Controller
         'photograph'         => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
     ]);
 
-
-  
+ 
     // ✅ Handle File Upload
     if ($request->hasFile('photograph')) {
         $file = $request->file('photograph');
@@ -83,7 +84,9 @@ class DriverController extends Controller
         }
     }
 
-    // ✅ Save Driver
+// dd($validated);
+
+// ✅ Save Driver
     $driver = \App\Models\Driver::create($validated);
 
     // ✅ Return JSON for AJAX
@@ -130,6 +133,56 @@ class DriverController extends Controller
     /**
      * Return employee info by employee_nid (used by driver create JS)
      */
+
+
+    public function data()
+{
+    if (request()->ajax()) {
+        $drivers = Driver::select([
+            'id',
+            'unit_id',
+            'department_id',
+            'driver_name',
+            'license_number',
+            'nid',
+            'employee_nid',
+            'license_type',
+            'license_issue_date',
+            'date_of_birth',
+            'joining_date',
+            'present_address',
+            'permanent_address',
+            'mobile',
+            'working_time_slot',
+            'leave_status',
+            'photograph'
+        ])->latest();
+
+        return DataTables::of($drivers)
+            ->addIndexColumn()
+            ->addColumn('action', function($row){
+                return '
+                    <button class="btn btn-sm btn-primary editDriver" 
+                        data-id="'.$row->id.'" 
+                        data-name="'.$row->driver_name.'" 
+                        data-phone="'.$row->mobile.'">
+                        <i class="fa fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger deleteUser" 
+                        data-did="'.$row->id.'">
+                        <i class="fa fa-trash"></i>
+                    </button>';
+            })
+            ->editColumn('driver_name', function($row){
+                return $row->driver_name;
+            })
+            ->editColumn('mobile', function($row){
+                return $row->mobile ?? '-';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+    }
+}
     public function getEmployeeInfo(Request $request)
     {
         $employee_code = $request->get('employee_code');
