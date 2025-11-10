@@ -33,11 +33,32 @@ use App\Models\RtaOffice;
 
 class VehicleController extends Controller
 {
-    public function index()
-    {
-        $vehicles = Vehicle::all();
-        return view('admin.dashboard.vehicles.index', compact('vehicles'));
+ public function index(Request $request)
+{
+    // Check if it's an AJAX request for DataTables
+    if ($request->ajax()) {
+        $vehicles = Vehicle::with(['department', 'driver', 'vehicleType', 'vendor'])->latest();
+
+        return datatables()->of($vehicles)
+            ->addIndexColumn() // Adds DT_RowIndex automatically
+            ->addColumn('department', function($row){
+                return $row->department ? $row->department->department_name : '-';
+            })
+            ->addColumn('driver', function($row){
+                return $row->driver ? $row->driver->driver_name : '-';
+            })
+            ->addColumn('status', function($row){
+                return $row->status == 1 
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-danger">Inactive</span>';
+            })
+            ->rawColumns(['status']) // allow HTML in status
+            ->make(true);
     }
+
+    // If normal page request
+    return view('admin.dashboard.vehicles.index');
+}
      protected function dropdownData()
     {
         // Use pluck to get id => name arrays
@@ -49,8 +70,8 @@ class VehicleController extends Controller
 
         // static ownership options
         $ownerships = [
-            'Company' => 'Company',
-            'Private' => 'Private',
+            'Owned' => 'Owned',
+            'Rented' => 'Rented',
             'Leased'  => 'Leased',
         ];
 
@@ -80,27 +101,29 @@ class VehicleController extends Controller
         
     }
 
-    public function store(Request $request)
+     public function store(Request $request)
     {
-
-    //    return dd($request->department_id);
         $request->validate([
-            'vehicle_name' => 'required|string|max:255',
-            'department_id' => 'required|string|max:255',
+            'vehicle_name' => 'required|string|max:100',
+            'department_id' => 'required|exists:departments,id',
             'registration_date' => 'required|date',
-            'license_plate' => 'required|string|max:50',
-            'alert_cell_number' => 'required|string|max:20',
-            'ownership' => 'required|string|max:100',
-            'vehicle_type_id' => 'required|string|max:100',
-            'rta_office' => 'required|string|max:100',
-            'driver' => 'required|string|max:100',
-            'vendor' => 'required|string|max:100',
+            'license_plate' => 'required|string|unique:vehicles,license_plate',
+            'alert_cell_number' => 'required|string',
+            'ownership' => 'required',
+            'vehicle_type_id' => 'required|exists:vehicle_types,id',
+            'driver_id' => 'required|exists:drivers,id',
+            'vendor_id' => 'required|exists:vendors,id',
             'seat_capacity' => 'required|integer|min:1',
         ]);
 
-        Vehicle::create($request->all());
+        $vehicle = Vehicle::create(array_merge($request->all(), [
+            'created_by' => Auth::id(),
+        ]));
 
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Vehicle created successfully'
+        ]);
     }
 
     public function edit(Vehicle $vehicle)

@@ -2,75 +2,66 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Vehicle extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'vehicle_code',
-        'registration_no',
-        'registration_date',
-        'brand',
-        'model',
-        'type',
-        'capacity',
-        'color',
-        'fuel_type',
-        'purchase_date',
-        'status_id',
-        'company_id',
+        'vehicle_name',
         'unit_id',
         'department_id',
-        'location_id',
+        'license_plate',
+        'vehicle_type_id',
         'driver_id',
-
+        'vendor_id',
+        'registration_date',
+        'seat_capacity',
         'status',
         'created_by',
         'updated_by'
     ];
 
-    // ✅ Relationships
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
-
-    public function unit()
-    {
-        return $this->belongsTo(Unit::class);
-    }
-
+    /**
+     * Vehicle belongs to a Department
+     */
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'department_id');
     }
 
-    public function location()
-    {
-        return $this->belongsTo(Location::class);
-    }
-
+    /**
+     * Vehicle belongs to a Driver
+     */
     public function driver()
     {
-        return $this->belongsTo(Driver::class);
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
 
-    public function trips()
+    /**
+     * Vehicle belongs to a Vehicle Type
+     */
+    public function vehicleType()
     {
-        return $this->hasMany(Trip::class);
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
     }
 
-    public function fuelLogs()
+    /**
+     * Vehicle belongs to a Vendor
+     */
+    public function vendor()
     {
-        return $this->hasMany(FuelLog::class);
+        return $this->belongsTo(Vendor::class, 'vendor_id');
     }
 
-    public function maintenanceRecords()
+    /**
+     * Vehicle belongs to a Unit
+     */
+    public function unit()
     {
-        return $this->hasMany(Maintenance::class);
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }
