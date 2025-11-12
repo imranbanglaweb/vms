@@ -42,6 +42,7 @@ use App\Http\Controllers\Admin\DocumentHistoryController;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\VehicleTypeController;
+use App\Http\Controllers\RequisitionController;
   
 
 
@@ -104,6 +105,7 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
     Route::get('drivers/list', [DriverController::class, 'list'])->name('drivers.list');
     Route::resource('drivers', DriverController::class);
     Route::resource('vehicle-type', VehicleTypeController::class);
+    Route::resource('requisitions', RequisitionController::class);
 
 
     

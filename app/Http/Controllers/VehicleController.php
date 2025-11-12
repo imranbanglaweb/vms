@@ -36,23 +36,36 @@ class VehicleController extends Controller
  public function index(Request $request)
 {
     // Check if it's an AJAX request for DataTables
-    if ($request->ajax()) {
+     if ($request->ajax()) {
         $vehicles = Vehicle::with(['department', 'driver', 'vehicleType', 'vendor'])->latest();
 
         return datatables()->of($vehicles)
-            ->addIndexColumn() // Adds DT_RowIndex automatically
+            ->addIndexColumn() // Adds DT_RowIndex
             ->addColumn('department', function($row){
-                return $row->department ? $row->department->department_name : '-';
+                return $row->department ? $row->department->name : '-';
             })
             ->addColumn('driver', function($row){
-                return $row->driver ? $row->driver->driver_name : '-';
+                return $row->driver ? $row->driver->name : '-';
             })
             ->addColumn('status', function($row){
                 return $row->status == 1 
                     ? '<span class="badge bg-success">Active</span>'
                     : '<span class="badge bg-danger">Inactive</span>';
             })
-            ->rawColumns(['status']) // allow HTML in status
+            ->addColumn('action', function($row){
+                $editUrl = route('vehicles.edit', $row->id);
+
+                $deleteBtn = '<button class="btn btn-danger btn-sm deleteVehicleBtn" data-id="'. $row->id .'">
+                                <i class="fa fa-trash"></i>
+                              </button>';
+
+                $editBtn = '<a href="'. $editUrl .'" class="btn btn-primary btn-sm">
+                                <i class="fa fa-edit"></i>
+                            </a>';
+
+                return $editBtn . ' ' . $deleteBtn;
+            })
+            ->rawColumns(['status', 'action']) // allow HTML in status and action
             ->make(true);
     }
 

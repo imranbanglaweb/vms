@@ -3,7 +3,10 @@
 @section('main_content')
 <section class="content-body mt-4">
 <div class="container">
-
+<br>
+<br>
+<br>
+<br>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold text-primary mb-0">
             <i class="fa fa-car"></i> Vehicles
@@ -23,7 +26,7 @@
                 <table id="vehicleTable" class="table table-striped table-bordered align-middle">
                     <thead class="bg-primary text-white text-center">
                         <tr>
-                            <th>#</th>
+                            <!-- <th>#</th> -->
                             <th>Vehicle Name</th>
                             <th>Department</th>
                             <th>License Plate</th>
@@ -124,10 +127,10 @@ $(function() {
 <style>
 .table th, .table td {
     vertical-align: middle !important;
-    font-size: 13px;
+    font-size: 15px;
 }
 .badge {
-    font-size: 12px;
+    font-size: 15px;
 }
 </style>
 @endpush
