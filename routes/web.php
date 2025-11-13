@@ -106,6 +106,10 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
     Route::resource('drivers', DriverController::class);
     Route::resource('vehicle-type', VehicleTypeController::class);
     Route::resource('requisitions', RequisitionController::class);
+    // routes/web.php
+// Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
+
+Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
 
     

@@ -3,7 +3,7 @@
 @section('main_content')
 <style>
     /* Readability & Professional UI */
-    body { background-color: #f4f6f8; }
+    body { background-color: #fff; }
     .section-container { background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
     .page-title { font-size: 15px; font-weight: 700; color: #1f2937; }
     .card-header-custom { background:#111827; color:#fff; padding: 14px 20px; border-radius: 10px; margin-bottom: 18px; }
@@ -20,280 +20,231 @@
 </style>
 
 <section role="main" class="content-body">
-<div class="container py-4">
-    <div class="section-container">
+
 <br>
 <br>
 <br>
-        {{-- Header --}}
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h2 class="page-title mb-0"><i class="fa fa-clipboard-list text-primary me-2"></i>
-                    {{ isset($requisition) && $requisition->id ? 'Edit Requisition' : 'Create New Requisition' }}
-                </h2>
-                <div class="muted-small mt-1">Complete the form below to request a vehicle</div>
-            </div>
-
-            <div>
-                <a href="{{ route('requisitions.index') }}" class="btn btn-outline-dark btn-lg">
-                    <i class="fa fa-arrow-left me-2"></i> Back to List
-                </a>
-            </div>
-        </div>
-
-        {{-- Card / Form --}}
-        <div class="card-body p-0">
-            <div class="card-header-custom d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                    <i class="fa fa-car-side text-primary me-3 fs-4"></i>
-                    <div>
-                        <div class="section-title mb-0">Requisition Information</div>
-                        <div class="muted-small">Required fields are marked. Use the dropdowns to search options quickly.</div>
-                    </div>
-                </div>
-
-                <div class="text-end">
-                    @if(isset($requisition) && $requisition->id)
-                        <span class="badge bg-info text-dark">#{{ $requisition->id }}</span>
-                    @endif
-                </div>
-            </div>
-
-            <div id="alertContainer" class="mb-3"></div>
-
-            <form id="requisitionForm" action="{{ $action }}" method="POST" autocomplete="off">
-                @csrf
-                @if(isset($method) && $method === 'PUT')
-                    @method('PUT')
-                @endif
-
-                <div class="row g-4">
-
-                    {{-- Unit --}}
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fa fa-sitemap text-primary me-1"></i> Unit</label>
-                        <br>
-                        <select name="unit_id" id="unit_id" class="form-select form-select-lg select2" data-placeholder="Select unit">
-                            <option value=""></option>
-                            @foreach($units ?? [] as $id => $title)
-                                <option value="{{ $id }}" {{ old('unit_id', $requisition->unit_id ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Department --}}
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fa fa-building text-primary me-1"></i> Department</label>
-                        <br>
-                        <select name="department_id" id="department_id" class="form-select form-select-lg select2" data-placeholder="Select department">
-                            <option value=""></option>
-                            @foreach($departments ?? [] as $id => $title)
-                                <option value="{{ $id }}" {{ old('department_id', $requisition->department_id ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Employee (Requested By) --}}
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fa fa-user text-primary me-1"></i> Requested By (Employee)</label>
-                        <select name="requested_by" id="requested_by" class="form-select form-select-lg select2" data-placeholder="Select employee" required>
-                            <option value=""></option>
-                            @foreach($employees ?? [] as $id => $name)
-                                <option value="{{ $id }}" {{ old('requested_by', $requisition->requested_by ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Office Location --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-map-marker-alt text-primary me-1"></i> Office Location</label>
-                        <select name="office_location" id="office_location" class="form-select form-select-lg select2" data-placeholder="Select office/branch">
-                            <option value=""></option>
-                            @foreach($locations ?? [] as $id => $title)
-                                <option value="{{ $id }}" {{ old('office_location', $requisition->office_location ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- From Location --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-location-arrow text-primary me-1"></i> From Location</label>
-                        <input type="text" name="from_location" id="from_location" class="form-control form-control-lg border-secondary" placeholder="Pickup / starting point" value="{{ old('from_location', $requisition->from_location ?? '') }}" required>
-                    </div>
-
-                    {{-- To Location --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-map-pin text-primary me-1"></i> To Location</label>
-                        <input type="text" name="to_location" id="to_location" class="form-control form-control-lg border-secondary" placeholder="Destination" value="{{ old('to_location', $requisition->to_location ?? '') }}" required>
-                    </div>
-
-                    {{-- Vehicle --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-car text-primary me-1"></i> Vehicle</label>
-                        <select name="vehicle_id" id="vehicle_id" class="form-select form-select-lg select2" data-placeholder="Select vehicle">
-                            <option value=""></option>
-                            @foreach($vehicles ?? [] as $id => $name)
-                                <option value="{{ $id }}" {{ old('vehicle_id', $requisition->vehicle_id ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Driver --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-user-tie text-primary me-1"></i> Driver</label>
-                        <select name="driver_id" id="driver_id" class="form-select form-select-lg select2" data-placeholder="Select driver">
-                            <option value=""></option>
-                            @foreach($drivers ?? [] as $id => $name)
-                                <option value="{{ $id }}" {{ old('driver_id', $requisition->driver_id ?? '') == $id ? 'selected' : '' }}>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Travel Date --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-calendar-day text-primary me-1"></i> Travel Date & Time</label>
-                        <input type="text" name="travel_date" id="travel_date" class="form-control form-control-lg flatpickr" placeholder="Select travel date & time" value="{{ old('travel_date', isset($requisition->travel_date) ? $requisition->travel_date : '') }}" required>
-                    </div>
-
-                    {{-- Return Date --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-calendar-check text-primary me-1"></i> Return Date & Time</label>
-                        <input type="text" name="return_date" id="return_date" class="form-control form-control-lg flatpickr" placeholder="Select return date & time" value="{{ old('return_date', isset($requisition->return_date) ? $requisition->return_date : '') }}">
-                    </div>
-
-                    {{-- Purpose --}}
-                    <div class="col-md-12">
-                        <label class="form-label"><i class="fa fa-align-left text-primary me-1"></i> Purpose</label>
-                        <textarea name="purpose" id="purpose" rows="3" class="form-control form-control-lg border-secondary" placeholder="Purpose / notes...">{{ old('purpose', $requisition->purpose ?? '') }}</textarea>
-                    </div>
-
-                    {{-- Status --}}
-                    <div class="col-md-6">
-                        <label class="form-label"><i class="fa fa-info-circle text-primary me-1"></i> Status</label>
-                        <select name="status" class="form-select form-select-lg border-secondary">
-                            @php $cur = old('status', $requisition->status ?? 'Pending'); @endphp
-                            <option value="Pending" {{ $cur == 'Pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="Approved" {{ $cur == 'Approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="Rejected" {{ $cur == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                            <option value="Completed" {{ $cur == 'Completed' ? 'selected' : '' }}>Completed</option>
-                        </select>
-                    </div>
-
-                </div> {{-- /.row --}}
-
-                {{-- Buttons --}}
-                <div class="text-end mt-5">
-                    <button type="submit" class="btn btn-success btn-lg px-4 me-2">
-                        <i class="fa fa-paper-plane me-2"></i> {{ isset($requisition) && $requisition->id ? 'Update Requisition' : 'Submit Requisition' }}
-                    </button>
-                    <a href="{{ route('requisitions.index') }}" class="btn btn-outline-secondary btn-lg px-4">
-                        <i class="fa fa-times me-2"></i> Cancel
-                    </a>
-                </div>
-
-            </form>
-        </div>
+<div class="container-fluid bg-white p-4 shadow-sm rounded-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark">
+            <i class="fa fa-solid fa-car-side me-2 text-primary"></i>
+            Create Requisition
+        </h3>
+        <a href="{{ route('requisitions.index') }}" class="btn btn-secondary">
+            <i class="fa fa-solid fa-arrow-left me-1"></i> Back
+        </a>
     </div>
+
+    <form id="requisitionForm" action="{{ route('requisitions.store') }}" method="POST">
+        @csrf
+
+        <div class="row g-4">
+            <!-- Requested By -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-user-tie text-primary me-1"></i> Requested Employee
+                </label>
+                <select id="employee_id" name="employee_id" class="form-select form-select-lg" required>
+                    <option value="">-- Select Employee --</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-building text-primary me-1"></i> Department
+                </label>
+                <input type="text" id="department_name" class="form-control form-control-lg" readonly>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-sitemap text-primary me-1"></i> Unit
+                </label>
+                <input type="text" id="unit_name" class="form-control form-control-lg" readonly>
+            </div>
+
+            <!-- From & To -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-map-marker-alt text-primary me-1"></i> From Location
+                </label>
+                <input type="text" name="from_location" class="form-control form-control-lg" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-location-dot text-primary me-1"></i> To Location
+                </label>
+                <input type="text" name="to_location" class="form-control form-control-lg" required>
+            </div>
+
+            <!-- Travel & Return Dates -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-calendar-day text-primary me-1"></i> Travel Date
+                </label>
+                <input type="datetime-local" name="travel_date" class="form-control form-control-lg" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-calendar-check text-primary me-1"></i> Return Date
+                </label>
+                <input type="datetime-local" name="return_date" class="form-control form-control-lg">
+            </div>
+
+            <!-- Purpose -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="fa fa-solid fa-clipboard-list text-primary me-1"></i> Purpose
+                </label>
+                <textarea name="purpose" rows="3" class="form-control form-control-lg"></textarea>
+            </div>
+        </div>
+
+        <!-- 🔹 Passenger Section -->
+        <div class="mt-5">
+            <h5 class="fa fw-bold text-dark mb-3">
+                <i class="fa fa-solid fa-users text-primary me-1"></i> Add Passengers
+            </h5>
+            <table class="table table-bordered align-middle" id="passengerTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 35%;">Employee</th>
+                        <th style="width: 30%;">Department</th>
+                        <th style="width: 30%;">Unit</th>
+                        <th style="width: 5%;" class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select name="passengers[0][employee_id]" class="form-select employee-select">
+                                <option value="">-- Select Employee --</option>
+                                @foreach($employees as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td><input type="text" name="passengers[0][department]" class="form-control department-field" readonly></td>
+                        <td><input type="text" name="passengers[0][unit]" class="form-control unit-field" readonly></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-success btn-sm addRow"><i class="fa fa-solid fa-plus"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 text-end">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+                <i class="fa fa-solid fa-paper-plane me-2"></i> Submit Requisition
+            </button>
+        </div>
+    </form>
+
+    <div id="formMessage" class="alert mt-3 d-none"></div>
 </div>
 </section>
+@endsection
 
-{{-- Dependencies: jQuery, Select2, Flatpickr (CDN used here) --}}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
+@push('scripts')
 <script>
 $(document).ready(function() {
-    // Initialize Select2 for all select2 elements
-    $('.select2').select2({
-        width: '100%',
-        theme: 'classic',
-        allowClear: true,
-        placeholder: function(){ return $(this).data('placeholder') || 'Select'; }
+
+    // 🔹 Main employee department/unit auto-fill
+    $('#employee_id').on('change', function() {
+        let empId = $(this).val();
+        if (!empId) {
+            $('#department_name, #unit_name').val('');
+            return;
+        }
+        // $.get('/get-employee-details/' + empId, function(data) {
+        //     $('#department_name').val(data.department);
+        //     $('#unit_name').val(data.unit);
+        // });
+
+        $.get("{{ route('employee.details', ':id') }}".replace(':id', empId), function(data) {
+            $('#department_name').val(data.department);
+            $('#unit_name').val(data.unit);
+        });
+
     });
 
-    // Flatpickr datetime with time enabled
-    $('.flatpickr').flatpickr({
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        time_24hr: true,
-        altInput: true,
-        altFormat: "F j, Y (H:i)",
-        allowInput: true
+    // 🔹 Add/Remove passenger rows
+    let rowIndex = 1;
+    $(document).on('click', '.addRow', function() {
+        let newRow = `
+        <tr>
+            <td>
+                <select name="passengers[${rowIndex}][employee_id]" class="form-select employee-select">
+                    <option value="">-- Select Employee --</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td><input type="text" name="passengers[${rowIndex}][department]" class="form-control department-field" readonly></td>
+            <td><input type="text" name="passengers[${rowIndex}][unit]" class="form-control unit-field" readonly></td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-solid fa-minus"></i></button>
+            </td>
+        </tr>`;
+        $('#passengerTable tbody').append(newRow);
+        rowIndex++;
     });
 
-    // If server provided ISO datetimes for existing record, populate flatpickr (handles edit)
-    @if(old('travel_date', $requisition->travel_date ?? false))
-        $('#travel_date').flatpickr().setDate("{{ old('travel_date', $requisition->travel_date) }}", true);
-    @endif
-    @if(old('return_date', $requisition->return_date ?? false))
-        $('#return_date').flatpickr().setDate("{{ old('return_date', $requisition->return_date) }}", true);
-    @endif
+    $(document).on('click', '.removeRow', function() {
+        $(this).closest('tr').remove();
+    });
 
-    // AJAX submit (works for create & update)
+    // 🔹 Auto-fill passenger department/unit
+    $(document).on('change', '.employee-select', function() {
+        let empId = $(this).val();
+        let row = $(this).closest('tr');
+        if (!empId) {
+            row.find('.department-field, .unit-field').val('');
+            return;
+        }
+        $.get('/get-employee-details/' + empId, function(data) {
+            row.find('.department-field').val(data.department);
+            row.find('.unit-field').val(data.unit);
+        });
+    });
+
+    // 🔹 AJAX form submit
     $('#requisitionForm').on('submit', function(e) {
         e.preventDefault();
-        const $form = $(this);
-        const url = $form.attr('action');
-        $('#alertContainer').html('');
-        $('#loader').removeClass('d-none');
+        let form = $(this);
+        let btn = form.find('button[type="submit"]');
+        btn.prop('disabled', true).html('<i class="FA fa-solid fa-spinner fa-spin"></i> Submitting...');
 
         $.ajax({
-            url: url,
-            type: $form.find('input[name="_method"]').val() || $form.attr('method') || 'POST',
-            data: $form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                $('#loader').addClass('d-none');
-                let message = response.message || 'Requisition saved successfully!';
-                $('#alertContainer').html(`
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa fa-check-circle me-2"></i> ${message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `);
-                // on create reset form, on edit we might leave data — choose to redirect to index
-                setTimeout(function(){
-                    window.location.href = "{{ route('requisitions.index') }}";
-                }, 1400);
+            url: form.attr('action'),
+            type: 'POST',
+            data: form.serialize(),
+            success: function() {
+                $('#formMessage')
+                    .removeClass('d-none alert-danger')
+                    .addClass('alert-success')
+                    .text('✅ Requisition submitted successfully!');
+                form.trigger('reset');
+                $('#passengerTable tbody').html('');
             },
-            error: function(xhr) {
-                $('#loader').addClass('d-none');
-                let errors = '';
-                if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    $.each(xhr.responseJSON.errors, function(k, v) {
-                        errors += `<li>${v[0]}</li>`;
-                    });
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errors = `<li>${xhr.responseJSON.message}</li>`;
-                } else {
-                    errors = '<li>Something went wrong. Please try again.</li>';
-                }
-                $('#alertContainer').html(`
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong><i class="fa fa-exclamation-circle me-2"></i>Error:</strong>
-                        <ul class="mt-2 mb-0">${errors}</ul>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `);
+            error: function() {
+                $('#formMessage')
+                    .removeClass('d-none alert-success')
+                    .addClass('alert-danger')
+                    .text('❌ Something went wrong. Please check your input.');
+            },
+            complete: function() {
+                btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane me-2"></i> Submit Requisition');
             }
         });
     });
 });
 </script>
-@endsection
+@endpush

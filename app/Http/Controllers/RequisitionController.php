@@ -8,6 +8,7 @@ use App\Models\Requisition;
 use App\Models\Vehicle;
 use App\Models\Driver;
 use App\Models\Employee;
+use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
 
 class RequisitionController extends Controller
@@ -29,15 +30,21 @@ class RequisitionController extends Controller
 
         $vehicles = Vehicle::where('status', 1)->get();
         $drivers  = Driver::where('status', 1)->get();
-
+    $employees = Employee::all();
+        $vehicleTypes = VehicleType::all();
 
     return view('admin.dashboard.requisition.create', [
         'action'      => route('requisitions.store'),
         'method'      => 'POST',
         'requisition' => new Requisition(),
         'vehicles'    => $vehicles,
+        'employees'    => $employees,
         'drivers'     => $drivers
     ]);
+
+
+ 
+        // return view('admin.dashboard.requisition.create', compact('employees', 'vehicleTypes'));
 }
 
     public function store(Request $request)

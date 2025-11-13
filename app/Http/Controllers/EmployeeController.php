@@ -73,6 +73,7 @@ class EmployeeController extends Controller
     {
         $units = Unit::orderBy('unit_name')->get();
         return view('admin.dashboard.employee.create', compact('units'));
+        
     }
 
     /**
@@ -246,4 +247,31 @@ class EmployeeController extends Controller
     {
         //
     }
+
+        public function getEmployeeDetails($id)
+        {
+            $employee = Employee::with(['department', 'unit'])->find($id);
+
+            // dd($id);
+
+            if (!$employee) {
+                return response()->json(['error' => 'Employee not found'], 404);
+            }
+
+    //         dd([
+    //     // 'employee' => $employee,
+    //     'department' => $employee->department,
+    //     'unit' => $employee->unit,
+    // ]);
+            return response()->json([
+                 'employee' => $employee,
+    //     'department' => $employee->depa
+                'department' => $employee->department->department_name ?? '',
+                'unit' => $employee->unit->unit_name ?? '',
+            ]);
+        }
+
+
+
+
 }
