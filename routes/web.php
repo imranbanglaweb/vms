@@ -111,6 +111,8 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
+Route::post('/requisitions/validate', [RequisitionController::class, 'validateAjax'])
+     ->name('requisitions.validate');
 
     
     Route::get('/get-departments-by-unit', [DriverController::class, 'getDepartmentsByUnit'])->name('getDepartmentsByUnit');

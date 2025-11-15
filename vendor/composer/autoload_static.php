@@ -719,6 +719,7 @@ class ComposerStaticInit76263817b114701ce8947ab2985659ae
         'App\\Http\\Controllers\\VehicleMaintenenceController' => __DIR__ . '/../..' . '/app/Http/Controllers/VehicleMaintenenceController.php',
         'App\\Http\\Controllers\\VehicleManagemantController' => __DIR__ . '/../..' . '/app/Http/Controllers/VehicleManagemantController.php',
         'App\\Http\\Controllers\\VehicleTypeController' => __DIR__ . '/../..' . '/app/Http/Controllers/VehicleTypeController.php',
+        'App\\Http\\Controllers\\VendorController' => __DIR__ . '/../..' . '/app/Http/Controllers/VendorController.php',
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\Authenticate' => __DIR__ . '/../..' . '/app/Http/Middleware/Authenticate.php',
         'App\\Http\\Middleware\\EncryptCookies' => __DIR__ . '/../..' . '/app/Http/Middleware/EncryptCookies.php',

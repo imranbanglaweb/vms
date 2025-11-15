@@ -79,6 +79,7 @@ return array(
     'App\\Http\\Controllers\\VehicleMaintenenceController' => $baseDir . '/app/Http/Controllers/VehicleMaintenenceController.php',
     'App\\Http\\Controllers\\VehicleManagemantController' => $baseDir . '/app/Http/Controllers/VehicleManagemantController.php',
     'App\\Http\\Controllers\\VehicleTypeController' => $baseDir . '/app/Http/Controllers/VehicleTypeController.php',
+    'App\\Http\\Controllers\\VendorController' => $baseDir . '/app/Http/Controllers/VendorController.php',
     'App\\Http\\Kernel' => $baseDir . '/app/Http/Kernel.php',
     'App\\Http\\Middleware\\Authenticate' => $baseDir . '/app/Http/Middleware/Authenticate.php',
     'App\\Http\\Middleware\\EncryptCookies' => $baseDir . '/app/Http/Middleware/EncryptCookies.php',
