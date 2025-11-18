@@ -110,11 +110,40 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 // Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
-
+ // AJAX search
+    Route::get('/requisitions-search', [RequisitionController::class, 'index'])
+         ->name('requisitions.search');
 Route::post('/requisitions/validate', [RequisitionController::class, 'validateAjax'])
      ->name('requisitions.validate');
-
+Route::get('/requisitions/export-excel', [RequisitionController::class, 'exportExcel'])->name('requisitions.export.excel');
+Route::get('/requisitions/export-pdf', [RequisitionController::class, 'exportPDF'])->name('requisitions.export.pdf');
     
+
+// Requisition status update
+Route::post('/requisitions/update-status/{id}', 
+    [RequisitionController::class, 'updateStatus']
+)->name('requisitions.updateStatus');
+
+
+
+   Route::post('{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])
+        ->name('requisitions.workflow.update');
+
+// Route::post('requisitions/{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])
+//     ->name('requisitions.workflow.update')
+//     ->middleware('role:transport,admin'); // only transport and admin can update
+
+Route::group(['middleware' => 'role:employee,transport,admin'], function() {
+    Route::resource('requisitions', RequisitionController::class);
+});
+
+Route::post('requisitions/{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])
+    ->name('requisitions.workflow.update')
+    ->middleware('auth','role:transport,admin'); // only transport & admin
+
+
+
+
     Route::get('/get-departments-by-unit', [DriverController::class, 'getDepartmentsByUnit'])->name('getDepartmentsByUnit');
 Route::get('/get-employee-info', [DriverController::class, 'getEmployeeInfo'])->name('getEmployeeInfo');
 

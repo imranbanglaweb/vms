@@ -1,653 +1,478 @@
 @extends('admin.dashboard.master')
-@section('title', 'Dashboard')
 
 @section('main_content')
-<section role="main" class="content-body">
-    <div class="container-fluid">
-        <!-- Header with Quick Actions -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4 class="page-title mb-1">Welcome, {{ Auth::user()->name }}</h4>
-                        <p class="text-muted">Here's what's happening with your documents today.</p>
-                    </div>
-              {{--       <div class="quick-actions">
-                        <a href="{{ route('documents.create') }}" class="btn btn-primary">
-                            <i class="fa fa-plus"></i> New Document
-                        </a>
-                    </div> --}}
-						</div>
-													</div>
-												</div>
+<style type="text/css">
+	.body{
 
-        <!-- Vehicle Management 3D Stats -->
-        <div class="row">
-            <!-- Total Vehicles -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stat-card vehicle-3d">
-                    <div class="stat-card__icon-wrapper bg-gradient-1">
-                        <i class="fa fa-car"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($totalVehicles ?? 0) }}</h3>
-                        <p class="stat-card__title">Total Vehicles</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Drivers -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stat-card vehicle-3d">
-                    <div class="stat-card__icon-wrapper bg-gradient-2">
-                        <i class="fa fa-user-tie"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($driversCount ?? 0) }}</h3>
-                        <p class="stat-card__title">Drivers</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upcoming Maintenance -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stat-card vehicle-3d">
-                    <div class="stat-card__icon-wrapper bg-gradient-3">
-                        <i class="fa fa-tools"></i>
-                        @if(($upcomingMaintenance ?? 0) > 0)
-                            <span class="pulse-ring"></span>
-                        @endif
-                    </div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($upcomingMaintenance ?? 0) }}</h3>
-                        <p class="stat-card__title">Upcoming Maintenance (30d)</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Inactive Vehicles -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stat-card vehicle-3d">
-                    <div class="stat-card__icon-wrapper bg-gradient-4">
-                        <i class="fa fa-ban"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($inactiveVehicles ?? 0) }}</h3>
-                        <p class="stat-card__title">Inactive Vehicles</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Vehicle Maintenances -->
-        <div class="row mt-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">Recent Vehicle Maintenances</h3>
-                        <small class="text-muted">Showing last 6 maintenance records</small>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($recentMaintenances) && $recentMaintenances->count())
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Vehicle</th>
-                                        <th>Maintenance Date</th>
-                                        <th>Type</th>
-                                        <th>Provider</th>
-                                        <th>Cost</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($recentMaintenances as $m)
-                                    <tr>
-                                        <td>{{ optional($m->vehicle)->registration_no ?? '—' }} ({{ optional($m->vehicle)->vehicle_code ?? '' }})</td>
-                                        <td>{{ \Carbon\Carbon::parse($m->maintenance_date)->format('Y-m-d') }}</td>
-                                        <td>{{ $m->maintenance_type }}</td>
-                                        <td>{{ $m->service_provider }}</td>
-                                        <td>{{ $m->cost ? number_format($m->cost,2) : '-' }}</td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fa fa-tools opacity-50"></i>
-                                <p class="mt-2">No recent maintenance records found.</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Approval Stats (Show only for super-admin) -->
-        @if(auth()->user()->hasRole('Super Admin'))
-        <div class="row mt-4">
-                 <!-- Withdrawn Documents -->
-            <div class="col-xl-3 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-info">
-                        <i class="fa fa-file"></i>
-													</div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($withdrawnDocuments) }}</h3>
-                        <p class="stat-card__title">Withdrawn Documents</p>
-													</div>
-												</div>
-											</div>
-            <!-- Pending Approvals -->
-            <div class="col-xl-4 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-danger">
-                        <i class="fa fa-file"></i>
-                        @if($pendingApprovals > 0)
-                            <span class="pulse-ring"></span>
-                        @endif
-										</div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($pendingApprovals) }}</h3>
-                        <p class="stat-card__title">Pending Approvals</p>
-                     {{--    <a href="{{ route('documents.pending-approval') }}" class="btn btn-sm btn-outline-danger mt-2">
-                            Review Now
-                        </a> --}}
-								</div>
-													</div>
-												</div>
-
-            <!-- Approved Documents -->
-            <div class="col-xl-4 col-md-4">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-success">
-                        <i class="fa fa-check"></i>
-														</div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">{{ number_format($approvedDocuments) }}</h3>
-                        <p class="stat-card__title">Approved Documents</p>
-													</div>
-												</div>
-											</div>
-
-            <!-- Rejected Documents -->
-        {{--     <div class="col-xl-4 col-md-6">
-                <div class="stat-card">
-                    <div class="stat-card__icon-wrapper bg-secondary">
-                        <i class="fa fa-minus"></i>
-                    </div>
-                    <div class="stat-card__content">
-                        <h3 class="stat-card__number">
-                        {{ number_format($rejectedDocuments) }}</h3>
-                        <p class="stat-card__title">Rejected Documents</p>
-                    </div>
-										</div>
-            </div> --}}
-								</div>
-        @endif
-
-        <!-- Recent Documents Table -->
-       {{--  <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Recent Documents</h3>
-                        <div class="card-tools">
-                            <div class="input-group input-group-sm" style="width: 250px;">
-                                <input type="text" name="table_search" id="recentDocsSearch" 
-                                    class="form-control float-right" placeholder="Search...">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-default">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-													</div>
-												</div>
-														</div>
-													</div>
-                    <div class="card-body">
-                        <div id="recentDocumentsTable">
-                            <!-- Table content will be loaded here -->
-													</div>
-												</div>
-											</div>
-										</div>
-        </div> --}}
-
-        <!-- Recent Pending Approvals Table -->
-        @if(auth()->user()->hasRole('Super Admin'))
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Recent Pending Approvals</h3>
-                        <div class="card-tools">
-                            <div class="input-group input-group-sm" style="width: 250px;">
-                                <input type="text" name="table_search" id="pendingApprovalsSearch" 
-                                    class="form-control float-right" placeholder="Search...">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-default">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-								</div>
-							</div>
-						</div>
-					</div>
-                    <div class="card-body">
-                        <div id="pendingApprovalsTable">
-                            <!-- Table content will be loaded here -->
-                        </div>
-                    </div>
-		    </div>
-            </div>
-        </div>
-        @endif
-    </div>
-    </section>
-
-@push('styles')
-<style>
-    /* Modern Dashboard Styles */
-    .page-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
+  background-color: #f8f9fa;
+	}
+	.card-header{
+        padding: 10px 15px;
     }
 
-    /* Stat Cards */
-    .stat-card {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 20px rgba(7,12,24,0.18), inset 0 -6px 12px rgba(0,0,0,0.03);
-        transition: transform 0.35s cubic-bezier(.25,.8,.25,1), box-shadow 0.35s ease;
-    }
 
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .stat-card__icon-wrapper {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 15px;
-        position: relative;
-    }
-
-    /* 3D card variants */
-    .vehicle-3d { perspective: 800px; }
-    .vehicle-3d .stat-card__icon-wrapper { box-shadow: 0 8px 18px rgba(14,30,60,0.12); }
-    .vehicle-3d:hover { transform: translateY(-10px) rotateX(3deg); box-shadow: 0 18px 40px rgba(7,12,24,0.28); }
-
-    .bg-gradient-1 { background: linear-gradient(135deg, #4f46e5, #06b6d4); }
-    .bg-gradient-2 { background: linear-gradient(135deg, #06b6d4, #10b981); }
-    .bg-gradient-3 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-    .bg-gradient-4 { background: linear-gradient(135deg, #9ca3af, #374151); }
-
-    .stat-card__icon-wrapper i { font-size: 26px; }
-
-    .stat-card__icon-wrapper i {
-        color: #fff;
-        font-size: 24px;
-    }
-
-    .stat-card__number {
-        font-size: 28px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .stat-card__title {
-        color: #6c757d;
-        margin-bottom: 0;
-    }
-
-    .pulse-ring {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        animation: pulse 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-        border: 3px solid rgba(255, 255, 255, 0.4);
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
-        50% {
-            transform: scale(1.05);
-            opacity: 0.5;
-        }
-        100% {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
-    }
-
-    /* Custom Table Styles */
-    .custom-table {
-        margin: 0;
-    }
-
-    .custom-table thead th {
-        background: #f8f9fa;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        padding: 1rem;
-        border-bottom: 2px solid #e9ecef;
-    }
-
-    .custom-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    /* Status Badges */
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .status-withdrawn {
-        background: rgba(255,193,7,0.1);
-        color: #ffc107;
-    }
-
-    .status-returned {
-        background: rgba(40,167,69,0.1);
-        color: #28a745;
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-icon:hover {
-        background: #e9ecef;
-    }
-
-    /* Empty State */
-    .empty-state {
-        padding: 2rem;
-        text-align: center;
-    }
-
-    .empty-state i {
-        font-size: 2rem;
-        display: block;
-    }
-
-    .badge {
-        padding: 0.5em 0.75em;
-    }
-
-    .btn-group .btn {
-        margin-right: 2px;
-    }
-
-    .table td, .table th {
-        vertical-align: middle;
-    }
-
-    /* Card Actions */
-    .card-actions .btn {
-        padding: 0.375rem 0.75rem;
-    }
-
-    .dropdown-item {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
-    }
-
-    .dropdown-item i {
-        width: 1.25rem;
-    }
-
-    .card {
-        border: none;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-
-    .card-body {
-        padding: 1.25rem;
-    }
-
-    .icon {
-        height: 48px;
-        width: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .opacity-50 {
-        opacity: 0.5;
-    }
-
-    .card-footer {
-        background: rgba(0, 0, 0, 0.1);
-        border-top: none;
-        padding: 0.75rem 1.25rem;
-    }
-
-    .stretched-link::after {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 1;
-        content: "";
-    }
-
-    .table th {
-        border-top: none;
-    }
 </style>
-@endpush
+<br>
+<br>
+<br>
+<br>
+<section role="main" class="content-body">
+<div class="container-fluid">
 
-@push('scripts')
-   <script>
-// Load tables on page load
-$(document).ready(function() {
-    loadRecentDocuments();
-    loadPendingApprovals();
+    {{-- ===================== --}}
+    {{--  Summary Status Cards --}}
+    {{-- ===================== --}}
+    <div class="row mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body text-center">
+                    <h5 class="text-primary">Pending</h5>
+                    <h2 class="fw-bold">
+                       {{ $chartData['Pending'] ?? 0 }}
+
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-success">
+                <div class="card-body text-center">
+                    <h5 class="text-success">Approved</h5>
+                    <h2 class="fw-bold">{{ $chartData['Approved'] }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-danger">
+                <div class="card-body text-center">
+                    <h5 class="text-danger">Rejected</h5>
+                    <h2 class="fw-bold">{{ $chartData['Rejected'] }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-info">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Completed</h5>
+                    <h2 class="fw-bold">{{ $chartData['Completed'] }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- ===================== --}}
+    {{--  Approval Quick Panel --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <strong>Pending Approvals</strong>
+        </div>
+        <div class="card-body">
+
+            @if($pendingRequisitions->count() == 0)
+                <p class="text-muted">No pending approvals.</p>
+            @else
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Employee</th>
+                            <th>From – To</th>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Action</th>
+                            <!-- <th>Status</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pendingRequisitions as $req)
+                            <tr>
+                                <td>{{ $req->id }}</td>
+                                <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
+                                <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
+                                <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
+                                <td>{{ $req->purpose }}</td>
+                                <td>
+                                    <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-info btn-sm">View</a>
+                                    <!-- <button class="btn btn-success btn-sm approve-btn" data-id="{{ $req->id }}">Approve</button>
+                                    <button class="btn btn-danger btn-sm reject-btn" data-id="{{ $req->id }}">Reject</button> -->
+
+                                    <!-- <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
+    <i class="fa fa-check"></i> Approve
+</button>
+
+<button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
+    <i class="fa fa-times"></i> Reject
+</button> -->
+
+                                </td>
+                                <td>
+    <span id="status-badge-{{ $req->id }}" 
+        class="badge 
+        @if($req->status=='Approved') badge-success
+        @elseif($req->status=='Rejected') badge-danger
+        @else badge-warning @endif">
+        {{ $req->status }}
+    </span>
+</td>
+
+<td id="action-buttons-{{ $req->id }}">
+    @if($req->status == 'Pending')
+        <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
+            Approve
+        </button>
+        <button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
+            Reject
+        </button>
+    @else
+        <small class="text-muted">No actions</small>
+    @endif
+</td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+
+        </div>
+    </div>
+
+    {{-- ===================== --}}
+    {{--  Status Chart --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <strong>Requisition Status Overview</strong>
+        </div>
+        <div class="card-body">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    {{-- ===================== --}}
+    {{--  Recent Requisitions --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-5">
+        <div class="card-header bg-dark text-white">
+            <strong>Recent Requisitions</strong>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Employee</th>
+                        <th>From – To</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>More</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recentRequisitions as $req)
+                        <tr>
+                            <td>{{ $req->id }}</td>
+                            <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
+                            <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
+                            <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
+                            <td>
+                                <span class="badge bg-{{ $req->statusBadgeColor() }}">
+                                    {{ $req->status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-sm btn-primary">Details</a>
+                            </td>
+                        </tr>    
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</section>
+
+<script src="{{ asset('public/admin_resource/')}}/plugins/jquery/jquery.min.js"></script>
+<script src="{{ asset('public/admin_resource/')}}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('public/admin_resource/')}}/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- 
+<script>
     
-    // Search functionality for recent documents
-    let recentDocsTimer;
-    $('#recentDocsSearch').on('keyup', function() {
-        clearTimeout(recentDocsTimer);
-        recentDocsTimer = setTimeout(() => {
-            loadRecentDocuments($(this).val());
-        }, 500);
-    });
-    
-    // Search functionality for pending approvals
-    let pendingApprovalsTimer;
-    $('#pendingApprovalsSearch').on('keyup', function() {
-        clearTimeout(pendingApprovalsTimer);
-        pendingApprovalsTimer = setTimeout(() => {
-            loadPendingApprovals($(this).val());
-        }, 500);
-    });
-});
+// Wait for document to be fully loaded
+jQuery(document).ready(function($) {
+    console.log('Script loaded successfully!');
+    // Initialize Chart
 
-function loadRecentDocuments(search = '') {
-    $.ajax({
-        url: "{{ route('dashboard.recent-documents') }}",
-        type: 'GET',
-        data: { search: search },
-        success: function(response) {
-            $('#recentDocumentsTable').html(response);
-        },
-        error: function(xhr) {
-            console.error('Error loading recent documents:', xhr);
-        }
+    $('body').on('click', function() {
+        console.log('Body clicked!');
     });
-}
 
-function loadPendingApprovals(search = '') {
-    $.ajax({
-        url: "{{ route('dashboard.pending-approvals') }}",
-        type: 'GET',
-        data: { search: search },
-        success: function(response) {
-            $('#pendingApprovalsTable').html(response);
-        },
-        error: function(xhr) {
-            console.error('Error loading pending approvals:', xhr);
-        }
-    });
-}
-
-function viewDocument(id) {
-    $.ajax({
-        url: "{{ route('documents.show', ':id') }}".replace(':id', id),
-        type: 'GET',
-        success: function(response) {
-            if (response.success) {
-                $('#documentModal').remove();
-                $('body').append(`<div class="modal fade" id="documentModal" 
-                    tabindex="-1" role="dialog" aria-hidden="true">${response.view}</div>`);
-                $('#documentModal').modal('show');
-            } else {
-                Swal.fire('Error', response.message, 'error');
-            }
-        },
-        error: function(xhr) {
-            console.error('Error:', xhr);
-            Swal.fire('Error', 'Could not load document details', 'error');
-        }
-    });
-}
-
-function editDocument(id) {
-    $.ajax({
-        url: "{{ route('documents.edit', ':id') }}".replace(':id', id),
-        type: 'GET',
-        success: function(response) {
-            if (response.success) {
-                $('#documentModal').remove();
-                $('body').append(`<div class="modal fade" id="documentModal" 
-                    tabindex="-1" role="dialog" aria-hidden="true">${response.view}</div>`);
-                $('#documentModal').modal('show');
-            } else {
-                Swal.fire('Error', response.message, 'error');
-            }
-        },
-        error: function(xhr) {
-            console.error('Error:', xhr);
-            Swal.fire('Error', 'Could not load edit form', 'error');
-        }
-    });
-}
-
-function approveDocument(id) {
-    Swal.fire({
-        title: 'Approve Document',
-        text: 'Are you sure you want to approve this document?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, approve it!',
-        cancelButtonText: 'No, cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "{{ route('documents.approve', ':id') }}".replace(':id', id),
-                type: 'POST',
+    const statusChart = document.getElementById('statusChart');
+    if (statusChart) {
+        new Chart(statusChart, {
+            type: 'bar',
             data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire('Success', response.message, 'success')
-                            .then(() => location.reload());
-                    } else {
-                        Swal.fire('Error', response.message, 'error');
+                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+                datasets: [{
+                    label: 'Requisitions',
+                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
+                    data: [
+                        {{ $chartData['Pending'] ?? 0 }},
+                        {{ $chartData['Approved'] ?? 0 }},
+                        {{ $chartData['Rejected'] ?? 0 }},
+                        {{ $chartData['Completed'] ?? 0 }}
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
-                },
-                error: function(xhr) {
-                    console.error('Error:', xhr);
-                    Swal.fire('Error', 'Could not approve document', 'error');
                 }
-            });
-        }
-    });
-}
-
-function rejectDocument(id) {
-    Swal.fire({
-        title: 'Reject Document',
-        text: 'Please provide a reason for rejection:',
-        input: 'textarea',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Reject',
-        cancelButtonText: 'Cancel',
-        preConfirm: (reason) => {
-            if (!reason) {
-                Swal.showValidationMessage('Please enter a rejection reason');
             }
-            return reason;
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "{{ route('documents.reject', ':id') }}".replace(':id', id),
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    reason: result.value
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire('Success', response.message, 'success')
-                            .then(() => location.reload());
-                    } else {
-                        Swal.fire('Error', response.message, 'error');
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Error:', xhr);
-                    Swal.fire('Error', 'Could not reject document', 'error');
-                }
-            });
-        }
-    });
-}
+        });
+    }
 
-// Refresh table data
-function refreshTable() {
-    location.reload();
-}
-    </script>
-@endpush
+    // Approve button handler
+    $('body').on('click', '.approve-btn', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const requisitionId = button.data('id');
+        
+        if (!confirm('Are you sure you want to approve requisition #' + requisitionId + '?')) {
+            return;
+        }
+        
+        // Disable button and show loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
+        
+        // Make AJAX request
+        $.ajax({
+            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
+            type: "POST",
+            data: {
+                status: 'Approved',
+                _token: "{{ csrf_token() }}",
+                _method: 'PUT'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message and reload
+                    showAlert('Requisition approved successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Error approving requisition', 'error');
+                    button.prop('disabled', false).text('Approve');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr);
+                showAlert('Error approving requisition. Please try again.', 'error');
+                button.prop('disabled', false).text('Approve');
+            }
+        });
+    });
+
+    // Reject button handler
+    $('body').on('click', '.reject-btn', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const requisitionId = button.data('id');
+        
+        const reason = prompt('Please enter reason for rejection:');
+        if (reason === null) return; // User cancelled
+        
+        if (!reason.trim()) {
+            alert('Reason is required for rejection.');
+            return;
+        }
+        
+        // Disable button and show loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
+        
+        // Make AJAX request
+        $.ajax({
+            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
+            type: "POST",
+            data: {
+                status: 'Rejected',
+                reason: reason.trim(),
+                _token: "{{ csrf_token() }}",
+                _method: 'PUT'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert('Requisition rejected successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Error rejecting requisition', 'error');
+                    button.prop('disabled', false).text('Reject');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr);
+                showAlert('Error rejecting requisition. Please try again.', 'error');
+                button.prop('disabled', false).text('Reject');
+            }
+        });
+    });
+
+    // Helper function to show alerts
+    function showAlert(message, type = 'info') {
+        // Remove existing alerts
+        $('.custom-alert').remove();
+        
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'error' ? 'alert-danger' : 'alert-info';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert" 
+                 style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        $('body').append(alertHtml);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            $('.custom-alert').alert('close');
+        }, 5000);
+    }
+});
+</script> -->
+<script>
+$(document).ready(function() {
+
+     const statusChart = document.getElementById('statusChart');
+    if (statusChart) {
+        new Chart(statusChart, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+                datasets: [{
+                    label: 'Requisitions',
+                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
+                    data: [
+                        {{ $chartData['Pending'] ?? 0 }},
+                        {{ $chartData['Approved'] ?? 0 }},
+                        {{ $chartData['Rejected'] ?? 0 }},
+                        {{ $chartData['Completed'] ?? 0 }}
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    function updateStatus(id, status) {
+
+        let button = $('.action-btn[data-id="'+id+'"]');
+
+        // Disable buttons + show spinner
+        button.prop('disabled', true).html(
+            '<span class="spinner-border spinner-border-sm"></span> Processing...'
+        );
+
+        $.ajax({
+            url: "{{ url('/requisitions/update-status') }}/" + id,
+            type: "POST",
+            data: {
+                status: status,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(res) {
+
+                // Update status badge instantly
+                let badgeClass =
+                    status === "Approved" ? "badge-success" :
+                    status === "Rejected" ? "badge-danger" : "badge-warning";
+
+                $("#status-badge-" + id).removeClass().addClass("badge " + badgeClass).text(status);
+
+                // Remove Approve/Reject buttons after action
+                $("#action-buttons-" + id).fadeOut();
+
+                toastr.success("Status updated to " + status + " successfully!");
+            },
+            error: function(err){
+                toastr.error("Error updating status!");
+                console.log(err);
+            },
+            complete: function() {
+                button.prop('disabled', false).html(status);
+            }
+        });
+    }
+
+    // Approve
+    $(document).on("click", ".approve-btn", function() {
+        let id = $(this).data("id");
+
+        Swal.fire({
+            title: "Approve this requisition?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Approve",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus(id, "Approved");
+            }
+        });
+
+    });
+
+    // Reject
+    $(document).on("click", ".reject-btn", function() {
+        let id = $(this).data("id");
+
+        Swal.fire({
+            title: "Reject this requisition?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Reject",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus(id, "Rejected");
+            }
+        });
+
+    });
+
+});
+</script>
+
 @endsection

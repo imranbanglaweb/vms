@@ -21,7 +21,7 @@ class EmployeeController extends Controller
     {
         // If this is an AJAX request from DataTables, return server-side JSON
         if (request()->ajax()) {
-            $query = Employee::with(['unit','department','company'])->select('employees.*');
+            $query = Employee::with(['unit','department'])->select('employees.*');
 
             return DataTables::of($query)
                 ->addIndexColumn()
@@ -47,7 +47,7 @@ class EmployeeController extends Controller
         }
 
         // Non-AJAX: prepare data for blade fallback (so edit/delete buttons are visible when JS is disabled)
-        $employees = Employee::with(['unit','department','company'])->orderBy('id','ASC')->get();
+        $employees = Employee::with(['unit','department'])->orderBy('id','ASC')->get();
 
         $employee_lists = $employees->map(function($e){
             return (object)[

@@ -58,4 +58,10 @@ class Driver extends Model
                     ->withPivot('status')
                     ->withTimestamps();
     }
+
+    public function requisitions()
+    {
+        return $this->hasMany(Requisition::class, 'driver_id', 'id');
+    }
+
 }

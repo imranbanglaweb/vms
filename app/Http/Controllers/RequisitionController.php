@@ -8,6 +8,7 @@ use App\Models\Requisition;
 use App\Models\Vehicle;
 use App\Models\Driver;
 use App\Models\Employee;
+use App\Models\Department;
 use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -17,13 +18,78 @@ class RequisitionController extends Controller
     /**
      * Display a listing of requisitions.
      */
-    public function index()
+    // public function index()
+    // {
+    //     $requisitions = Requisition::with(['vehicle', 'driver'])
+    //         ->orderBy('id', 'desc')
+    //         ->get();
+
+    //     return view('admin.dashboard.requisition.index', compact('requisitions'));
+    // }
+ public function index(Request $request)
     {
-        $requisitions = Requisition::with(['vehicle', 'driver'])
-            ->orderBy('id', 'desc')
-            ->get();
+        $query = Requisition::with(['requestedBy', 'vehicle', 'driver']);
+
+        // ==============================
+        // Search Filters
+        // ==============================
+        if ($request->employee) {
+            $query->whereHas('requestedBy', function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->employee}%");
+            });
+        }
+
+        if ($request->department) {
+            $query->whereHas('requestedBy', function ($q) use ($request) {
+                $q->where('department_name', 'like', "%{$request->department}%");
+            });
+        }
+
+        if ($request->vehicle) {
+            $query->whereHas('vehicle', function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->vehicle}%");
+            });
+        }
+
+        if ($request->date_from) {
+            $query->whereDate('travel_date', '>=', $request->date_from);
+        }
+
+        if ($request->date_to) {
+            $query->whereDate('travel_date', '<=', $request->date_to);
+        }
+
+        $requisitions = $query->orderBy('id', 'DESC')->paginate(10);
+
+        // If AJAX request → return table + pagination only
+        if ($request->ajax()) {
+            return response()->json([
+                'table'      => View::make('admin.dashboard.requisition.table', compact('requisitions'))->render(),
+                'pagination' => $requisitions->links()->render(),
+            ]);
+        }
 
         return view('admin.dashboard.requisition.index', compact('requisitions'));
+    }
+
+
+
+
+// EXPORT EXCEL
+    public function exportExcel()
+    {
+        return Excel::download(new RequisitionExport, 'requisitions.xlsx');
+    }
+
+    // EXPORT PDF
+    public function exportPDF()
+    {
+        $requisitions = Requisition::with(['requestedBy','vehicle','driver'])->get();
+
+        $pdf = PDF::loadView('admin.dashboard.requisition.pdf', compact('requisitions'))
+                  ->setPaper('a4', 'landscape');
+
+        return $pdf->download('requisitions.pdf');
     }
 
    public function create()
@@ -87,7 +153,7 @@ public function validateAjax(Request $request)
         'from_location' => 'required|string|max:255',
         'to_location' => 'required|string|max:255',
         'travel_date' => 'required|date',
-        'return_date' => 'required|date|after_or_equal:travel_date',
+        // 'return_date' => 'required|date|after_or_equal:travel_date',
         'number_of_passenger' => 'required|integer|min:1', // Add this if it's in your form
         'purpose' => 'required|string|max:500', // Changed from nullable to required
         'passengers.*.employee_id' => 'required|exists:employees,id',
@@ -119,6 +185,7 @@ public function validateAjax(Request $request)
             'driver_id' => $request->driver_id ?? null,
             'from_location' => $request->from_location,
             'to_location' => $request->to_location,
+            'requisition_date' => $request->requisition_date,
             'travel_date' => $request->travel_date,
             'return_date' => $request->return_date,
             'purpose' => $request->purpose,
@@ -156,65 +223,161 @@ public function validateAjax(Request $request)
     }
 }
 
+     /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $requisition = Requisition::with(['requestedBy', 'vehicle', 'driver', 'passengers.employee'])
+                                  ->findOrFail($id);
+
+        return view('admin.dashboard.requisition.show', compact('requisition'));
+        
+    }
+
     /**
-     * Show the form for editing an existing requisition.
+     * Edit form.
      */
     public function edit($id)
     {
         $requisition = Requisition::findOrFail($id);
-        $vehicles = Vehicle::where('status', 1)->get();
-        $drivers  = Driver::where('status', 1)->get();
+        $employees   = Employee::orderBy('name')->get();
+        $vehicles    = Vehicle::orderBy('vehicle_name')->get();
+        $drivers     = Driver::orderBy('driver_name')->get();
 
-        return view('admin.dashboard.requisition.edit', [
-            'action' => route('requisition.update', $id),
-            'method' => 'PUT',
-            'requisition' => $requisition,
-            'vehicles' => $vehicles,
-            'drivers' => $drivers
-        ]);
+        return view('admin.dashboard.requisition.edit', compact(
+            'requisition', 'employees', 'vehicles', 'drivers'
+        ));
     }
 
     /**
-     * Update the specified requisition.
+     * Update requisition.
      */
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'from_location' => 'required|string|max:255',
-            'to_location' => 'required|string|max:255',
-            'travel_date' => 'required|date',
-            'return_date' => 'nullable|date|after_or_equal:travel_date',
-            'purpose' => 'nullable|string',
-            'status' => 'required|string'
+        $request->validate([
+            'from_location' => 'required',
+            'to_location'   => 'required',
+            'travel_date'   => 'required|date',
         ]);
 
-        $validated['updated_by'] = Auth::id() ?? 1;
-
         $requisition = Requisition::findOrFail($id);
-        $requisition->update($validated);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Requisition updated successfully!',
-                'data' => $requisition
-            ]);
-        }
+        $requisition->update([
+            'vehicle_id'    => $request->vehicle_id,
+            'driver_id'     => $request->driver_id,
+            'from_location' => $request->from_location,
+            'to_location'   => $request->to_location,
+            'travel_date'   => $request->travel_date,
+            'return_date'   => $request->return_date,
+            'purpose'       => $request->purpose,
+            'updated_by'    => Auth::id(),
+        ]);
 
-        return redirect()->route('requisition.index')->with('success', 'Requisition updated successfully!');
+        return redirect()->route('requisitions.index')
+                         ->with('success', 'Requisition updated successfully!');
     }
 
     /**
-     * Remove the specified requisition.
+     * Delete requisition.
      */
     public function destroy($id)
     {
         $requisition = Requisition::findOrFail($id);
         $requisition->delete();
 
+        return redirect()->route('requisitions.index')
+                         ->with('success', 'Requisition deleted successfully!');
+    }
+ public function getEmployeeDetails($id)
+    {
+        $emp = Employee::find($id);
+
+        if (!$emp) {
+            return response()->json(['status' => 'error', 'message' => 'Employee not found']);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => 'Requisition deleted successfully!'
+            'status' => 'success',
+            'employee' => [
+                'department' => $emp->department_name,
+                'unit'       => $emp->unit_name,
+                'designation'=> $emp->designation,
+            ]
         ]);
     }
+
+
+public function updateWorkflow(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:1,2,3,4,5',
+        'remarks' => 'nullable|string|max:1000',
+    ]);
+
+    $requisition = Requisition::findOrFail($id);
+
+    // Role-based allowed transitions (example)
+    $user = Auth::user();
+    $newStatus = (int)$request->status;
+    $oldStatus = (int)$requisition->status;
+
+    // Example policy:
+    // - employee cannot change status (except create)
+    // - transport can move Requested(1) -> TransportReview(2) OR TransportReview(2) -> Pending/Approved? customize
+    // - admin can Approve(3) or Reject(4) or Complete(5)
+    if ($user->role === 'employee') {
+        abort(403, 'Access Denied');
+    }
+
+    if ($user->role === 'transport') {
+        // allow only transitions to 2 (review) or to 5 (completed) depending on your rules
+        $allowed = [2];
+        if (!in_array($newStatus, $allowed)) {
+            abort(403, 'Transport role not allowed to set this status.');
+        }
+    }
+
+    if ($user->role === 'admin') {
+        // admin allowed any
+    }
+
+    // Update
+    $requisition->update([
+        'status' => $newStatus,
+        'updated_by' => $user->id,
+    ]);
+
+    // Log
+    WorkflowLog::create([
+        'requisition_id' => $requisition->id,
+        'changed_by' => $user->id,
+        'old_status' => $oldStatus,
+        'new_status' => $newStatus,
+        'remarks' => $request->remarks,
+    ]);
+
+    // Dispatch event for email
+    event(new RequisitionStatusChanged($requisition, $oldStatus, $newStatus, $request->remarks));
+
+    return back()->with('success', 'Workflow updated.');
+}
+public function updateStatus(Request $request, $id)
+{
+    $req = Requisition::findOrFail($id);
+    $req->update([
+        'status' => $request->status,
+        'updated_by' => auth()->id()
+    ]);
+
+    return response()->json(['success' => true]);
+}
+
+
+
+  
+
+   
+
+
 }
