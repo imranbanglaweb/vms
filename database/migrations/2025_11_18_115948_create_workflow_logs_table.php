@@ -20,8 +20,8 @@ class CreateWorkflowLogsTable extends Migration
             $table->tinyInteger('old_status')->nullable();
             $table->tinyInteger('new_status');
             $table->text('remarks')->nullable();
+            $table->string('action')->nullable();
             $table->timestamps();
-
             $table->foreign('requisition_id')->references('id')->on('requisitions')->onDelete('cascade');
             $table->foreign('changed_by')->references('id')->on('users')->onDelete('cascade');
         });

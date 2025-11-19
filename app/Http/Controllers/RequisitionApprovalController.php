@@ -2,84 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RequisitionApproval;
+use App\Models\Requisition;
 use Illuminate\Http\Request;
 
 class RequisitionApprovalController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function approve(Request $request, $id)
     {
-        //
+        $req = Requisition::findOrFail($id);
+        $user = auth()->user();
+
+        switch ($user->role) {
+
+            case 'dept_head':
+                if ($req->status != 'Pending') return response()->json(["error" => "Already processed"]);
+                $req->status = 'Dept_Approved';
+                break;
+
+            case 'transport_admin':
+                if ($req->status != 'Dept_Approved') return response()->json(["error" => "Not department-approved"]);
+                $req->status = 'Transport_Approved';
+                break;
+
+            case 'gm':
+                if ($req->status != 'Transport_Approved') return response()->json(["error" => "Not transport-approved"]);
+                $req->status = 'GM_Approved';
+                break;
+
+            case 'super_admin':
+                $req->status = 'Completed';
+                break;
+
+            default:
+                return response()->json(["error" => "You are not allowed to approve"]);
+        }
+
+        $req->save();
+
+        return response()->json(["success" => true]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\RequisitionApproval  $requisitionApproval
-     * @return \Illuminate\Http\Response
-     */
-    public function show(RequisitionApproval $requisitionApproval)
+    public function reject(Request $request, $id)
     {
-        //
-    }
+        $req = Requisition::findOrFail($id);
+        $req->status = 'Rejected';
+        $req->save();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\RequisitionApproval  $requisitionApproval
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(RequisitionApproval $requisitionApproval)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RequisitionApproval  $requisitionApproval
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, RequisitionApproval $requisitionApproval)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\RequisitionApproval  $requisitionApproval
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(RequisitionApproval $requisitionApproval)
-    {
-        //
+        return response()->json(["success" => true]);
     }
 }
+

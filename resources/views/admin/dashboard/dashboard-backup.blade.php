@@ -1,367 +1,478 @@
 @extends('admin.dashboard.master')
+
 @section('main_content')
 <style type="text/css">
-	.overview{
+	.body{
 
-    margin-top: 114px;
-    text-align: center;
-    border: 1px solid #34495e;
-    border-radius: 50%;
-    width: 70%;
-    /* height: 100px; */
-    display: block;
-    padding: 70px 50px;
-    color: #fff;
-    font-weight: bold;
-    margin-left: 30px;
-  background: url('https://images.pexels.com/photos/2325446/pexels-photo-2325446.jpeg?auto=compress&cs=tinysrgb&h=650&w=940');
-  background-position: center;
-  background-size: cover;
+  background-color: #f8f9fa;
 	}
-	.overview_content{
+	.card-header{
+        padding: 10px 15px;
+    }
 
-    margin-top: 70px;
 
-	}
-	.overview_content ul li{
-		/*margin-bottom: 0;*/
-    /*padding-left: 27px;*/
-    list-style-type: disclosure-closed;
-    color: brown;
-    font-weight: bold;
-    font-family: ui-monospace;
-    margin-left: 20px
-	}
-	.overview_content p{
-    color: #7169aa;
-    border-bottom: 1px solid #e7e7e7;
-    padding: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    font-family: georgia;
-	}
 </style>
+<br>
+<br>
+<br>
+<br>
 <section role="main" class="content-body">
-					<header class="page-header">
-						<h2>Dashboard</h2>
-					
-						<div class="right-wrapper pull-right">
-							<ol class="breadcrumbs">
-								<li>
-									<a href="{{ route('home')}}">
-										<i class="fa fa-home"></i>
-									</a>
-								</li>
-								<li><span>Dashboard</span></li>
-							</ol>
-					
-							<a class="sidebar-right-toggle" data-open="sidebar-right"></a>
-						</div>
-					</header>
-					<!-- start: page -->
-					<div class="row">
-					
-						<div class="col-md-6 col-lg-12 col-xl-6">
-							<div class="row">
-								<div class="col-md-6 col-lg-6 col-xl-6">
-									<section class="panel panel-featured-left panel-featured-primary">
-										<div class="panel-body">
-											<div class="widget-summary">
-												<div class="widget-summary-col widget-summary-col-icon">
-													<div class="summary-icon bg-primary">
-														<i class="fa fa-photo"></i>
-													</div>
-												</div>
-												<div class="widget-summary-col">
-												<a href="{{ route('supports.index')}}">
-														<div class="summary">
-														<h4 class="title">Total Task Completed</h4>
-														<div class="info">
-															{{-- {{$task_completed}}  --}}
-															{{-- <strong 
-																class="amount">1281</strong> --}}
-															{{-- <span class="text-primary">(14 unread)</span> --}}
-															<div class="info">
-															<strong class="amount">{{$task_completed}} </strong>
-														</div>
-														</div>
-													</div>
-													</a>
-													<div class="summary-footer">
-														{{-- <a class="text-muted text-uppercase">(view all)</a> --}}
-													</div>
-												</div>
-											</div>
-										</div>
-									</section>
-								</div>
-								
-								<div class="col-md-12 col-lg-6 col-xl-6">
-									<section class="panel panel-featured-left panel-featured-tertiary">
-										<div class="panel-body">
-												<a href="#">
-													<div class="widget-summary">
-												<div class="widget-summary-col widget-summary-col-icon">
-													<div class="summary-icon bg-tertiary">
-														<i class="fa fa-home"></i>
-													</div>
-												</div>
-												<div class="widget-summary-col">
-													<div class="summary">
-														<h4 class="title">Upcoming Projects</h4>
-														<div class="info">
-															{{-- <strong class="amount">38</strong> --}}
-														</div>
-													</div>
-													<div class="summary-footer">
-														{{-- <a class="text-muted text-uppercase">(statement)</a> --}}
-													</div>
-												</div>
-											</div>
-												</a>
-										</div>
-									</section>
-								</div>
-								<div class="col-md-12 col-lg-6 col-xl-6">
-									<section class="panel panel-featured-left panel-featured-quartenary">
-										<div class="panel-body">
-										
-												<a href="{{ route('emergency-task')}}">
-													<input type="hidden" name="emergency_issue">
-												<div class="widget-summary">
-												<div class="widget-summary-col widget-summary-col-icon">
-													<div class="summary-icon bg-quartenary">
-														<i class="fa fa-lock"></i>
-													</div>
-												</div>
-												<div class="widget-summary-col">
-													<div class="summary">
-														<h4 class="title">Emergency Issue</h4>
-														<div class="info">
-															<strong class="amount">
-															{{$emergency}}</strong>
-														</div>
-													</div>
-													<div class="summary-footer">
-														{{-- <a class="text-muted text-uppercase">(report)</a> --}}
-													</div>
-												</div>
-											</div>
-											</a>
-											
-										</div>
-									</section>
-								</div>
-								<div class="col-md-12 col-lg-6 col-xl-6">
-									<section class="panel panel-featured-left panel-featured-quartenary">
-										<div class="panel-body">
-											<a href="{{ route('pendingsupport')}}">
-												<div class="widget-summary">
-												<div class="widget-summary-col widget-summary-col-icon">
-													<div class="summary-icon bg-primary">
-														<i class="fa fa-list"></i>
-													</div>
-												</div>
-												<div class="widget-summary-col">
-													<div class="summary">
-														<h4 class="title">Overall Pending Job</h4>
-														<div class="info">
-															<strong class="amount">{{$month_task_incompleted}} </strong>
-														</div>
-													</div>
-													<div class="summary-footer">
-														{{-- <a class="text-muted text-uppercase">(report)</a> --}}
-													</div>
-												</div>
-											</div>
-											</a>
-										</div>
-									</section>
-								</div>
-							</div>
-						</div>
-					</div>
+<div class="container-fluid">
 
-				<div class="dashboard_bottom_info" style="background-color: #fff;padding: 0 15px;min-height: 350px">
-						<div class="row" style="margin-top: 15px">
-						<div class="col-md-6">
-							{{-- <h4 class="overview">Overview</h4> --}}
-							  <!-- PIE CHART -->
-			 <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-7">
-        
+    {{-- ===================== --}}
+    {{--  Summary Status Cards --}}
+    {{-- ===================== --}}
+    <div class="row mb-4">
 
-            <!-- DONUT CHART -->
-            <div class="card card-danger">
-              <div class="card-header">
-                <h3 class="card-title">Task In Chart</h3>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body text-center">
+                    <h5 class="text-primary">Pending</h5>
+                    <h2 class="fw-bold">
+                       {{ $chartData['Pending'] ?? 0 }}
 
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
+                    </h2>
                 </div>
-              </div>
-              <div class="card-body">
-                <canvas id="donutChart" style=" height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-              </div>
-              <!-- /.card-body -->
             </div>
-            <!-- /.card -->
+        </div>
 
-         
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-success">
+                <div class="card-body text-center">
+                    <h5 class="text-success">Approved</h5>
+                    <h2 class="fw-bold">{{ $chartData['Approved'] }}</h2>
+                </div>
+            </div>
+        </div>
 
-          </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-danger">
+                <div class="card-body text-center">
+                    <h5 class="text-danger">Rejected</h5>
+                    <h2 class="fw-bold">{{ $chartData['Rejected'] }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-left-info">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Completed</h5>
+                    <h2 class="fw-bold">{{ $chartData['Completed'] }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- ===================== --}}
+    {{--  Approval Quick Panel --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <strong>Pending Approvals</strong>
+        </div>
+        <div class="card-body">
+
+            @if($pendingRequisitions->count() == 0)
+                <p class="text-muted">No pending approvals.</p>
+            @else
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Employee</th>
+                            <th>From – To</th>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Action</th>
+                            <!-- <th>Status</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pendingRequisitions as $req)
+                            <tr>
+                                <td>{{ $req->id }}</td>
+                                <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
+                                <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
+                                <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
+                                <td>{{ $req->purpose }}</td>
+                                <td>
+                                    <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-info btn-sm">View</a>
+                                    <!-- <button class="btn btn-success btn-sm approve-btn" data-id="{{ $req->id }}">Approve</button>
+                                    <button class="btn btn-danger btn-sm reject-btn" data-id="{{ $req->id }}">Reject</button> -->
+
+                                    <!-- <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
+    <i class="fa fa-check"></i> Approve
+</button>
+
+<button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
+    <i class="fa fa-times"></i> Reject
+</button> -->
+
+                                </td>
+                                <td>
+    <span id="status-badge-{{ $req->id }}" 
+        class="badge 
+        @if($req->status=='Approved') badge-success
+        @elseif($req->status=='Rejected') badge-danger
+        @else badge-warning @endif">
+        {{ $req->status }}
+    </span>
+</td>
+
+<td id="action-buttons-{{ $req->id }}">
+    @if($req->status == 'Pending')
+        <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
+            Approve
+        </button>
+        <button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
+            Reject
+        </button>
+    @else
+        <small class="text-muted">No actions</small>
+    @endif
+</td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
 
         </div>
-        <!-- /.row -->
-      </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
-					<!-- end: page -->
-						</div>
-						<div class="col-md-3 overview_content">
-							
-								<p>Daily Job Status</p>
-							<ul>
-								<li>Completed</li>
-								<li>In-Completed</li>
-							</ul>
-								<p>Weekly Job Status</p>
-							<ul>
-								<li>Completed</li>
-								<li>In-Completed</li>
-							</ul>
-								<p>Monthly Job Status</p>
-							<ul>
-								<li>Completed</li>
-								<li>In-Completed</li>
-							</ul>
-						</div>
-						
-						<div class="col-md-2 overview_content">
-							
-								<p>Progress</p>
-							<ul>
-								<li>{{$task_completed}} job </li>
-								
-								<li>{{$task_incompleted}} job </li>
-							</ul>
-							<p>Progress</p>
-							<ul>
-									<li>{{ $current_week_completed }} job </li>
-								<li>{{ $current_week_incompleted }} job </li>
-							</ul>
-								<p>Progress</p>
-							<ul>
-								<li>{{ $month_task_completed }} job </li>
-								<li>{{ $month_task_incompleted }} job </li>
-						</div>
-					</div>
-					<br>
-					<br>
-				</div>
-	
-				</section>
+    </div>
 
-<!-- jQuery -->
+    {{-- ===================== --}}
+    {{--  Status Chart --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <strong>Requisition Status Overview</strong>
+        </div>
+        <div class="card-body">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    {{-- ===================== --}}
+    {{--  Recent Requisitions --}}
+    {{-- ===================== --}}
+    <div class="card shadow mb-5">
+        <div class="card-header bg-dark text-white">
+            <strong>Recent Requisitions</strong>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Employee</th>
+                        <th>From – To</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>More</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recentRequisitions as $req)
+                        <tr>
+                            <td>{{ $req->id }}</td>
+                            <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
+                            <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
+                            <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
+                            <td>
+                                <span class="badge bg-{{ $req->statusBadgeColor() }}">
+                                    {{ $req->status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-sm btn-primary">Details</a>
+                            </td>
+                        </tr>    
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</section>
+
 <script src="{{ asset('public/admin_resource/')}}/plugins/jquery/jquery.min.js"></script>
 <script src="{{ asset('public/admin_resource/')}}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('public/admin_resource/')}}/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-{{-- <script src="{{ asset('public/admin_resource/')}}/dist/js/demo.js"></script> --}}
-<!-- ChartJS -->
-<script src="{{ asset('public/admin_resource/')}}/plugins/chart.js/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- 
 <script>
-  $(function () {
-var task_completed = {{ Js::from($task_completed) }};
-var month_task_completed = {{ Js::from($month_task_completed) }};
-var current_week_completed = {{ Js::from($current_week_completed) }};
-// var task_completed = '50';
+    
+// Wait for document to be fully loaded
+jQuery(document).ready(function($) {
+    console.log('Script loaded successfully!');
+    // Initialize Chart
 
-// alert(task_completed);
+    $('body').on('click', function() {
+        console.log('Body clicked!');
+    });
 
-    //- DONUT CHART -
-    //-------------
-    // Get context with jQuery - using jQuery's .get() method.
-    var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
-    var donutData        = {
-      labels: [
-          'Daily',
-          'Weekly',
-          'Monthly',
-      ],
-      datasets: [
-        {
-          data: [task_completed,50,400],
-          backgroundColor : ['#f56954', '#00a65a', '#f39c12'],
+    const statusChart = document.getElementById('statusChart');
+    if (statusChart) {
+        new Chart(statusChart, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+                datasets: [{
+                    label: 'Requisitions',
+                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
+                    data: [
+                        {{ $chartData['Pending'] ?? 0 }},
+                        {{ $chartData['Approved'] ?? 0 }},
+                        {{ $chartData['Rejected'] ?? 0 }},
+                        {{ $chartData['Completed'] ?? 0 }}
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Approve button handler
+    $('body').on('click', '.approve-btn', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const requisitionId = button.data('id');
+        
+        if (!confirm('Are you sure you want to approve requisition #' + requisitionId + '?')) {
+            return;
         }
-      ]
+        
+        // Disable button and show loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
+        
+        // Make AJAX request
+        $.ajax({
+            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
+            type: "POST",
+            data: {
+                status: 'Approved',
+                _token: "{{ csrf_token() }}",
+                _method: 'PUT'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message and reload
+                    showAlert('Requisition approved successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Error approving requisition', 'error');
+                    button.prop('disabled', false).text('Approve');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr);
+                showAlert('Error approving requisition. Please try again.', 'error');
+                button.prop('disabled', false).text('Approve');
+            }
+        });
+    });
+
+    // Reject button handler
+    $('body').on('click', '.reject-btn', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const requisitionId = button.data('id');
+        
+        const reason = prompt('Please enter reason for rejection:');
+        if (reason === null) return; // User cancelled
+        
+        if (!reason.trim()) {
+            alert('Reason is required for rejection.');
+            return;
+        }
+        
+        // Disable button and show loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
+        
+        // Make AJAX request
+        $.ajax({
+            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
+            type: "POST",
+            data: {
+                status: 'Rejected',
+                reason: reason.trim(),
+                _token: "{{ csrf_token() }}",
+                _method: 'PUT'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert('Requisition rejected successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Error rejecting requisition', 'error');
+                    button.prop('disabled', false).text('Reject');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr);
+                showAlert('Error rejecting requisition. Please try again.', 'error');
+                button.prop('disabled', false).text('Reject');
+            }
+        });
+    });
+
+    // Helper function to show alerts
+    function showAlert(message, type = 'info') {
+        // Remove existing alerts
+        $('.custom-alert').remove();
+        
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'error' ? 'alert-danger' : 'alert-info';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert" 
+                 style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        $('body').append(alertHtml);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            $('.custom-alert').alert('close');
+        }, 5000);
     }
-    var donutOptions     = {
-      maintainAspectRatio : false,
-      responsive : true,
+});
+</script> -->
+<script>
+$(document).ready(function() {
+
+     const statusChart = document.getElementById('statusChart');
+    if (statusChart) {
+        new Chart(statusChart, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+                datasets: [{
+                    label: 'Requisitions',
+                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
+                    data: [
+                        {{ $chartData['Pending'] ?? 0 }},
+                        {{ $chartData['Approved'] ?? 0 }},
+                        {{ $chartData['Rejected'] ?? 0 }},
+                        {{ $chartData['Completed'] ?? 0 }}
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
     }
-    //Create pie or douhnut chart
-    // You can switch between pie and douhnut using the method below.
-    new Chart(donutChartCanvas, {
-      type: 'doughnut',
-      data: donutData,
-      options: donutOptions
-    })
+    function updateStatus(id, status) {
 
-    //-------------
-    //- PIE CHART -
-    //-------------
-    // Get context with jQuery - using jQuery's .get() method.
-    var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
-    var pieData        = donutData;
-    var pieOptions     = {
-      maintainAspectRatio : false,
-      responsive : true,
+        let button = $('.action-btn[data-id="'+id+'"]');
+
+        // Disable buttons + show spinner
+        button.prop('disabled', true).html(
+            '<span class="spinner-border spinner-border-sm"></span> Processing...'
+        );
+
+        $.ajax({
+            url: "{{ url('/requisitions/update-status') }}/" + id,
+            type: "POST",
+            data: {
+                status: status,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(res) {
+
+                // Update status badge instantly
+                let badgeClass =
+                    status === "Approved" ? "badge-success" :
+                    status === "Rejected" ? "badge-danger" : "badge-warning";
+
+                $("#status-badge-" + id).removeClass().addClass("badge " + badgeClass).text(status);
+
+                // Remove Approve/Reject buttons after action
+                $("#action-buttons-" + id).fadeOut();
+
+                toastr.success("Status updated to " + status + " successfully!");
+            },
+            error: function(err){
+                toastr.error("Error updating status!");
+                console.log(err);
+            },
+            complete: function() {
+                button.prop('disabled', false).html(status);
+            }
+        });
     }
-    //Create pie or douhnut chart
-    // You can switch between pie and douhnut using the method below.
-    new Chart(pieChartCanvas, {
-      type: 'pie',
-      data: pieData,
-      options: pieOptions
-    })
 
-  
+    // Approve
+    $(document).on("click", ".approve-btn", function() {
+        let id = $(this).data("id");
 
-    new Chart(barChartCanvas, {
-      type: 'bar',
-      data: barChartData,
-      options: barChartOptions
-    })
-    // This will get the first returned node in the jQuery collection.
-    new Chart(areaChartCanvas, {
-      type: 'line',
-      data: areaChartData,
-      options: areaChartOptions
-    })
-  //-------------
-    //- LINE CHART -
-    //--------------
-    var lineChartCanvas = $('#lineChart').get(0).getContext('2d')
-    var lineChartOptions = $.extend(true, {}, areaChartOptions)
-    var lineChartData = $.extend(true, {}, areaChartData)
-    lineChartData.datasets[0].fill = false;
-    lineChartData.datasets[1].fill = false;
-    lineChartOptions.datasetFill = false
+        Swal.fire({
+            title: "Approve this requisition?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Approve",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus(id, "Approved");
+            }
+        });
 
-    var lineChart = new Chart(lineChartCanvas, {
-      type: 'line',
-      data: lineChartData,
-      options: lineChartOptions
-    })
-  })
+    });
+
+    // Reject
+    $(document).on("click", ".reject-btn", function() {
+        let id = $(this).data("id");
+
+        Swal.fire({
+            title: "Reject this requisition?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Reject",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus(id, "Rejected");
+            }
+        });
+
+    });
+
+});
 </script>
+
 @endsection

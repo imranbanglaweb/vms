@@ -126,6 +126,28 @@ Route::post('/requisitions/update-status/{id}',
 
 
 
+// Transport Office Approval
+Route::post('/requisitions/transport-approve/{id}', 
+    [RequisitionController::class, 'transportApprove']
+)->name('requisitions.transport.approve');
+
+Route::post('/requisitions/transport-reject/{id}', 
+    [RequisitionController::class, 'transportReject']
+)->name('requisitions.transport.reject');
+
+
+// Admin Final Approval
+Route::post('/requisitions/admin-approve/{id}', 
+    [RequisitionController::class, 'adminApprove']
+)->name('requisitions.admin.approve');
+
+Route::post('/requisitions/admin-reject/{id}', 
+    [RequisitionController::class, 'adminReject']
+)->name('requisitions.admin.reject');
+
+
+
+
    Route::post('{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])
         ->name('requisitions.workflow.update');
 

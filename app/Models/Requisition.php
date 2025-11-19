@@ -30,6 +30,15 @@ class Requisition extends Model
       'updated_by'
     ];
 
+    
+public const STATUS_PENDING = 'Pending';
+public const STATUS_DEPT_APPROVED = 'Dept_Approved';
+public const STATUS_TRANSPORT_APPROVED = 'Transport_Approved';
+public const STATUS_GM_APPROVED = 'GM_Approved';
+public const STATUS_REJECTED = 'Rejected';
+public const STATUS_COMPLETED = 'Completed';
+
+
     protected $casts = [
       'travel_date'=>'date','travel_time'=>'datetime','return_date'=>'datetime',
       'approval_level_1_date'=>'datetime','approval_level_2_date'=>'datetime'
@@ -49,16 +58,21 @@ class Requisition extends Model
     return $this->hasMany(WorkflowLog::class);
 }
  // Badge Color Helper
-    public function statusBadgeColor()
-    {
-        return match($this->status) {
-            'Pending' => 'warning',
-            'Approved' => 'success',
-            'Rejected' => 'danger',
-            'Completed' => 'info',
-            default => 'secondary',
-        };
-    }
+        public function statusBadgeColor()
+        {
+            return [
+                'Pending' => 'warning',
+                'Dept_Approved' => 'info',
+                'Transport_Approved' => 'primary',
+                'GM_Approved' => 'success',
+                'Rejected' => 'danger',
+                'Completed' => 'dark',
+            ][$this->status] ?? 'secondary';
+        }
+            
+    
+
+    
 
     
 }

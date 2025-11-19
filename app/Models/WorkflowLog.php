@@ -12,6 +12,7 @@ class WorkflowLog extends Model
         'old_status',
         'new_status',
         'remarks',
+         'action',
     ];
 
     public function requisition()

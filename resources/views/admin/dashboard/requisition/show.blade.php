@@ -165,7 +165,76 @@
   </ul>
 </div>
 
+<h4>Approval Timeline</h4>
+<ul class="timeline">
+    <li class="{{ $requisition->status=='Pending'?'active':'' }}">Employee Submitted</li>
+    <li class="{{ $requisition->status=='Dept_Approved'?'active':'' }}">Department Head Approved</li>
+    <li class="{{ $requisition->status=='Transport_Approved'?'active':'' }}">Transport Admin Approved</li>
+    <li class="{{ $requisition->status=='GM_Approved'?'active':'' }}">GM Approved</li>
+    <li class="{{ $requisition->status=='Completed'?'active':'' }}">Completed</li>
+</ul>
 
 </div>
+
+
+<div class="card mt-4">
+    <div class="card-header bg-dark text-white">
+        <strong>Approval Timeline</strong>
+    </div>
+
+    <div class="card-body">
+        @if($requisition->logs->count() == 0)
+            <p class="text-muted">No actions recorded.</p>
+        @else
+            <ul class="timeline">
+                @foreach($requisition->logs as $log)
+                <li class="mb-3">
+                    <strong>{{ $log->action }}</strong>  
+                    <br>
+                    <small>
+                        {{ $log->created_at->format('d M Y - h:i A') }}  
+                        by {{ $log->user->name ?? 'System' }}
+                    </small>
+
+                    @if($log->note)
+                        <div class="mt-1 p-2 bg-light border rounded">
+                            {{ $log->note }}
+                        </div>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+</div>
+
+<style>
+
+    .timeline li.active {
+    font-weight: bold;
+    color: green;
+}
+
+.timeline {
+    list-style: none;
+    padding-left: 0;
+}
+.timeline li {
+    border-left: 3px solid #0d6efd;
+    padding-left: 15px;
+    position: relative;
+}
+.timeline li::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: #0d6efd;
+    border-radius: 50%;
+    position: absolute;
+    left: -6px;
+    top: 5px;
+}
+</style>
+
 </section>
 @endsection

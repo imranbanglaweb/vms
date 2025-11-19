@@ -6,7 +6,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Requisition;
 
-class RequisitionStatusMail extends Mailable
+class RequisitionStatusMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

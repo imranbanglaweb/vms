@@ -31,12 +31,24 @@ class HomeController extends Controller
     {
          $user = Auth::user();
 
+        $transportPending = Requisition::where('status', 2)->count();
+        $transportApproved = Requisition::where('status', 4)->count();
+        $transportRejected = Requisition::where('status', 5)->count();
+
+        $adminPending = Requisition::where('status', 4)->count();
+        $adminApproved = Requisition::where('status', 6)->count();
+        $adminRejected = Requisition::where('status', 7)->count();
+
+
         // Dashboard counters
       $chartData = [
             'Pending' => Requisition::where('status', 'Pending')->count(),
             'Approved' => Requisition::where('status', 'Approved')->count(),
-            'Rejected' => Requisition::where('status', 'Rejected')->count(),
-            'Completed' => Requisition::where('status', 'Completed')->count(),
+            'Dept_Approved' => Requisition::where('status','Dept_Approved')->count(),
+            'Transport_Approved' => Requisition::where('status','Transport_Approved')->count(),
+            'GM_Approved' => Requisition::where('status','GM_Approved')->count(),
+            'Rejected' => Requisition::where('status','Rejected')->count(),
+            'Completed' => Requisition::where('status','Completed')->count(),
         ];
 
         $pendingRequisitions = Requisition::where('status', 'Pending')->latest()->take(5)->get();
@@ -54,7 +66,17 @@ class HomeController extends Controller
         }
 
         // return view('admin.dashboard.dashboard', compact('stats', 'requisitions', 'user'));
-         return view('admin.dashboard.dashboard', compact('chartData', 'pendingRequisitions', 'recentRequisitions'));
+         return view('admin.dashboard.dashboard', 
+         compact(
+        'chartData', 
+         'pendingRequisitions', 
+         'recentRequisitions',
+         'transportPending',
+         'transportApproved',
+         'transportRejected',
+          'adminPending', 'adminApproved', 'adminRejected'
+         )
+        );
     } 
 
 

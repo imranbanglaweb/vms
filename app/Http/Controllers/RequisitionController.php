@@ -13,6 +13,9 @@ use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+
+use App\Mail\RequisitionStatusChangedMail;
+use Illuminate\Support\Facades\Mail;
 class RequisitionController extends Controller
 {
     /**
@@ -364,14 +367,137 @@ public function updateWorkflow(Request $request, $id)
 }
 public function updateStatus(Request $request, $id)
 {
-    $req = Requisition::findOrFail($id);
+    // $req = Requisition::findOrFail($id);
+    // $req->update([
+    //     'status' => $request->status,
+    //     'updated_by' => auth()->id()
+    // ]);
+
+    // return response()->json(['success' => true]);
+
+
+     $req = Requisition::findOrFail($id);
+
+    $old = $req->status;
+    $new = $request->status;
+
+    // Update status
     $req->update([
-        'status' => $request->status,
-        'updated_by' => auth()->id()
+        'status' => $new
     ]);
+
+    // Insert log
+    WorkflowLog::create([
+        'requisition_id' => $req->id,
+        'changed_by' => auth()->id(),
+        'action' => $new == 'Approved' ? 'APPROVED' : 'REJECTED',
+        'old_status' => $old,
+        'new_status' => $new,
+        'remarks' => $request->comment ?? null
+    ]);
+
+
+    // SEND EMAIL TO EMPLOYEE
+Mail::to($req->requestedBy->email)
+    ->send(new RequisitionStatusChangedMail($req, $newStatus, $request->comment ?? null));
+
+// OPTIONAL: SEND EMAIL TO ADMIN  
+Mail::to('admin@company.com')
+    ->send(new RequisitionStatusChangedMail($req, $newStatus));
 
     return response()->json(['success' => true]);
 }
+
+
+
+
+
+public function transportApprove($id)
+{
+    $req = Requisition::findOrFail($id);
+
+    if ($req->status != 2) {
+        return response()->json(['status' => 'error', 'message' => 'Invalid workflow step']);
+    }
+
+    $req->status = 4; // Transport Office Approved
+    $req->save();
+
+    RequisitionLogHistory::create([
+    'requisition_id' => $req->id,
+    'user_id' => auth()->id(),
+    'action' => 'Transport Approved'
+]);
+
+
+    return response()->json(['status' => 'success']);
+}
+
+public function transportReject($id)
+{
+    $req = Requisition::findOrFail($id);
+
+    if ($req->status != 2) {
+        return response()->json(['status' => 'error', 'message' => 'Invalid workflow step']);
+    }
+
+    $req->status = 5; // Transport Office Rejected
+    $req->save();
+
+    RequisitionLogHistory::create([
+    'requisition_id' => $req->id,
+    'user_id' => auth()->id(),
+    'action' => 'Transport Rejected',
+    'note' => $request->note ?? null
+]);
+
+    return response()->json(['status' => 'success']);
+}
+
+
+public function adminApprove($id)
+{
+    $req = Requisition::findOrFail($id);
+
+    if ($req->status != 4) {
+        return response()->json(['status' => 'error', 'message' => 'Invalid workflow step']);
+    }
+
+    $req->status = 6; // Final Approval
+    $req->save();
+
+    RequisitionLogHistory::create([
+    'requisition_id' => $req->id,
+    'user_id' => auth()->id(),
+    'action' => 'Admin Final Approved'
+]);
+
+
+    return response()->json(['status' => 'success']);
+}
+
+public function adminReject($id)
+{
+    $req = Requisition::findOrFail($id);
+
+    if ($req->status != 4) {
+        return response()->json(['status' => 'error', 'message' => 'Invalid workflow step']);
+    }
+
+    $req->status = 7; // Final Rejection
+    $req->save();
+
+    RequisitionLogHistory::create([
+        'requisition_id' => $req->id,
+        'user_id' => auth()->id(),
+        'action' => 'Admin Final Rejected',
+        'note' => $request->note ?? null
+    ]);
+
+
+    return response()->json(['status' => 'success']);
+}
+
 
 
 

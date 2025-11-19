@@ -15,7 +15,7 @@
 
     <td>{{ Str::limit($req->purpose, 25) }}</td>
 
-    <td>
+    <!-- <td>
         <span class="badge 
             @if($req->status == 'Pending') bg-warning 
             @elseif($req->status == 'Approved') bg-success 
@@ -24,6 +24,37 @@
         ">
             {{ $req->status }}
         </span>
+    </td> -->
+
+    <td>
+        @if($req->status == 2)
+<div class="d-flex gap-2">
+    <button class="btn btn-success btn-sm transportApproveBtn" 
+            data-id="{{$req->id}}">
+        Transport Approve
+    </button>
+
+    <button class="btn btn-danger btn-sm transportRejectBtn"  
+            data-id="{{$req->id}}">
+        Transport Reject
+    </button>
+</div>
+@endif
+
+@if($req->status == 4)
+<div class="d-flex gap-2">
+    <button class="btn btn-primary btn-sm adminApproveBtn" 
+            data-id="{{$req->id}}">
+        Final Approve
+    </button>
+
+    <button class="btn btn-warning btn-sm adminRejectBtn"  
+            data-id="{{$req->id}}">
+        Final Reject
+    </button>
+</div>
+@endif
+
     </td>
 
     <td width="">
@@ -58,3 +89,83 @@
     </td>
 </tr>
 @endif
+
+<script>
+    // Transport Office Approve
+$(document).on('click', '.transportApproveBtn', function () {
+    let id = $(this).data('id');
+
+    $.ajax({
+        url: "/requisitions/transport-approve/" + id,
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function (res) {
+            if (res.status === "success") {
+                toastr.success("Transport Office Approved!");
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    });
+});
+
+// Transport Office Reject
+$(document).on('click', '.transportRejectBtn', function () {
+    let id = $(this).data('id');
+
+    $.ajax({
+        url: "/requisitions/transport-reject/" + id,
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function (res) {
+            if (res.status === "success") {
+                toastr.error("Transport Office Rejected!");
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    });
+});
+
+
+// Admin Final Approve
+$(document).on('click', '.adminApproveBtn', function () {
+    let id = $(this).data('id');
+
+    $.ajax({
+        url: "/requisitions/admin-approve/" + id,
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function (res) {
+            if (res.status === "success") {
+                toastr.success("Requisition Fully Approved (Admin Final)");
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    });
+});
+
+// Admin Final Reject
+$(document).on('click', '.adminRejectBtn', function () {
+    let id = $(this).data('id');
+
+    $.ajax({
+        url: "/requisitions/admin-reject/" + id,
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function (res) {
+            if (res.status === "success") {
+                toastr.error("Requisition Rejected by Admin");
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    });
+});
+
+</script>
