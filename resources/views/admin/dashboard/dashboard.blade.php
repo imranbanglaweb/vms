@@ -1,478 +1,302 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<style type="text/css">
-	.body{
-
-  background-color: #f8f9fa;
-	}
-	.card-header{
-        padding: 10px 15px;
-    }
-
-
-</style>
+<section role="main" class="content-body" style="body;background:#fff;">
+<div class="container-fluid p-4 bg-white rounded shadow-sm">
 <br>
-<br>
-<br>
-<br>
-<section role="main" class="content-body">
-<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="fa fa-tachometer-alt me-2 text-primary"></i> Dashboard Overview</h4>
 
-    {{-- ===================== --}}
-    {{--  Summary Status Cards --}}
-    {{-- ===================== --}}
-    <div class="row mb-4">
-
-        <div class="col-md-3">
-            <div class="card shadow-sm border-left-primary">
-                <div class="card-body text-center">
-                    <h5 class="text-primary">Pending</h5>
-                    <h2 class="fw-bold">
-                       {{ $chartData['Pending'] ?? 0 }}
-
-                    </h2>
-                </div>
+        <div class="d-flex align-items-center gap-2">
+            <button id="refreshNow" class="btn btn-outline-primary btn-sm"><i class="fa fa-sync"></i> Refresh</button>
+            <div class="position-relative">
+                <i class="fa fa-bell fa-lg"></i>
+                <span id="liveNotifCount" class="badge bg-danger position-absolute" style="top:-8px; right:-8px; display:none;">0</span>
             </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm border-left-success">
-                <div class="card-body text-center">
-                    <h5 class="text-success">Approved</h5>
-                    <h2 class="fw-bold">{{ $chartData['Approved'] }}</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm border-left-danger">
-                <div class="card-body text-center">
-                    <h5 class="text-danger">Rejected</h5>
-                    <h2 class="fw-bold">{{ $chartData['Rejected'] }}</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm border-left-info">
-                <div class="card-body text-center">
-                    <h5 class="text-info">Completed</h5>
-                    <h2 class="fw-bold">{{ $chartData['Completed'] }}</h2>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    {{-- ===================== --}}
-    {{--  Approval Quick Panel --}}
-    {{-- ===================== --}}
-    <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white">
-            <strong>Pending Approvals</strong>
-        </div>
-        <div class="card-body">
-
-            @if($pendingRequisitions->count() == 0)
-                <p class="text-muted">No pending approvals.</p>
-            @else
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#ID</th>
-                            <th>Employee</th>
-                            <th>From – To</th>
-                            <th>Date</th>
-                            <th>Purpose</th>
-                            <th>Action</th>
-                            <!-- <th>Status</th> -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($pendingRequisitions as $req)
-                            <tr>
-                                <td>{{ $req->id }}</td>
-                                <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
-                                <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
-                                <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
-                                <td>{{ $req->purpose }}</td>
-                                <td>
-                                    <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-info btn-sm">View</a>
-                                    <!-- <button class="btn btn-success btn-sm approve-btn" data-id="{{ $req->id }}">Approve</button>
-                                    <button class="btn btn-danger btn-sm reject-btn" data-id="{{ $req->id }}">Reject</button> -->
-
-                                    <!-- <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
-    <i class="fa fa-check"></i> Approve
-</button>
-
-<button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
-    <i class="fa fa-times"></i> Reject
-</button> -->
-
-                                </td>
-                                <td>
-    <span id="status-badge-{{ $req->id }}" 
-        class="badge 
-        @if($req->status=='Approved') badge-success
-        @elseif($req->status=='Rejected') badge-danger
-        @else badge-warning @endif">
-        {{ $req->status }}
-    </span>
-</td>
-
-<td id="action-buttons-{{ $req->id }}">
-    @if($req->status == 'Pending')
-        <button class="btn btn-success btn-sm action-btn approve-btn" data-id="{{ $req->id }}">
-            Approve
-        </button>
-        <button class="btn btn-danger btn-sm action-btn reject-btn" data-id="{{ $req->id }}">
-            Reject
-        </button>
-    @else
-        <small class="text-muted">No actions</small>
-    @endif
-</td>
-
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
-
         </div>
     </div>
 
-    {{-- ===================== --}}
-    {{--  Status Chart --}}
-    {{-- ===================== --}}
-    <div class="card shadow mb-4">
-        <div class="card-header bg-secondary text-white">
-            <strong>Requisition Status Overview</strong>
+    {{-- Cards --}}
+    <div class="row mb-4" id="cardsRow">
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Total</div>
+                <h3 id="cardTotal">{{ $total }}</h3>
+            </div>
         </div>
-        <div class="card-body">
-            <canvas id="statusChart"></canvas>
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Pending</div>
+                <h3 id="cardPending">{{ $pending }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Approved</div>
+                <h3 id="cardApproved">{{ $approved }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Rejected</div>
+                <h3 id="cardRejected">{{ $rejected }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Completed</div>
+                <h3 id="cardCompleted">{{ $completed }}</h3>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center shadow-sm p-3">
+                <div class="small text-muted">Cancelled</div>
+                <h3 id="cardCancelled">{{ $cancelled ?? 0 }}</h3>
+            </div>
         </div>
     </div>
 
-    {{-- ===================== --}}
-    {{--  Recent Requisitions --}}
-    {{-- ===================== --}}
-    <div class="card shadow mb-5">
-        <div class="card-header bg-dark text-white">
-            <strong>Recent Requisitions</strong>
+    <div class="row g-4">
+
+        {{-- Left column: Monthly + Dept pie --}}
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Monthly Requisitions (Last 12 months)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0">Department-wise Requests</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="deptPieChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0">Status Ratio</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="statusDoughnut" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Top users --}}
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Top Active Users</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="topUsersChart" height="80"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#ID</th>
-                        <th>Employee</th>
-                        <th>From – To</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>More</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($recentRequisitions as $req)
-                        <tr>
-                            <td>{{ $req->id }}</td>
-                            <td>{{ $req->requestedBy->name ?? 'N/A' }}</td>
-                            <td>{{ $req->from_location }} → {{ $req->to_location }}</td>
-                            <td>{{ date('d M Y', strtotime($req->travel_date)) }}</td>
-                            <td>
-                                <span class="badge bg-{{ $req->statusBadgeColor() }}">
-                                    {{ $req->status }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ route('requisitions.show', $req->id) }}" class="btn btn-sm btn-primary">Details</a>
-                            </td>
-                        </tr>    
+
+        {{-- Right column: Timeline + latest table --}}
+        <div class="col-lg-4">
+
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Recent Workflow Activity</h6>
+                </div>
+                <div class="card-body" id="timelineContainer" style="max-height:420px; overflow:auto;">
+                    @foreach($timeline as $item)
+                        <div class="mb-3">
+                            <div class="small text-muted">{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y - h:i A') }} by {{ $item->user_name }}</div>
+                            <div class="fw-bold">{{ $item->action }}</div>
+                            @if($item->remarks)<div class="small text-muted">{{ $item->remarks }}</div>@endif
+                        </div>
                     @endforeach
-                </tbody>
-            </table>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Latest Requisitions</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Employee</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="latestTableBody">
+                            @foreach($latest as $r)
+                                <tr>
+                                    <td>{{ $r->id }}</td>
+                                    <td>{{ $r->requestedBy->name ?? 'N/A' }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($r->travel_date)->format('d M Y') }}</td>
+                                    <td>
+                                        <span class="badge {{ $r->status == 3 ? 'bg-success' : ($r->status == 4 ? 'bg-danger' : 'bg-warning') }}">
+                                            {{ $r->status_text ?? $r->status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
 </div>
+<br>
+<br>
+<br>
+<br>
 </section>
+@endsection
 
-<script src="{{ asset('public/admin_resource/')}}/plugins/jquery/jquery.min.js"></script>
-<script src="{{ asset('public/admin_resource/')}}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('public/admin_resource/')}}/dist/js/adminlte.min.js"></script>
+@push('scripts')
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- SweetAlert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Toastr -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-<!-- 
 <script>
-    
-// Wait for document to be fully loaded
-jQuery(document).ready(function($) {
-    console.log('Script loaded successfully!');
-    // Initialize Chart
+$(function(){
+    // ---------- INITIAL DATA FROM BLADE (server rendered)
+    const monthLabels = {!! json_encode($monthLabels) !!};
+    const monthlyData = {!! json_encode($monthlyData) !!};
+    const deptData = {!! json_encode($deptData) !!};
+    const statusCounts = {!! json_encode($statusCounts) !!};
+    const topUsers = {!! json_encode($topUsers) !!};
 
-    $('body').on('click', function() {
-        console.log('Body clicked!');
+    // ---------- CHARTS
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Requisitions',
+                backgroundColor: '#0d6efd',
+                data: monthlyData
+            }]
+        },
+        options: { responsive:true, scales:{ y:{ beginAtZero: true } } }
     });
 
-    const statusChart = document.getElementById('statusChart');
-    if (statusChart) {
-        new Chart(statusChart, {
-            type: 'bar',
-            data: {
-                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
-                datasets: [{
-                    label: 'Requisitions',
-                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
-                    data: [
-                        {{ $chartData['Pending'] ?? 0 }},
-                        {{ $chartData['Approved'] ?? 0 }},
-                        {{ $chartData['Rejected'] ?? 0 }},
-                        {{ $chartData['Completed'] ?? 0 }}
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
+    const deptLabels = deptData.map(d => d.label);
+    const deptValues = deptData.map(d => d.value);
+    const deptCtx = document.getElementById('deptPieChart').getContext('2d');
+    const deptPieChart = new Chart(deptCtx, {
+        type:'pie',
+        data: { labels: deptLabels, datasets: [{ data: deptValues }] },
+        options: { responsive:true }
+    });
 
-    // Approve button handler
-    $('body').on('click', '.approve-btn', function(e) {
-        e.preventDefault();
-        
-        const button = $(this);
-        const requisitionId = button.data('id');
-        
-        if (!confirm('Are you sure you want to approve requisition #' + requisitionId + '?')) {
-            return;
+    const statusLabels = Object.keys(statusCounts);
+    const statusValues = Object.values(statusCounts);
+    const statusCtx = document.getElementById('statusDoughnut').getContext('2d');
+    const statusDoughnut = new Chart(statusCtx, {
+        type:'doughnut',
+        data: { labels: statusLabels, datasets: [{ data: statusValues }] },
+        options: { responsive:true }
+    });
+
+    const topUserLabels = topUsers.map(u => u.name);
+    const topUserValues = topUsers.map(u => u.total);
+    const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
+    const topUsersChart = new Chart(topUsersCtx, {
+        type:'bar',
+        data: { labels: topUserLabels, datasets: [{ data: topUserValues, backgroundColor:'#20c997' }] },
+        options: { responsive:true, indexAxis: 'y' }
+    });
+
+    // ---------- LIVE AJAX REFRESH
+    function applyLiveData(data) {
+        // cards
+        $('#cardTotal').text(data.total);
+        $('#cardPending').text(data.pending);
+        $('#cardApproved').text(data.approved);
+        $('#cardRejected').text(data.rejected);
+        $('#cardCompleted').text(data.completed);
+
+        // latest table
+        let rows = '';
+        data.latest.forEach(function(r){
+            rows += `<tr>
+                        <td>${r.id}</td>
+                        <td>${r.requested_by_name ?? (r.requested_by || 'N/A')}</td>
+                        <td>${(new Date(r.travel_date)).toLocaleDateString()}</td>
+                        <td><span class="badge ${r.status==3 ? 'bg-success' : (r.status==4 ? 'bg-danger' : 'bg-warning')}">${r.status_text ?? r.status}</span></td>
+                    </tr>`;
+        });
+        $('#latestTableBody').html(rows);
+
+        // dept pie update (simple)
+        if (data.deptData && Array.isArray(data.deptData)) {
+            deptPieChart.data.labels = data.deptData.map(d=>d.label);
+            deptPieChart.data.datasets[0].data = data.deptData.map(d=>d.value);
+            deptPieChart.update();
         }
-        
-        // Disable button and show loading
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
-        
-        // Make AJAX request
-        $.ajax({
-            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
-            type: "POST",
-            data: {
-                status: 'Approved',
-                _token: "{{ csrf_token() }}",
-                _method: 'PUT'
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Show success message and reload
-                    showAlert('Requisition approved successfully!', 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    showAlert(response.message || 'Error approving requisition', 'error');
-                    button.prop('disabled', false).text('Approve');
-                }
-            },
-            error: function(xhr) {
-                console.error('Error:', xhr);
-                showAlert('Error approving requisition. Please try again.', 'error');
-                button.prop('disabled', false).text('Approve');
-            }
-        });
-    });
+    }
 
-    // Reject button handler
-    $('body').on('click', '.reject-btn', function(e) {
-        e.preventDefault();
-        
-        const button = $(this);
-        const requisitionId = button.data('id');
-        
-        const reason = prompt('Please enter reason for rejection:');
-        if (reason === null) return; // User cancelled
-        
-        if (!reason.trim()) {
-            alert('Reason is required for rejection.');
-            return;
+    // fetch live
+    function fetchLive(){
+        $.get("{{ route('admin.dashboard.data') }}")
+            .done(function(res){
+                // normalize latest rows: add requested_by_name for client
+                res.latest.forEach(function(r){
+                    r.requested_by_name = (r.requested_by && r.requested_by.name) ? r.requested_by.name : (r.requested_by_name || '');
+                });
+                applyLiveData(res);
+            })
+            .fail(function(){ console.warn('dashboard live fetch failed'); });
+    }
+
+    // manual refresh button
+    $('#refreshNow').on('click', function(){ fetchLive(); toastr.info('Dashboard refreshed'); });
+
+    // auto poll every 10s
+    const autoRefresh = setInterval(fetchLive, 10000);
+
+    // ---------- REALTIME (ECHO) listener, optional
+    try {
+        if (typeof Echo !== 'undefined') {
+            Echo.private('dashboard')
+                .listen('RequisitionCreated', (e) => {
+                    toastr.info('New requisition created');
+                    // update small UI immediately
+                    fetchLive();
+                })
+                .listen('RequisitionStatusUpdated', (e) => {
+                    toastr.info('Requisition status updated');
+                    fetchLive();
+                });
         }
-        
-        // Disable button and show loading
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing');
-        
-        // Make AJAX request
-        $.ajax({
-            url: "{{ route('requisitions.updateStatus', '') }}/" + requisitionId,
-            type: "POST",
-            data: {
-                status: 'Rejected',
-                reason: reason.trim(),
-                _token: "{{ csrf_token() }}",
-                _method: 'PUT'
-            },
-            success: function(response) {
-                if (response.success) {
-                    showAlert('Requisition rejected successfully!', 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    showAlert(response.message || 'Error rejecting requisition', 'error');
-                    button.prop('disabled', false).text('Reject');
-                }
-            },
-            error: function(xhr) {
-                console.error('Error:', xhr);
-                showAlert('Error rejecting requisition. Please try again.', 'error');
-                button.prop('disabled', false).text('Reject');
-            }
-        });
-    });
-
-    // Helper function to show alerts
-    function showAlert(message, type = 'info') {
-        // Remove existing alerts
-        $('.custom-alert').remove();
-        
-        const alertClass = type === 'success' ? 'alert-success' : 
-                          type === 'error' ? 'alert-danger' : 'alert-info';
-        
-        const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert" 
-                 style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        $('body').append(alertHtml);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            $('.custom-alert').alert('close');
-        }, 5000);
-    }
-});
-</script> -->
-<script>
-$(document).ready(function() {
-
-     const statusChart = document.getElementById('statusChart');
-    if (statusChart) {
-        new Chart(statusChart, {
-            type: 'bar',
-            data: {
-                labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
-                datasets: [{
-                    label: 'Requisitions',
-                    backgroundColor: ['#ffc107','#28a745','#dc3545','#17a2b8'],
-                    data: [
-                        {{ $chartData['Pending'] ?? 0 }},
-                        {{ $chartData['Approved'] ?? 0 }},
-                        {{ $chartData['Rejected'] ?? 0 }},
-                        {{ $chartData['Completed'] ?? 0 }}
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-    function updateStatus(id, status) {
-
-        let button = $('.action-btn[data-id="'+id+'"]');
-
-        // Disable buttons + show spinner
-        button.prop('disabled', true).html(
-            '<span class="spinner-border spinner-border-sm"></span> Processing...'
-        );
-
-        $.ajax({
-            url: "{{ url('/requisitions/update-status') }}/" + id,
-            type: "POST",
-            data: {
-                status: status,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(res) {
-
-                // Update status badge instantly
-                let badgeClass =
-                    status === "Approved" ? "badge-success" :
-                    status === "Rejected" ? "badge-danger" : "badge-warning";
-
-                $("#status-badge-" + id).removeClass().addClass("badge " + badgeClass).text(status);
-
-                // Remove Approve/Reject buttons after action
-                $("#action-buttons-" + id).fadeOut();
-
-                toastr.success("Status updated to " + status + " successfully!");
-            },
-            error: function(err){
-                toastr.error("Error updating status!");
-                console.log(err);
-            },
-            complete: function() {
-                button.prop('disabled', false).html(status);
-            }
-        });
+    } catch(err) {
+        console.warn('Echo not configured or error: ', err);
     }
 
-    // Approve
-    $(document).on("click", ".approve-btn", function() {
-        let id = $(this).data("id");
+    // ---------- Notification bell count (simple)
+    function fetchNotifCount() {
+        $.get("{{ url('/admin/notifications/unread-count') }}").done(function(res){
+            if(res.count && res.count > 0) {
+                $('#liveNotifCount').text(res.count).show();
+            } else $('#liveNotifCount').hide();
+        }).fail(()=>{ $('#liveNotifCount').hide(); });
+    }
+    fetchNotifCount();
+    setInterval(fetchNotifCount, 15000);
 
-        Swal.fire({
-            title: "Approve this requisition?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Approve",
-            cancelButtonText: "Cancel",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                updateStatus(id, "Approved");
-            }
-        });
-
-    });
-
-    // Reject
-    $(document).on("click", ".reject-btn", function() {
-        let id = $(this).data("id");
-
-        Swal.fire({
-            title: "Reject this requisition?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Reject",
-            cancelButtonText: "Cancel",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                updateStatus(id, "Rejected");
-            }
-        });
-
-    });
-
-});
+}); // document ready
 </script>
-
-@endsection
+@endpush

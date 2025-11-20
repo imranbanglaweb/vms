@@ -1,155 +1,149 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<br>
-<br>
-<br>
 <section role="main" class="content-body">
-<div class="container-fluid mt-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold">Requisition List</h3>
-        <div>
-            <a href="{{ route('requisitions.export.excel') }}" class="btn btn-success btn-sm">Export Excel</a>
-            <a href="{{ route('requisitions.export.pdf') }}" class="btn btn-danger btn-sm">Export PDF</a>
-            <a href="{{ route('requisitions.create') }}" class="btn btn-primary btn-sm">+ New Requisition</a>
+    <div class="container-fluid">
+
+        {{-- Header --}}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold">Requisition List</h2>
+            <a href="{{ route('requisitions.create') }}" class="btn btn-primary">
+                + Add Requisition
+            </a>
         </div>
-    </div>
 
-    <!-- Search Filter -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('requisitions.index') }}">
-                <div class="row g-3">
+        {{-- Search + Filter --}}
+        <div class="card mb-3">
+            <div class="card-body">
+                <form id="searchForm">
+                    <div class="row g-3">
 
-                    <div class="col-md-3">
-                        <label class="fw-semibold">Employee</label>
-                        <select name="employee_id" class="form-select">
-                            <option value="">All Employees</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}" {{ request('employee_id') == $emp->id ? 'selected' : '' }}>
-                                    {{ $emp->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="col-md-3">
+                            <input type="text" name="keyword" id="keyword"
+                                   class="form-control"
+                                   placeholder="Search employee name...">
+                        </div>
+
+                        <div class="col-md-3">
+                            <select name="status" id="status" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="0">Pending</option>
+                                <option value="1">Approved</option>
+                                <option value="2">Rejected</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                        </div>
+
                     </div>
-
-                    <div class="col-md-3">
-                        <label class="fw-semibold">Department</label>
-                        <select name="department_id" class="form-select">
-                            <option value="">All Departments</option>
-                            @foreach($departments as $dept)
-                                <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                                    {{ $dept->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="fw-semibold">From Date</label>
-                        <input type="date" class="form-control" name="from_date" value="{{ request('from_date') }}">
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="fw-semibold">To Date</label>
-                        <input type="date" class="form-control" name="to_date" value="{{ request('to_date') }}">
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="fw-semibold">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="">All</option>
-                            @foreach(['Pending','Approved','Rejected','Completed'] as $st)
-                                <option value="{{ $st }}" {{ request('status') == $st ? 'selected' : '' }}>
-                                    {{ $st }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="mt-3">
-                    <button class="btn btn-dark btn-sm">Search</button>
-                    <a href="{{ route('requisitions.index') }}" class="btn btn-secondary btn-sm">Reset</a>
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    <!-- Requisition Table -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-
-            <table class="table table-bordered table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Requested By</th>
-                        <th>Department</th>
-                        <th>Vehicle</th>
-                        <th>Driver</th>
-                        <th>From–To</th>
-                        <th>Travel Date</th>
-                        <th>Status</th>
-                        <th width="120">Action</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($requisitions as $req)
-                    <tr>
-                        <td>{{ $req->id }}</td>
-                        <td>{{ $req->requestedBy->name ?? '' }}</td>
-                        <td>{{ $req->requestedBy->department->name ?? '' }}</td>
-                        <td>{{ $req->vehicle->vehicle_name ?? '-' }}</td>
-                        <td>{{ $req->driver->name ?? '-' }}</td>
-
-                        <td>
-                            <strong>{{ $req->from_location }}</strong> → 
-                            {{ $req->to_location }}
-                        </td>
-
-                        <td>{{ date('d M, Y h:i A', strtotime($req->travel_date)) }}</td>
-
-                        <td>
-                            <span class="badge 
-                                @if($req->status=='Pending') bg-warning 
-                                @elseif($req->status=='Approved') bg-success
-                                @elseif($req->status=='Rejected') bg-danger
-                                @else bg-primary @endif">
-                                {{ $req->status }}
-                            </span>
-                        </td>
-
-                        <td>
-                            <a href="{{ route('requisitions.show',$req->id) }}" class="btn btn-info btn-sm">View</a>
-                            <a href="{{ route('requisitions.edit',$req->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ route('requisitions.destroy',$req->id) }}" method="POST" class="d-inline">
-                                @csrf @method('DELETE')
-                                <button onclick="return confirm('Delete?')" class="btn btn-danger btn-sm">Del</button>
-                            </form>
-                        </td>
-
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10" class="text-center py-3 text-muted">No Requisitions Found</td>
-                    </tr>
-                    @endforelse
-
-                </tbody>
-            </table>
-
-            <div class="mt-3">
-                {{ $requisitions->links() }}
+                </form>
             </div>
-
         </div>
+
+        {{-- Table --}}
+        <div class="card">
+            <div class="card-body table-responsive">
+
+                {{-- Preloader --}}
+                <div id="loader" class="text-center py-5" style="display: none;">
+                    <img src="/admin/loader.gif" width="60" alt="Loading">
+                    <p class="mt-2 text-muted">Loading...</p>
+                </div>
+
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Vehicle</th>
+                            <th>Travel Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                            <th>Approval</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tableData">
+                         @include('admin.dashboard.requisition.table')
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
     </div>
 
-</div>
 </section>
+
+<script>
+    // Search with AJAX
+    $('#searchForm').on('submit', function (e) {
+        e.preventDefault();
+        fetchData();
+    });
+
+    // Approve
+    $(document).on('click', '.approveRequest', function () {
+        updateStatus($(this).data('id'), 1);
+    });
+
+    // Reject
+    $(document).on('click', '.rejectRequest', function () {
+        updateStatus($(this).data('id'), 2);
+    });
+
+    // Delete
+    $(document).on('click', '.deleteItem', function () {
+        let id = $(this).data('id');
+        if(confirm("Are you sure you want to delete this requisition?")) {
+            $.ajax({
+                url: route('requisitions.destroy')" + id,
+                type: "DELETE",
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function () {
+                    fetchData();
+                }
+            });
+        }
+    });
+
+    // Fetch data
+    function fetchData() {
+        $('#loader').show();
+
+        $.ajax({
+            url: "{{ route('requisitions.index') }}",
+            data: $('#searchForm').serialize(),
+            success: function (data) {
+                $('#tableData').html(data.html);
+                $('#loader').hide();
+            }
+        });
+    }
+
+    
+    // Update status
+    function updateStatus(id, status) {
+        $.ajax({
+           url: "{{ route('requisitions.updateStatus', '') }}/" + id,
+            type: "POST",
+            data: {
+                id: id,
+                status: status,
+                _token: "{{ csrf_token() }}"
+            },
+            success: function () {
+                fetchData();
+            }
+        });
+    }
+
+
+</script>
 @endsection

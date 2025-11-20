@@ -13,67 +13,120 @@ use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\RequisitionStatusChangedMail;
 use Illuminate\Support\Facades\Mail;
 class RequisitionController extends Controller
 {
-    /**
-     * Display a listing of requisitions.
-     */
-    // public function index()
-    // {
-    //     $requisitions = Requisition::with(['vehicle', 'driver'])
-    //         ->orderBy('id', 'desc')
-    //         ->get();
+   
 
-    //     return view('admin.dashboard.requisition.index', compact('requisitions'));
-    // }
- public function index(Request $request)
-    {
-        $query = Requisition::with(['requestedBy', 'vehicle', 'driver']);
-
-        // ==============================
-        // Search Filters
-        // ==============================
-        if ($request->employee) {
-            $query->whereHas('requestedBy', function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->employee}%");
-            });
-        }
-
-        if ($request->department) {
-            $query->whereHas('requestedBy', function ($q) use ($request) {
-                $q->where('department_name', 'like', "%{$request->department}%");
-            });
-        }
-
-        if ($request->vehicle) {
-            $query->whereHas('vehicle', function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->vehicle}%");
-            });
-        }
-
-        if ($request->date_from) {
-            $query->whereDate('travel_date', '>=', $request->date_from);
-        }
-
-        if ($request->date_to) {
-            $query->whereDate('travel_date', '<=', $request->date_to);
-        }
-
-        $requisitions = $query->orderBy('id', 'DESC')->paginate(10);
-
-        // If AJAX request → return table + pagination only
-        if ($request->ajax()) {
-            return response()->json([
-                'table'      => View::make('admin.dashboard.requisition.table', compact('requisitions'))->render(),
-                'pagination' => $requisitions->links()->render(),
-            ]);
-        }
-
-        return view('admin.dashboard.requisition.index', compact('requisitions'));
+    public function index(Request $request)
+{
+    $query = Requisition::with(['employee', 'department', 'vehicle']);
+    
+    // Apply filters
+    if ($request->filled('requisition_number')) {
+        $query->where('requisition_number', 'like', '%' . $request->requisition_number . '%');
     }
+    
+    if ($request->filled('employee_name')) {
+        $query->whereHas('employee', function($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->employee_name . '%');
+        });
+    }
+    
+    if ($request->filled('department_id')) {
+        $query->where('department_id', $request->department_id);
+    }
+    
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+    
+    if ($request->filled('priority')) {
+        $query->where('priority', $request->priority);
+    }
+    
+    if ($request->filled('start_date')) {
+        $query->whereDate('travel_date', '>=', $request->start_date);
+    }
+    
+    if ($request->filled('end_date')) {
+        $query->whereDate('travel_date', '<=', $request->end_date);
+    }
+    
+    $perPage = $request->get('per_page', 10);
+    $requisitions = $query->latest()->paginate($perPage);
+    
+    // For AJAX requests
+    if ($request->ajax()) {
+        return response()->json([
+            'html' => view('admin.dashboard.requisition.table', compact('requisitions'))->render(),
+            'pagination' => view('admin.dashboard.requisition.pagination', compact('requisitions'))->render(),
+            'stats' => [
+                'total' => Requisition::count(),
+                'pending' => Requisition::where('status', 0)->count(),
+                'approved' => Requisition::where('status', 1)->count(),
+                'rejected' => Requisition::where('status', 2)->count(),
+            ]
+        ]);
+    }
+    
+    $departments = Department::all();
+    $stats = [
+        'total' => Requisition::count(),
+        'pending' => Requisition::where('status', 0)->count(),
+        'approved' => Requisition::where('status', 1)->count(),
+        'rejected' => Requisition::where('status', 2)->count(),
+    ];
+    
+    return view('admin.dashboard.requisition.index', compact('requisitions', 'departments', 'stats'));
+}
+//  public function index(Request $request)
+//     {
+//         $query = Requisition::with(['requestedBy', 'vehicle', 'driver']);
+
+//         // ==============================
+//         // Search Filters
+//         // ==============================
+//         if ($request->employee) {
+//             $query->whereHas('requestedBy', function ($q) use ($request) {
+//                 $q->where('name', 'like', "%{$request->employee}%");
+//             });
+//         }
+
+//         if ($request->department) {
+//             $query->whereHas('requestedBy', function ($q) use ($request) {
+//                 $q->where('department_name', 'like', "%{$request->department}%");
+//             });
+//         }
+
+//         if ($request->vehicle) {
+//             $query->whereHas('vehicle', function ($q) use ($request) {
+//                 $q->where('name', 'like', "%{$request->vehicle}%");
+//             });
+//         }
+
+//         if ($request->date_from) {
+//             $query->whereDate('travel_date', '>=', $request->date_from);
+//         }
+
+//         if ($request->date_to) {
+//             $query->whereDate('travel_date', '<=', $request->date_to);
+//         }
+
+//         $requisitions = $query->orderBy('id', 'DESC')->paginate(10);
+
+//         // If AJAX request → return table + pagination only
+//         if ($request->ajax()) {
+//             return response()->json([
+//                 'table'      => View::make('admin.dashboard.requisition.table', compact('requisitions'))->render(),
+//                 'pagination' => $requisitions->links()->render(),
+//             ]);
+//         }
+
+//         return view('admin.dashboard.requisition.index', compact('requisitions'));
+//     }
 
 
 
@@ -180,12 +233,28 @@ public function validateAjax(Request $request)
         ], 422);
     }
 
+
+
+
+     // 🔵 AUTO GENERATE UNIQUE REQUISITION NUMBER
+        $last = Requisition::orderBy('id', 'DESC')->first();
+
+        if ($last) {
+            $number = ((int) filter_var($last->requisition_number, FILTER_SANITIZE_NUMBER_INT)) + 1;
+        } else {
+            $number = 1;
+        }
+
+        $requisition_number = 'REQ-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+
+    
     DB::beginTransaction();
     try {
         $requisition = Requisition::create([
             'requested_by' => $request->employee_id,
             'vehicle_id' => $request->vehicle_id ?? null,
             'driver_id' => $request->driver_id ?? null,
+            'requisition_number' => $requisition_number,
             'from_location' => $request->from_location,
             'to_location' => $request->to_location,
             'requisition_date' => $request->requisition_date,
@@ -209,6 +278,14 @@ public function validateAjax(Request $request)
         }
 
         DB::commit();
+
+        sendNotification(
+    1, // Admin user id
+    "New Requisition Submitted",
+    "A new requisition has been created by ".auth()->user()->name,
+    "warning",
+    route('admin.requisition.index')
+);
 
         return response()->json([
             'status' => 'success',
@@ -241,45 +318,124 @@ public function validateAjax(Request $request)
     /**
      * Edit form.
      */
-    public function edit($id)
+   public function edit($id)
     {
-        $requisition = Requisition::findOrFail($id);
-        $employees   = Employee::orderBy('name')->get();
-        $vehicles    = Vehicle::orderBy('vehicle_name')->get();
-        $drivers     = Driver::orderBy('driver_name')->get();
-
+        $requisition = Requisition::with(['employee', 'department', 'vehicle', 'driver', 'passengers.employee'])->findOrFail($id);
+        
+        $employees = Employee::all();
+        $vehicles = Vehicle::all();
+        $drivers = Driver::all();
+        
         return view('admin.dashboard.requisition.edit', compact(
             'requisition', 'employees', 'vehicles', 'drivers'
         ));
+
+
     }
 
     /**
      * Update requisition.
      */
     public function update(Request $request, $id)
-    {
-        $request->validate([
-            'from_location' => 'required',
-            'to_location'   => 'required',
-            'travel_date'   => 'required|date',
-        ]);
+{
+    try {
 
         $requisition = Requisition::findOrFail($id);
 
-        $requisition->update([
-            'vehicle_id'    => $request->vehicle_id,
-            'driver_id'     => $request->driver_id,
-            'from_location' => $request->from_location,
-            'to_location'   => $request->to_location,
-            'travel_date'   => $request->travel_date,
-            'return_date'   => $request->return_date,
-            'purpose'       => $request->purpose,
-            'updated_by'    => Auth::id(),
+        // Validation
+        $validator = Validator::make($request->all(), [
+            'employee_id'           => 'required|exists:employees,id',
+            'vehicle_id'            => 'required|exists:vehicles,id',
+            'driver_id'             => 'required|exists:drivers,id',
+            'requisition_date'      => 'required|date',
+            'from_location'         => 'required|string',
+            'to_location'           => 'required|string',
+            'travel_date'           => 'required|date',
+            'number_of_passenger'   => 'required|integer|min:1',
+            'purpose'               => 'required|string',
+            // 'status'                => 'required|string',
+
+            'passengers'            => 'sometimes|array',
+            'passengers.*.employee_id' => 'required|exists:employees,id',
         ]);
 
-        return redirect()->route('requisitions.index')
-                         ->with('success', 'Requisition updated successfully!');
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'validation_error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+         // --------------------------------------
+        // 🔵 Auto-generate requisition number if blank
+        // --------------------------------------
+        if (empty($request->requisition_number)) {
+
+            $last = Requisition::orderBy('id', 'DESC')->first();
+
+            if ($last && $last->requisition_number) {
+                $number = ((int) filter_var($last->requisition_number, FILTER_SANITIZE_NUMBER_INT)) + 1;
+            } else {
+                $number = 1;
+            }
+
+            $generatedReqNo = 'REQ-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+        } else {
+            $generatedReqNo = $request->requisition_number;
+        }
+
+        // -------------------------------
+        // 🔵 Update each field manually
+        // -------------------------------
+        $requisition->requested_by        = $request->employee_id;
+        $requisition->department_id       = $request->department_id;
+        $requisition->unit_id             = $request->unit_id;
+        $requisition->vehicle_id          = $request->vehicle_id;
+        $requisition->driver_id           = $request->driver_id;
+        $requisition->requisition_date    = $request->requisition_date;
+        $requisition->from_location       = $request->from_location;
+        $requisition->to_location         = $request->to_location;
+        $requisition->travel_date         = $request->travel_date;
+        $requisition->number_of_passenger = $request->number_of_passenger;
+        $requisition->purpose             = $request->purpose;
+        $requisition->status              = 'Pending';
+        $requisition->created_by          = auth()->id() ?? 1;
+         // Final requisition number
+        $requisition->requisition_number  = $generatedReqNo;
+        $requisition->save();
+
+        // -------------------------------
+        // 🔵 Update Passengers
+        // -------------------------------
+        if ($request->has('passengers')) {
+
+            // Remove old
+            $requisition->passengers()->delete();
+
+            // Insert new passengers
+            foreach ($request->passengers as $passengerData) {
+                $requisition->passengers()->create([
+                    'employee_id' => $passengerData['employee_id'],
+                     'created_by'  => auth()->id() ?? 1, // fallback for testing
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Requisition updated successfully!',
+            'redirect_url' => route('requisitions.index')
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Error updating requisition: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Delete requisition.
@@ -472,6 +628,15 @@ public function adminApprove($id)
     'action' => 'Admin Final Approved'
 ]);
 
+sendNotification(
+    $requisition->created_by,
+    "Requisition Approved",
+    "Your requisition request #{$requisition->id} has been approved.",
+    "success",
+    route('admin.requisition.show', $requisition->id)
+);
+
+
 
     return response()->json(['status' => 'success']);
 }
@@ -494,12 +659,38 @@ public function adminReject($id)
         'note' => $request->note ?? null
     ]);
 
+sendNotification(
+    $requisition->created_by,
+    "Requisition Rejected",
+    "Your requisition request #{$requisition->id} was rejected.",
+    "danger",
+    route('admin.requisition.show', $requisition->id)
+);
 
     return response()->json(['status' => 'success']);
 }
 
 
 
+
+public function downloadPDF($id)
+{
+    $requisition = Requisition::with([
+        'employee',
+        'department', 
+        'unit',
+        'vehicle',
+        'driver',
+        'passengers.employee.department',
+        'passengers.employee.unit',
+        'approvedBy',
+        'rejectedBy'
+    ])->findOrFail($id);
+
+    $pdf = PDF::loadView('admin.dashboard.requisition.pdf', compact('requisition'));
+    
+    return $pdf->download("requisition-{$requisition->requisition_number}.pdf");
+}
 
   
 

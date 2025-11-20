@@ -70,7 +70,18 @@ public const STATUS_COMPLETED = 'Completed';
             ][$this->status] ?? 'secondary';
         }
             
-    
+      // Relationship with Department
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+     // Relationship with Employee
+   public function employee()
+    {
+        // 'requested_by' is the foreign key in requisitions table
+        return $this->belongsTo(Employee::class, 'requested_by');
+    }
 
     
 

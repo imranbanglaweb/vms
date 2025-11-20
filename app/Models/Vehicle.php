@@ -65,9 +65,9 @@ class Vehicle extends Model
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
-    public function requisitions()
+     public function requisitions(): HasMany
     {
-        return $this->hasMany(Requisition::class, 'vehicle_id', 'id');
+        return $this->hasMany(Requisition::class, 'vehicle_id');
     }
 
 }

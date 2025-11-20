@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\VehicleTypeController;
 use App\Http\Controllers\RequisitionController;
+use App\Http\Controllers\NotificationController;
   
 
 
@@ -110,6 +111,8 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 // Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
+
+Route::get('/requisitions/{id}/download', [RequisitionController::class, 'downloadPDF'])->name('requisitions.download');
  // AJAX search
     Route::get('/requisitions-search', [RequisitionController::class, 'index'])
          ->name('requisitions.search');
@@ -173,8 +176,15 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/contactlistview', [HomeController::class, 'contactlistview'])->name('contactlistview');
 Route::any('/contactlistviewdelete/{id}', [FrontendController::class, 'contactlistviewdelete'])->name('contactlistviewdelete');
 
-	Auth::routes();
-    Route::resource('roles', RoleController::class);
+
+// AJAX data endpoint for live refresh
+Route::get('/admin/dashboard/data', [HomeController::class, 'data'])->name('admin.dashboard.data');
+Route::get('/admin/notifications/unread-count', function(){
+    return response()->json(['count' => \App\Models\Notification::where('user_id', auth()->id())->where('is_read', 0)->count()]);
+})->name('notifications.unread');
+
+Auth::routes();
+Route::resource('roles', RoleController::class);
 
     Route::resource('supports', SupportController::class);
 Route::any('emergency-task', [SupportController::class,'emergencytask'])->name('emergency-task');
@@ -240,14 +250,14 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
     Route::post('import-category', [CategoryController::class, 'import'])->name('category.import-category');
 
 
-
-
 Route::post('export', [EmployeeController::class,'export'])->name('employee.export');
-
+Route::post('export', [RequisitionController::class,'exportExcel'])->name('requisitions.export');
 // sample_import-file
 Route::post('sample_import-file', [SupportController::class,'importexcelfile'])->name('support.sample_import-file');
 
 
+Route::get('notifications', [NotificationController::class, 'index'])
+    ->name('admin.notifications.all');
 
 
 Route::post('menus/reorder', [MenuController::class, 'menuoder'])->name('menus.reorder');

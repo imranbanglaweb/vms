@@ -51,6 +51,7 @@
 		margin:0 auto
 	}
 </style>
+@include('admin.dashboard.includes.notification')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 	</head>
 	<body>

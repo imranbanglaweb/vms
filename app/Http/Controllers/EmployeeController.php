@@ -267,6 +267,8 @@ class EmployeeController extends Controller
                  'employee' => $employee,
     //     'department' => $employee->depa
                 'department' => $employee->department->department_name ?? '',
+                'department_id' => $employee->department->id ?? '',
+                'unit_id' => $employee->unit->id ?? '',
                 'unit' => $employee->unit->unit_name ?? '',
             ]);
         }

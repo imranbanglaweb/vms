@@ -24,9 +24,14 @@ class Department extends Model
         return $this->belongsTo(Unit::class);
     }
 
+      public function requisitions(): HasMany
+    {
+        return $this->hasMany(Requisition::class, 'department_id');
+    }
+
     public function employees()
         {
-            return $this->hasMany(Employee::class);
+             return $this->hasMany(Employee::class, 'department_id');
         }
 
 }
