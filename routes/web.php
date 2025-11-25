@@ -44,6 +44,8 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\VehicleTypeController;
 use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DepartmentApprovalController;
+use App\Http\Controllers\TransportApprovalController;
   
 
 
@@ -131,24 +133,73 @@ Route::post('/requisitions/update-status/{id}',
 
 // Transport Office Approval
 Route::post('/requisitions/transport-approve/{id}', 
-    [RequisitionController::class, 'transportApprove']
+    [RequisitionApprovalController::class, 'transportApprove']
 )->name('requisitions.transport.approve');
 
 Route::post('/requisitions/transport-reject/{id}', 
-    [RequisitionController::class, 'transportReject']
+    [RequisitionApprovalController::class, 'transportReject']
 )->name('requisitions.transport.reject');
 
 
-// Admin Final Approval
+// Admin Department Final Approval
 Route::post('/requisitions/admin-approve/{id}', 
-    [RequisitionController::class, 'adminApprove']
+    [RequisitionApprovalController::class, 'adminApprove']
 )->name('requisitions.admin.approve');
 
 Route::post('/requisitions/admin-reject/{id}', 
-    [RequisitionController::class, 'adminReject']
+    [RequisitionApprovalController::class, 'adminReject']
 )->name('requisitions.admin.reject');
 
+// department head approval view
 
+ Route::prefix('department')->group(function () {
+
+        Route::get('/approvals', 
+            [DepartmentApprovalController::class, 'index']
+        )->name('department.approvals.index');
+
+        Route::get('/approvals/{id}', 
+            [DepartmentApprovalController::class, 'show']
+        )->name('department.approvals.show');
+
+        Route::post('/approvals/{id}/approve', 
+            [DepartmentApprovalController::class, 'approve']
+        )->name('department.approvals.approve');
+
+        Route::post('/approvals/{id}/reject', 
+            [DepartmentApprovalController::class, 'reject']
+        )->name('department.approvals.reject');
+
+    });
+
+ // Transport head approval view
+    // Route::middleware(['auth', 'role:transport_admin'])->group(function () {
+
+    Route::prefix('transport')->group(function () {
+
+        Route::get('/approvals', 
+            [TransportApprovalController::class, 'index']
+        )->name('transport.approvals.index');
+
+        Route::get('/approvals/{id}', 
+            [TransportApprovalController::class, 'show']
+        )->name('transport.approvals.show');
+
+        Route::post('/approvals/{id}/assign', 
+            [TransportApprovalController::class, 'assignVehicleDriver']
+        )->name('transport.approvals.assign');
+
+        Route::post('/approvals/{id}/approve', 
+            [TransportApprovalController::class, 'approve']
+        )->name('transport.approvals.approve');
+
+        Route::post('/approvals/{id}/reject', 
+            [TransportApprovalController::class, 'reject']
+        )->name('transport.approvals.reject');
+
+    });
+
+// });
 
 
    Route::post('{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])

@@ -17,13 +17,18 @@ class CreateRequisitionsTable extends Migration
             $table->id();
             // requested_by references employees.id — foreign key added later in a follow-up migration
             $table->unsignedBigInteger('requested_by');
-            $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
-            $table->foreignId('driver_id')->nullable()->constrained('drivers');
-
+            $table->unsignedBigInteger('approved_by_department')->nullable();
+            $table->timestamp('department_approved_at')->nullable();
+            $table->unsignedBigInteger('transport_admin_id')->nullable();
+            $table->timestamp('transport_approved_at')->nullable();
+            $table->unsignedBigInteger('vehicle_type')->nullable();
+            $table->unsignedBigInteger('vehicle_id')->nullable();
+            $table->unsignedBigInteger('driver_id')->nullable();
             $table->string('from_location');
             $table->string('to_location');
             $table->dateTime('travel_date');
             $table->dateTime('return_date')->nullable();
+            $table->date('requisition_date')->nullable();
             $table->text('purpose')->nullable();
             $table->enum('status', ['Pending', 'Approved', 'Rejected', 'Completed'])->default('Pending');
 

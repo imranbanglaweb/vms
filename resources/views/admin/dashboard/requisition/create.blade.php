@@ -80,6 +80,11 @@
                         <label class="form-label"><i class="fa fa-sitemap text-primary me-1"></i> Unit</label>
                         <input type="text" id="unit_name" class="form-control form-control-lg" readonly>
                     </div>
+                       <input type="hidden" id="department_id" class="form-control form-control-lg" 
+                               value="{{ $requisition->department->id ?? '' }}" name="department_id">
+                               
+                         <input type="hidden" id="unit_id" class="form-control form-control-lg" 
+                               value="{{ $requisition->unit->id ?? '' }}" name="unit_id">
 
                 </div>
 
@@ -90,18 +95,18 @@
                 <!-- ============================ -->
                 <div class="row mb-4">
 
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fa fa-car text-primary me-1"></i> Vehicle</label>
-                        <select id="vehicle_id" name="vehicle_id" class="form-select form-select-lg select2">
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="fa fa-car text-primary me-1"></i> Vehicle Type</label>
+                        <select id="vehicle_type" name="vehicle_type" class="form-select form-select-lg select2">
                             <option value="">Select vehicle</option>
                             @foreach($vehicles as $id => $name)
-                                <option value="{{ $name->id }}">{{ $name->vehicle_name }}</option>
+                                <option value="{{ $name->id }}">{{ $name->name }}</option>
                             @endforeach
                         </select>
                         <small class="text-danger error-text vehicle_id_error"></small>
                     </div>
 
-                    <div class="col-md-4">
+                    <!-- <div class="col-md-4">
                         <label class="form-label"><i class="fa fa-user text-primary me-1"></i> Driver</label>
                         <select name="driver_id" class="form-select form-select-lg select2">
                             <option value="">Select driver</option>
@@ -110,9 +115,9 @@
                             @endforeach
                         </select>
                         <small class="text-danger error-text driver_id_error"></small>
-                    </div>
+                    </div> -->
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">
                             <i class="fa fa-calendar text-primary me-1"></i> Requisition Date
                         </label>
@@ -259,6 +264,8 @@ $(function () {
         $.get("{{ route('employee.details', ':id') }}".replace(':id', empId), function(data) {
             $('#department_name').val(data.department);
             $('#unit_name').val(data.unit);
+            $('#unit_id').val(data.unit_id);
+            $('#department_id').val(data.department_id);
         });
 
     });

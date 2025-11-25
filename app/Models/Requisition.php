@@ -18,6 +18,9 @@ class Requisition extends Model
       'travel_time',
       'return_date',
       'vehicle_id',
+      'vehicle_type',
+      'requisition_number',
+      'number_of_passenger',
       'driver_id',
       'requisition_date',
       'status',
@@ -52,7 +55,15 @@ public const STATUS_COMPLETED = 'Completed';
     public function logs(){ return $this->hasMany(RequisitionLogHistory::class); }
     public function notifications(){ return $this->hasMany(Notification::class); }
     public function requestedBy(){return $this->belongsTo(Employee::class, 'requested_by', 'id');}
+    public function departmentHead()
+    {
+        return $this->belongsTo(Employee::class, 'approved_by_department');
+    }
 
+    public function transportAdmin()
+    {
+        return $this->belongsTo(User::class, 'transport_admin_id'); 
+    }
     public function workflowLogs()
 {
     return $this->hasMany(WorkflowLog::class);
@@ -74,6 +85,12 @@ public const STATUS_COMPLETED = 'Completed';
     public function department()
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+
+      // Relationship with Unit
+    public function unit()
+    {
+        return $this->belongsTo(unit::class, 'unit_id');
     }
 
      // Relationship with Employee

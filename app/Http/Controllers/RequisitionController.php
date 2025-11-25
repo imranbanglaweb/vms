@@ -151,7 +151,7 @@ class RequisitionController extends Controller
    public function create()
 {
 
-        $vehicles = Vehicle::where('status', 1)->get();
+        $vehicles = VehicleType::where('status', 1)->get();
         $drivers  = Driver::where('status', 1)->get();
         $employees = Employee::all();
         $vehicleTypes = VehicleType::all();
@@ -203,8 +203,8 @@ public function validateAjax(Request $request)
     // Complete validation for ALL form fields
     $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
-        'vehicle_id' => 'required|exists:vehicles,id',
-        'driver_id' => 'required|exists:drivers,id',    
+        'vehicle_type' => 'required|exists:vehicle_types,id',
+        // 'driver_id' => 'required|exists:drivers,id',    
         'requisition_date' => 'required|date', // Add this if it's in your form
         'from_location' => 'required|string|max:255',
         'to_location' => 'required|string|max:255',
@@ -215,7 +215,7 @@ public function validateAjax(Request $request)
         'passengers.*.employee_id' => 'required|exists:employees,id',
     ], [
         'employee_id.required' => 'Please select an employee',
-        'vehicle_id.required' => 'Please select a vehicle',
+        'vehicle_type.required' => 'Please select a vehicle Type',
         'driver_id.required' => 'Please select a driver',
         'requisition_date.required' => 'Requisition date is required',
         'from_location.required' => 'From location is required',
@@ -253,11 +253,15 @@ public function validateAjax(Request $request)
         $requisition = Requisition::create([
             'requested_by' => $request->employee_id,
             'vehicle_id' => $request->vehicle_id ?? null,
+            'department_id' => $request->department_id,
+            'unit_id'       => $request->unit_id,
+            'vehicle_type' => $request->vehicle_type ?? null,
             'driver_id' => $request->driver_id ?? null,
             'requisition_number' => $requisition_number,
             'from_location' => $request->from_location,
             'to_location' => $request->to_location,
             'requisition_date' => $request->requisition_date,
+            'number_of_passenger' => $request->number_of_passenger,
             'travel_date' => $request->travel_date,
             'return_date' => $request->return_date,
             'purpose' => $request->purpose,
@@ -345,8 +349,8 @@ public function validateAjax(Request $request)
         // Validation
         $validator = Validator::make($request->all(), [
             'employee_id'           => 'required|exists:employees,id',
-            'vehicle_id'            => 'required|exists:vehicles,id',
-            'driver_id'             => 'required|exists:drivers,id',
+            'vehicle_type'            => 'required|exists:vehicles,id',
+            // 'driver_id'             => 'required|exists:drivers,id',
             'requisition_date'      => 'required|date',
             'from_location'         => 'required|string',
             'to_location'           => 'required|string',
@@ -390,7 +394,7 @@ public function validateAjax(Request $request)
         $requisition->requested_by        = $request->employee_id;
         $requisition->department_id       = $request->department_id;
         $requisition->unit_id             = $request->unit_id;
-        $requisition->vehicle_id          = $request->vehicle_id;
+        $requisition->vehicle_type        = $request->vehicle_type;
         $requisition->driver_id           = $request->driver_id;
         $requisition->requisition_date    = $request->requisition_date;
         $requisition->from_location       = $request->from_location;
@@ -628,6 +632,12 @@ public function adminApprove($id)
     'action' => 'Admin Final Approved'
 ]);
 
+$requisition->update([
+        'approved_by_department' => auth()->id(),
+        'department_approved_at' => now(),
+        'status' => 'Pending Transport Approval'
+    ]);
+
 sendNotification(
     $requisition->created_by,
     "Requisition Approved",
@@ -657,6 +667,12 @@ public function adminReject($id)
         'user_id' => auth()->id(),
         'action' => 'Admin Final Rejected',
         'note' => $request->note ?? null
+    ]);
+
+     $requisition->update([
+        'approved_by_department' => auth()->id(),
+        'department_approved_at' => now(),
+        'status' => 'Rejected'
     ]);
 
 sendNotification(
