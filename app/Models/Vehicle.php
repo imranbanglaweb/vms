@@ -21,6 +21,7 @@ class Vehicle extends Model
         'registration_date',
         'seat_capacity',
         'status',
+        'availability_status',
         'created_by',
         'updated_by'
     ];
@@ -69,5 +70,31 @@ class Vehicle extends Model
     {
         return $this->hasMany(Requisition::class, 'vehicle_id');
     }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('status', 1)
+                    ->where('availability_status', 'available');
+    }
+
+    public function getAvailabilityStatusLabelAttribute()
+    {
+        return [
+            'available' => 'Available',
+            'Assigned'      => 'Assigned',
+            'on_leave'  => 'Maintenance / Not Available'
+        ][$this->availability_status] ?? 'Unknown';
+    }
+
+    public function getAvailabilityStatusBadgeAttribute()
+    {
+        return [
+            'available' => 'success',   // green
+            'busy'      => 'warning',   // yellow
+            'on_leave'  => 'danger',    // red
+        ][$this->availability_status] ?? 'secondary';
+    }
+
+
 
 }

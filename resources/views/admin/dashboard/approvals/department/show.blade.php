@@ -1,43 +1,205 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="background-color:#f1f4f8;">
+<style>
+    .text-secondary {
+    color: #0088cc !important;
+    font-size: 15px;
+    font-weight: 700;
+}
+.text-dark {
+    color: #000!important;
+    font-size: 16px;
+    font-weight: 600;
+}
+.table th,td{
+    font-size: 15px!important;
+    font-weight: 500!important;
+}
 
-    <h3>Review Requisition</h3>
+.table th{
+    font-size: 16px!important;
+    font-weight: 500!important;
+    color: #fff!important;
+    background-color: #0088cc!important;
+}
+</style>
+<section role="main" class="content-body" style="background-color:#eef2f7;">
+<br>
+<br>
+    <div class="container py-4">
 
-    <div class="card shadow-lg mt-3">
-        <div class="card-body">
-
-            <h5>Requisition Information</h5>
-            <hr>
-
-            <p><strong>Requisition No:</strong> {{ $requisition->requisition_number }}</p>
-            <p><strong>Requested By:</strong> {{ $requisition->requestedBy->name }}</p>
-            <p><strong>Department:</strong> {{ $requisition->department->name }}</p>
-            <p><strong>Unit:</strong> {{ $requisition->unit->name }}</p>
-            <p><strong>Passengers:</strong> {{ $requisition->number_of_passenger }}</p>
-
-            <form id="actionForm" class="mt-3">
-                @csrf
-
-                <!-- <label>Remarks</label>
-                <textarea name="remarks" class="form-control"></textarea> -->
-
-                <div class="mt-3">
-                    <button type="button" class="btn btn-success" onclick="submitApproval('approve')">
-                        Approve
-                    </button>
-
-                    <button type="button" class="btn btn-danger" onclick="submitApproval('reject')">
-                        Reject
-                    </button>
-                </div>
-            </form>
-
+        <!-- PAGE TITLE -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="fa fa-file-alt me-2"></i> Requisition Review
+            </h2>
         </div>
+<br>
+        <!-- CARD -->
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+
+                <h4 class="fw-bold text-dark mb-3">
+                    <i class="fa fa-info-circle me-2"></i> Requisition Information
+                </h4>
+
+                <hr>
+
+                <!-- GRID INFO -->
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Requisition No</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->requisition_number }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Requested By</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->requestedBy->name }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Department</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->department->department_name }}</div>
+                        </div>
+                    </div>
+</div>
+<hr>
+<div class="row">
+                    <!-- Unit -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Unit</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->unit->unit_name }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Passengers -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Number of Passengers</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->number_of_passenger }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Created Date -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Created Date</span>
+                            <div class="fs-5 fw-bold text-dark">
+                                {{ $requisition->created_at->format('d M Y, h:i A') }}
+                            </div>
+                        </div>
+                    </div>
+</div>
+<div class="row">
+                    <!-- Assigned Date -->
+                    @if($requisition->assigned_date)
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Assigned Date</span>
+                            <div class="fs-5 fw-bold text-dark">
+                                {{ \Carbon\Carbon::parse($requisition->assigned_date)->format('d M Y, h:i A') }}
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+<br>
+                    <!-- From Location -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">From Location</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->from_location }}</div>
+                        </div>
+                    </div>
+
+                    <!-- To Location -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">To Location</span>
+                            <div class="fs-5 fw-bold text-dark">{{ $requisition->to_location }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Location -->
+                    <div class="col-md-4">
+                        <div class="info-box p-3 bg-white rounded-3 shadow-sm">
+                            <span class="fw-bold text-secondary">Pickup Location</span>
+                            <div class="fs-5 fw-bold text-dark">none</div>
+                        </div>
+                    </div>
+<hr>
+                </div>
+<hr>
+                <!-- Passenger List -->
+                <h4 class="fw-bold text-dark mt-5 mb-3">
+                    <i class="fa fa-users me-2"></i> Passenger List
+                </h4>
+
+                <table class="table table-bordered table-striped shadow-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">SL</th>
+                            <th>Name</th>
+                            <th>Designation</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($requisition->passengers as $p)
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td>{{ $p->employee->name }}</td>
+                                <td>{{ $p->employee->designation }}</td>
+                                <td>{{ $p->employee->department->department_name ?? 'N/A' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <hr class="mt-4">
+
+                <!-- ACTION BUTTONS -->
+                <form id="actionForm" class="mt-4">
+                    @csrf
+
+                    <div class="d-flex gap-3">
+
+                        <button type="button"
+                            class="btn btn-success btn-lg px-4 fw-bold"
+                            onclick="submitApproval('approve')">
+                            <i class="fa fa-thumbs-up me-2"></i> Approve
+                        </button>
+
+                        <button type="button"
+                            class="btn btn-danger btn-lg px-4 fw-bold"
+                            onclick="submitApproval('reject')">
+                            <i class="fa fa-thumbs-down me-2"></i> Reject
+                        </button>
+
+                        <a href="{{ route('department.approvals.index') }}"
+                           class="btn btn-secondary btn-lg px-4 fw-bold">
+                            <i class="fa fa-arrow-left me-2"></i> Back
+                        </a>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
     </div>
 
 </section>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 function submitApproval(action) {
@@ -50,8 +212,15 @@ function submitApproval(action) {
         method: "POST",
         data: $("#actionForm").serialize(),
         success: function(res) {
-            alert(res.message);
-            window.location.href = "{{ route('department.approvals.index') }}";
+            Swal.fire({
+                icon: 'success',
+                title: res.message,
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                window.location.href = "{{ route('department.approvals.index') }}";
+            }, 1500);
         }
     });
 }

@@ -46,6 +46,7 @@ use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DepartmentApprovalController;
 use App\Http\Controllers\TransportApprovalController;
+use App\Http\Controllers\TripSheetController;
   
 
 
@@ -131,7 +132,7 @@ Route::post('/requisitions/update-status/{id}',
 
 
 
-// Transport Office Approval
+// Transport Admin Approval
 Route::post('/requisitions/transport-approve/{id}', 
     [RequisitionApprovalController::class, 'transportApprove']
 )->name('requisitions.transport.approve');
@@ -150,8 +151,13 @@ Route::post('/requisitions/admin-reject/{id}',
     [RequisitionApprovalController::class, 'adminReject']
 )->name('requisitions.admin.reject');
 
-// department head approval view
 
+
+
+// department head approval view
+Route::get('/department/approvals/ajax', 
+    [DepartmentApprovalController::class, 'ajax'])
+    ->name('department.approvals.ajax');
  Route::prefix('department')->group(function () {
 
         Route::get('/approvals', 
@@ -181,6 +187,10 @@ Route::post('/requisitions/admin-reject/{id}',
             [TransportApprovalController::class, 'index']
         )->name('transport.approvals.index');
 
+        // AJAX endpoint for transport approvals DataTable (must be above {id} route)
+        Route::get('/approvals/ajax', [TransportApprovalController::class, 'ajax'])
+        ->name('transport.approvals.ajax');
+
         Route::get('/approvals/{id}', 
             [TransportApprovalController::class, 'show']
         )->name('transport.approvals.show');
@@ -197,9 +207,33 @@ Route::post('/requisitions/admin-reject/{id}',
             [TransportApprovalController::class, 'reject']
         )->name('transport.approvals.reject');
 
+    // Trip Sheet Management
+        Route::get('/trip-sheets', [TripSheetController::class, 'index'])
+        ->name('trip-sheets.index');
+
+        Route::get('/trip-sheet/{id}', [TripSheetController::class, 'show'])
+        ->name('trip-sheets.show');
+
+        Route::post('/trip-sheet/start/{id}', [TripSheetController::class, 'startTrip'])
+        ->name('trip-sheets.start');
+
+        Route::post('/trip-sheet/finish/{id}', [TripSheetController::class, 'finishTrip'])
+        ->name('trip-sheets.finish');
+
+        Route::get('/trip-sheet/end/{id}', function($id){
+    $trip = \App\Models\TripSheet::findOrFail($id);
+    return view('transport.trip_sheets.end', compact('trip'));
+})->name('trip-sheets.end');
+
+
     });
 
+    // (within your department/transport group)
+Route::get('/transport/approvals/{id}/availability', [TransportApprovalController::class, 'availability'])
+    ->name('transport.approvals.availability');
+
 // });
+
 
 
    Route::post('{id}/workflow/update', [RequisitionController::class, 'updateWorkflow'])
@@ -358,6 +392,10 @@ Route::get('/dashboard/recent-documents', [HomeController::class, 'getRecentDocu
     ->name('dashboard.recent-documents');
 Route::get('/dashboard/pending-approvals', [HomeController::class, 'getPendingApprovals'])
     ->name('dashboard.pending-approvals');
+
+
+Route::get('/transport/approvals/ajax', [TransportApprovalController::class, 'ajax'])
+    ->name('transport.approvals.ajax');
 
 
 

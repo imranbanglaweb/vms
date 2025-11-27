@@ -14,9 +14,9 @@ class AddStatusToRequisitionsTable extends Migration
     public function up()
     {
         Schema::table('requisitions', function (Blueprint $table) {
-        $table->enum('department_status', ['Pending', 'Assigned', 'Approved', 'Rejected'])
+        $table->enum('department_status', ['Pending',  'busy', 'Assigned', 'Approved', 'Rejected'])
                 ->default('Pending');
-          $table->enum('transport_status', ['Pending', 'Assigned', 'Approved', 'Rejected'])
+          $table->enum('transport_status', ['Pending', 'busy', 'Assigned', 'Approved', 'Rejected'])
                 ->default('Pending');
             $table->unsignedBigInteger('assigned_vehicle_id')->nullable();
             $table->unsignedBigInteger('assigned_driver_id')->nullable();

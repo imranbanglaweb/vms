@@ -26,6 +26,7 @@ class Driver extends Model
         'photo',
         'department_id',
         'unit_id',
+        'availability_status',
         'status',
         'created_by',
         'updated_by'
@@ -63,5 +64,32 @@ class Driver extends Model
     {
         return $this->hasMany(Requisition::class, 'driver_id', 'id');
     }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('status', 1)
+                    
+        ->where('availability_status', 'available');
+    }
+
+    public function getAvailabilityStatusLabelAttribute()
+    {
+        return [
+            'available' => 'Available',
+            'Assigned'      => 'Assigned',
+            'on_leave'  => 'On Leave'
+        ][$this->availability_status] ?? 'Unknown';
+    }
+
+    public function getAvailabilityStatusBadgeAttribute()
+    {
+        return [
+            'available' => 'success',
+            'Assigned'      => 'warning',
+            'on_leave'  => 'danger',
+        ][$this->availability_status] ?? 'secondary';
+    }
+
+
 
 }

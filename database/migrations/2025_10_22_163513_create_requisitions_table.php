@@ -30,7 +30,7 @@ class CreateRequisitionsTable extends Migration
             $table->dateTime('return_date')->nullable();
             $table->date('requisition_date')->nullable();
             $table->text('purpose')->nullable();
-            $table->enum('status', ['Pending', 'Approved', 'Rejected', 'Completed'])->default('Pending');
+            $table->enum('status', ['Pending', 'busy', 'Approved', 'Rejected', 'Completed'])->default('Pending');
 
             $table->tinyInteger('status_flag')->default(1);
             $table->unsignedInteger('created_by');

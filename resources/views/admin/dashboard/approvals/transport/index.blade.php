@@ -1,6 +1,12 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
+<style>
+    table{
+        color:#000;
+        font-size:15px;
+    }
+</style>
 <section role="main" class="content-body" style="background-color:#f1f4f8;">
 <div class="container-fluid px-4 mt-4">
 
@@ -13,64 +19,96 @@
     <div class="card shadow border-0">
         <div class="card-body p-4">
 
-            @if($requisitions->isEmpty())
-                <div class="text-center py-5">
-                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486802.png" width="120">
-                    <h5 class="mt-3 text-muted">No pending requisitions for transport approval.</h5>
+            <!-- Filter Bar -->
+            <div class="row g-2 mb-3" id="filterBar">
+                <div class="col-md-3">
+                    <input type="text" id="searchBox" class="form-control" placeholder="Search requisition # or text">
                 </div>
-            @else
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Req No</th>
-                        <th>Requester</th>
-                        <th>Department</th>
-                        <th>Passengers</th>
-                        <th>Dept Approved</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
+                <div class="col-md-2">
+                    <select id="filterDepartment" class="form-select">
+                        <option value="">All Departments</option>
+                        <!-- Option values should be loaded dynamically or via JS -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="filterStatus" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Assigned">Assigned</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <input type="date" id="dateFrom" class="form-control">
+                    <input type="date" id="dateTo" class="form-control">
+                </div>
+                <div class="col-12 mt-2">
+                    <button id="btnFilter" class="btn btn-primary btn-sm">Apply</button>
+                    <button id="btnReset" class="btn btn-outline-secondary btn-sm">Reset</button>
+                </div>
+            </div>
+            <hr>
+            <!-- DataTable -->
+            <div class="table-responsive">
+                <table id="transportTable" class="table table-striped table-hover align-middle w-100">
+                    <thead class="bg-dark text-white sticky-top">
+                        <tr>
+                            <th>Req No</th>
+                            <th>Requested By</th>
+                            <th>Department</th>
+                            <th>Passengers</th>
+                            <th>Dept Approved</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
 
-                <tbody>
-                    @foreach ($requisitions as $req)
-                    <tr>
-                        <td>
-                            <span class="fw-bold">{{ $req->requisition_number }}</span>
-                        </td>
+<!-- Scripts for DataTable -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
-                        <td>
-                            <i class="fa fa-user text-primary me-1"></i> 
-                            {{ $req->requestedBy->name }}
-                        </td>
+<script>
+$(function(){
+    // DataTable
+    var table = $('#transportTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('transport.approvals.ajax') }}",
+            data: function(d){
+                d.department_id = $('#filterDepartment').val();
+                d.status = $('#filterStatus').val();
+                d.date_from = $('#dateFrom').val();
+                d.date_to = $('#dateTo').val();
+                d.search_text = $('#searchBox').val();
+            }
+        },
+        columns: [
+            { data: 'requisition_number', name: 'requisition_number' },
+            { data: 'requested_by', name: 'requestedBy.name' },
+            { data: 'department', name: 'department.name' },
+            { data: 'number_of_passenger', name: 'number_of_passenger' },
+            { data: 'department_status', name: 'department_status' },
+            { data: 'status_badge', name: 'status' },
+            { data: 'action', name: 'action', orderable:false, searchable:false }
+        ],
+        order: [[4,'desc']]
+    });
 
-                        <td>{{ $req->department->name }}</td>
-
-                        <td>
-                            <span class="badge bg-info">
-                                {{ $req->number_of_passenger }} Persons
-                            </span>
-                        </td>
-
-                        <td>
-                            <span class="badge bg-success">{{ date('d M, Y', strtotime($req->department_approved_at)) }}</span>
-                        </td>
-
-                        <td>
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        </td>
-
-                        <td class="text-end">
-                            <a href="{{ route('transport.approvals.show', $req->id) }}" 
-                               class="btn btn-primary btn-sm">
-                                <i class="fa fa-eye me-1"></i>Process
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @endif
+    // Filters
+    $('#btnFilter').click(function(){ table.ajax.reload(); });
+    $('#btnReset').click(function(){
+        $('#filterDepartment,#filterStatus,#dateFrom,#dateTo,#searchBox').val('');
+        table.ajax.reload();
+    });
+    $('#searchBox').on('keypress', function(e){ if(e.which==13) table.ajax.reload(); });
+});
+</script>
 
         </div>
     </div>

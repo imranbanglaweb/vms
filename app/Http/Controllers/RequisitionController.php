@@ -237,15 +237,16 @@ public function validateAjax(Request $request)
 
 
      // 🔵 AUTO GENERATE UNIQUE REQUISITION NUMBER
-        $last = Requisition::orderBy('id', 'DESC')->first();
+       $last = Requisition::orderBy('id', 'DESC')->first();
 
-        if ($last) {
-            $number = ((int) filter_var($last->requisition_number, FILTER_SANITIZE_NUMBER_INT)) + 1;
-        } else {
-            $number = 1;
-        }
+            if ($last && preg_match('/(\d+)/', $last->requisition_number, $matches)) {
+                $number = (int)$matches[1] + 1;
+            } else {
+                $number = 1;
+            }
 
-        $requisition_number = 'REQ-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+            $requisition_number = 'REQ-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+
 
     
     DB::beginTransaction();
@@ -283,13 +284,13 @@ public function validateAjax(Request $request)
 
         DB::commit();
 
-        sendNotification(
-    1, // Admin user id
-    "New Requisition Submitted",
-    "A new requisition has been created by ".auth()->user()->name,
-    "warning",
-    route('admin.requisition.index')
-);
+//         sendNotification(
+//     1, // Admin user id
+//     "New Requisition Submitted",
+//     "A new requisition has been created by ".auth()->user()->name,
+//     "warning",
+//     route('requisitions.index')
+// );
 
         return response()->json([
             'status' => 'success',
@@ -349,7 +350,7 @@ public function validateAjax(Request $request)
         // Validation
         $validator = Validator::make($request->all(), [
             'employee_id'           => 'required|exists:employees,id',
-            'vehicle_type'            => 'required|exists:vehicles,id',
+            // 'vehicle_type'            => 'required|exists:vehicles,id',
             // 'driver_id'             => 'required|exists:drivers,id',
             'requisition_date'      => 'required|date',
             'from_location'         => 'required|string',
