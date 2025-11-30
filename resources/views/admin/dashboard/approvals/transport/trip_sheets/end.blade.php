@@ -1,144 +1,193 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="background:#f1f4f8;">
-
-<div class="container mt-5">
-
-    <h3 class="fw-bold text-primary mb-4">
-        <i class="fa fa-flag-checkered me-2"></i> Complete Trip
-    </h3>
-
-    {{-- Notification --}}
-    <div id="notify"></div>
-
-    {{-- Trip Summary Card --}}
-    <div class="card shadow-lg border-0 mb-4">
-        <div class="card-body">
-
-            <h5 class="mb-3 text-secondary">
-                <i class="fa fa-info-circle me-2"></i> Trip Summary
-            </h5>
-
-            <div class="row g-4">
-
-                <div class="col-md-3">
-                    <div class="p-3 bg-light rounded text-center">
-                        <span class="fw-bold fs-5 d-block">Requisition No</span>
-                        <span class="text-muted fs-6">{{ $trip->requisition->requisition_number }}</span>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="p-3 bg-light rounded text-center">
-                        <span class="fw-bold fs-5 d-block">Vehicle</span>
-                        <span class="text-muted fs-6">{{ $trip->vehicle->vehicle_name }}</span>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="p-3 bg-light rounded text-center">
-                        <span class="fw-bold fs-5 d-block">Driver</span>
-                        <span class="text-muted fs-6">{{ $trip->driver->name }}</span>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="p-3 bg-light rounded text-center">
-                        <span class="fw-bold fs-5 d-block">Trip Start</span>
-                        <span class="text-muted fs-6">{{ $trip->trip_start_time }}</span>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </div>
-
-    {{-- Trip End Form --}}
-    <div class="card shadow border-0">
-        <div class="card-body">
-
-            <h5 class="mb-4 text-secondary">
-                <i class="fa fa-road me-2"></i> Trip Completion Details
-            </h5>
-
-            <form id="finishTripForm">
-                @csrf
-
-                <div class="row g-4">
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold fs-6">Start KM</label>
-                        <input type="number" class="form-control form-control-lg" value="{{ $trip->start_km }}" readonly>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold fs-6">End KM</label>
-                        <input type="number" name="end_km" id="end_km" class="form-control form-control-lg" required>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold fs-6">Total KM</label>
-                        <input type="number" id="total_km" class="form-control form-control-lg" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold fs-6">End Location</label>
-                        <input type="text" name="end_location" class="form-control form-control-lg" required placeholder="Enter end location">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold fs-6">Remarks</label>
-                        <textarea name="remarks" class="form-control form-control-lg" placeholder="Enter final remarks"></textarea>
-                    </div>
-
-                </div>
-
-                <button type="button" class="btn btn-success btn-lg mt-4 w-100" onclick="submitFinishTrip()">
-                    <i class="fa fa-check-circle me-2"></i> Finish Trip
-                </button>
-
-            </form>
-
-        </div>
-    </div>
-
-</div>
-
-{{-- JS --}}
-<script>
-function alertBox(type, msg) {
-    let html = `
-        <div class="alert alert-${type} alert-dismissible fade show mt-3">
-            ${msg}
-            <button class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    $('#notify').html(html);
-}
-
-$('#end_km').on('input', function() {
-    let start = {{ $trip->start_km }};
-    let end = parseInt($(this).val());
-    if (end > start) {
-        $('#total_km').val(end - start);
-    } else {
-        $('#total_km').val('');
+<style>
+    .text-secondary {
+        color: #0088cc !important;
+        font-size: 15px;
+        font-weight: 700;
     }
-});
+    .text-dark {
+        color: #000!important;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .table th,td{
+        font-size: 15px!important;
+        font-weight: 500!important;
+    }
+    .card-body p{
+        font-size: 16px!important;
+        font-weight: 500!important;
+        color: #fff!important;
+        background-color: #0088cc!important;
+        padding: 8px;
+    }
+    .card-header {
+        color: #fff !important;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 8px!important;
+        display: block!important;
+    }
+</style>
 
-function submitFinishTrip() {
-    $.post(
-        "{{ route('trip-sheets.finish', $trip->id) }}",
-        $("#finishTripForm").serialize(),
-        function(res){
-            alertBox('success', res.message);
-            setTimeout(() => window.location.href = "{{ route('trip-sheets.index') }}", 1500);
+<section role="main" class="content-body" style="background-color:#eef2f7;">
+<br>
+<div class="container mt-4">
+
+    <h3 class="mb-4 fw-bold">End Trip – {{ $trip->trip_number }}</h3>
+
+    <div class="row">
+
+        <!-- Trip Info panel -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    Trip Information
+                </div>
+                <div class="card-body">
+                    <p><strong>Vehicle:</strong> {{ $trip->vehicle->vehicle_name }}</p>
+                    <p><strong>Driver:</strong> {{ $trip->driver->driver_name }}</p>
+                    <p><strong>Start Date:</strong> {{ $trip->start_date }}</p>
+                    <p><strong>Start Meter:</strong> {{ $trip->start_meter }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Trip Form -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning fw-bold">
+                    End Trip Form
+                </div>
+                <div class="card-body">
+
+                    <form id="endTripForm">
+                        @csrf
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" name="end_date" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Time</label>
+                                <input type="time" name="end_time" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Closing Meter</label>
+                                <input type="number" name="closing_meter" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Location</label>
+                                <input type="text" name="end_location" class="form-control" required>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Remarks (Optional)</label>
+                                <textarea name="remarks" class="form-control" rows="3"></textarea>
+                            </div>
+
+                        </div>
+
+                        <button type="button" onclick="submitEndTrip()" class="btn btn-warning px-4">
+                            End Trip
+                        </button>
+
+                        <a href="{{ route('trip-sheets.index') }}" class="btn btn-secondary">
+                            Back
+                        </a>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function submitEndTrip() {
+
+    let end_date = document.querySelector("input[name='end_date']").value;
+    let end_time = document.querySelector("input[name='end_time']").value;
+
+    let closing_meter = document.querySelector("input[name='closing_meter']").value;
+    let start_meter = @json($trip->start_meter);
+
+     if (!end_date) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Missing End Date',
+            text: "Please select the trip end date.",
+        });
+    }
+
+    if (!end_time) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Missing End Time',
+            text: "Please select the trip end time.",
+        });
+    }
+    if (Number(closing_meter) < Number(start_meter)) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Meter Reading',
+            text: "Closing meter cannot be less than starting meter!",
+        });
+    }
+
+    Swal.fire({
+        title: "Confirm Trip End?",
+        text: "Are you sure you want to end this trip?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#0d6efd",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, End Trip"
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            $.ajax({
+                url: "{{ route('trip.end.save', $trip->id) }}",
+                method: "POST",
+                data: $("#endTripForm").serialize(),
+                success: function(res) {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Trip Completed!',
+                        text: res.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    setTimeout(() => {
+                        window.location.href = "{{ route('trip-sheets.index') }}";
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed!',
+                        text: xhr.responseJSON?.message || "Trip end failed!",
+                    });
+                }
+            });
+
         }
-    ).fail(function(xhr){
-        let msg = xhr.responseJSON?.message || "Failed to complete trip.";
-        alertBox('danger', msg);
     });
 }
 </script>

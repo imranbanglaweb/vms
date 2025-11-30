@@ -1,63 +1,50 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="background:#f8f9fa;">
 
-<div class="container mt-5">
+<style>
+    .badge {
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 12px;
+}
+    .badge-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+</style>
+<section class="content-body" style="background:#f1f4f8;">
 
-    <h3 class="fw-bold mb-4 text-primary">
-        <i class="fa fa-route me-2"></i> Trip Sheet Overview
-    </h3>
+<div class="container-fluid py-4">
 
-    <div class="card shadow border-0">
+    <!-- Page Title -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">
+            <i class="fa fa-route me-2"></i> Trip Sheet List
+        </h2>
+    </div>
+
+    <!-- DataTable Card -->
+    <div class="card shadow-lg border-0">
         <div class="card-body">
 
-            <table class="table table-hover align-middle fs-6">
-                <thead class="table-primary">
-                <tr>
-                    <th>#</th>
-                    <th>Requisition No</th>
-                    <th>Vehicle</th>
-                    <th>Driver</th>
-                    <th>Status</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-
-                <tbody>
-                    @foreach($trips as $trip)
+            <table id="tripSheetTable" class="table table-hover table-bordered"
+                style="width:100%; font-size:16px;">
+                <thead class="table-light">
                     <tr>
-                        <td>{{ $trip->id }}</td>
-                        <td>{{ $trip->requisition->requisition_number }}</td>
-                        <td>{{ $trip->vehicle->vehicle_name ?? '' }}</td>
-                        <td>{{ $trip->driver->driver_name ?? '' }}</td>
-                        <td>
-                            <span class="badge 
-                                {{ $trip->status == 'finished' ? 'bg-success' : 'bg-warning' }}">
-                                {{ ucfirst($trip->status) }}
-                            </span>
-                        </td>
-                        <td>{{ $trip->trip_start_time }}</td>
-                        <td>{{ $trip->trip_end_time ?? '—' }}</td>
-                        <td>
-                            <a href="{{ route('trip-sheets.show', $trip->id) }}"
-                               class="btn btn-sm btn-primary">
-                                View
-                            </a>
-                             <!-- END TRIP BUTTON -->
-                @if($trip->status == 'in_progress')
-                <a href="{{ url('transport/trip-sheet/end/'.$trip->id) }}" 
-                   class="btn btn-warning btn-sm">
-                    End Trip
-                </a>
-                @endif
-                        </td>
+                        <!-- <th>#</th> -->
+                        <th>Trip No</th>
+                        <th>Vehicle</th>
+                        <th>Driver</th>
+                        <th>Start Date</th>
+                        <th>Status</th>
+                        <th width="120">Actions</th>
                     </tr>
-                    @endforeach
-                </tbody>
-
+                </thead>
             </table>
 
         </div>
@@ -65,5 +52,37 @@
 
 </div>
 
-</section>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script>
+$(document).ready(function(){
+
+    $('#tripSheetTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('trip-sheets.data') }}",
+
+        columns: [
+            // { data: '', name: '' },
+            { data: 'trip_number', name: 'trip_number' },
+            { data: 'vehicle', name: 'vehicle' },
+            { data: 'driver', name: 'driver' },
+            { data: 'start_date', name: 'start_date' },
+            { data: 'status', name: 'status', orderable: false, searchable: false },
+            { data: 'action', name: 'action', orderable: false, searchable: false },
+        ],
+
+        pageLength: 10,
+        responsive: true,
+        language: {
+            searchPlaceholder: "Search trips...",
+            search: "",
+        }
+    });
+
+});
+</script>
 @endsection

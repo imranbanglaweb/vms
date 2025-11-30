@@ -47,7 +47,49 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DepartmentApprovalController;
 use App\Http\Controllers\TransportApprovalController;
 use App\Http\Controllers\TripSheetController;
+use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\MaintenanceTypeController;
+use App\Http\Controllers\MaintenanceVendorController;
+use App\Http\Controllers\MaintenanceScheduleController;
   
+
+  Route::prefix('maintenance')->middleware('auth')->group(function(){
+    Route::get('/', [MaintenanceController::class,'index'])->name('maintenance.index');
+    Route::get('/create', [MaintenanceController::class,'create'])->name('maintenance.create');
+    Route::post('/create', [MaintenanceController::class,'storeSchedule'])->name('maintenance.store');
+    Route::get('/record/{id}', [MaintenanceController::class,'recordForm'])->name('maintenance.record.form');
+    Route::post('/record/{id}', [MaintenanceController::class,'recordMaintenance'])->name('maintenance.record');
+    Route::post('/schedule/{id}/deactivate', [MaintenanceController::class,'markScheduleInactive'])->name('maintenance.schedule.deactivate');
+    Route::get('/due/list', [MaintenanceController::class,'dueList'])->name('maintenance.due.list');
+});
+
+Route::prefix('maintenance-types')->middleware('auth')->group(function(){
+    Route::get('/', [MaintenanceTypeController::class, 'index'])->name('maintenance.types.index');
+    Route::post('/store', [MaintenanceTypeController::class, 'store'])->name('maintenance.types.store');
+    Route::get('/edit/{maintenanceType}', [MaintenanceTypeController::class, 'edit'])->name('maintenance.types.edit');
+    Route::post('/update/{maintenanceType}', [MaintenanceTypeController::class, 'update'])->name('maintenance.types.update');
+    Route::delete('/delete/{maintenanceType}', [MaintenanceTypeController::class, 'destroy'])->name('maintenance.types.destroy');
+});
+
+
+// Maintenance Vendor Routes
+Route::prefix('maintenance-vendors')->middleware('auth')->group(function(){
+    Route::get('/', [MaintenanceVendorController::class, 'index'])->name('maintenance.vendors.index');
+    Route::post('/store', [MaintenanceVendorController::class, 'store'])->name('maintenance.vendors.store');
+    Route::get('/edit/{vendor}', [MaintenanceVendorController::class, 'edit'])->name('maintenance.vendors.edit');
+    Route::post('/update/{vendor}', [MaintenanceVendorController::class, 'update'])->name('maintenance.vendors.update');
+    Route::delete('/delete/{vendor}', [MaintenanceVendorController::class, 'destroy'])->name('maintenance.vendors.destroy');
+});
+
+// Maintenance Schedule Routes
+Route::prefix('maintenance-schedules')->middleware('auth')->group(function(){
+    Route::get('/', [MaintenanceScheduleController::class, 'index'])->name('maintenance.schedules.index');
+    Route::post('/store', [MaintenanceScheduleController::class, 'store'])->name('maintenance.schedules.store');
+    Route::get('/edit/{schedule}', [MaintenanceScheduleController::class, 'edit'])->name('maintenance.schedules.edit');
+    Route::post('/update/{schedule}', [MaintenanceScheduleController::class, 'update'])->name('maintenance.schedules.update');
+    Route::delete('/delete/{schedule}', [MaintenanceScheduleController::class, 'destroy'])->name('maintenance.schedules.destroy');
+});
+
 
 
 Route::group(['middleware' => ['auth']], function() {
@@ -220,10 +262,13 @@ Route::get('/department/approvals/ajax',
         Route::post('/trip-sheet/finish/{id}', [TripSheetController::class, 'finishTrip'])
         ->name('trip-sheets.finish');
 
-        Route::get('/trip-sheet/end/{id}', function($id){
-    $trip = \App\Models\TripSheet::findOrFail($id);
-    return view('transport.trip_sheets.end', compact('trip'));
-})->name('trip-sheets.end');
+   // Trip Sheet Routes
+Route::get('/trip-sheet/end/{id}', [TripSheetController::class, 'endTripForm'])->name('trip.end.form');
+Route::post('transport/trip-sheet/end/{id}', [TripSheetController::class, 'endTripSave'])->name('trip.end.save');
+Route::get('transport/trip-sheets/data', [TripSheetController::class, 'getData'])
+    ->name('trip-sheets.data');
+
+
 
 
     });
@@ -264,6 +309,10 @@ Route::any('/contactlistviewdelete/{id}', [FrontendController::class, 'contactli
 
 // AJAX data endpoint for live refresh
 Route::get('/admin/dashboard/data', [HomeController::class, 'data'])->name('admin.dashboard.data');
+
+// Unread notifications for admin dropdown (returns array of notifications)
+Route::get('/notifications/unread', [NotificationController::class, 'unread'])->name('admin.notifications.unread');
+// Unread notifications count (if needed elsewhere)
 Route::get('/admin/notifications/unread-count', function(){
     return response()->json(['count' => \App\Models\Notification::where('user_id', auth()->id())->where('is_read', 0)->count()]);
 })->name('notifications.unread');
@@ -295,6 +344,9 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
     Route::post('profile-password-update', [UserController::class,'profilepasswordupdate'])->name('profile-password-update');
     Route::resource('units', UnitController::class);
    
+// Maintenance Route
+  
+
 
     // Debug-only endpoint: returns same payload as units.data but only when APP_DEBUG=true.
     // Useful to verify the JSON output without auth redirects during local troubleshooting.

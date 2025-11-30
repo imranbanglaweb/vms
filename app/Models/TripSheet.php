@@ -12,13 +12,16 @@ class TripSheet extends Model
         'vehicle_id',
         'driver_id',
         'start_date',
-        'start_time',
+        'trip_start_time',
         'start_meter',
         'start_location',
         'end_date',
-        'end_time',
+        'trip_end_time',
         'closing_meter',
         'end_location',
+        'start_km',
+        'end_km',
+        'total_km',
         'remarks',
         'status'
     ];

@@ -142,28 +142,30 @@ class TransportApprovalController extends Controller
         $requisition->transport_remarks = $request->remarks ?? $requisition->transport_remarks;
         $requisition->save();
 
-        // Optionally send notifications to requester, driver, vehicle owner, etc.
+        // // Optionally send notifications to requester, driver, vehicle owner, etc.
 
-         // Update vehicle status
+        //  // Update vehicle status
         $vehicle = Vehicle::find($requisition->assigned_vehicle_id);
         $vehicle->availability_status = 'busy';  // ENUM value
         $vehicle->save();
 
-        // Update driver status
+        // // Update driver status
         $driver = Driver::find($requisition->assigned_driver_id);
         $driver->availability_status = 'busy';   // ENUM value
         $driver->save();
 
 
+        // dd($requisition->assigned_vehicle_id);
+
          // CREATE TRIP SHEET
     $trip = TripSheet::create([
         'trip_number' => 'TS-' . str_pad(TripSheet::max('id') + 1, 5, '0', STR_PAD_LEFT),
         'requisition_id' => $requisition->id,
-        'vehicle_id' => $request->vehicle_id,
-        'driver_id' => $request->driver_id,
-        'start_date' => $request->start_date,
-        'start_time' => $request->start_time,
-        'start_meter' => $request->start_meter,
+        'vehicle_id' => $requisition->assigned_vehicle_id,
+        'driver_id' => $requisition->assigned_driver_id,
+        'start_date' => $requisition->travel_date,
+        // 'trip_start_time' => $request->start_time,
+        // 'start_meter' => $request->start_meter,
         'start_location' => $requisition->from_location,
         'status' => 'in_progress'
     ]);

@@ -115,12 +115,12 @@ class HomeController extends Controller
             ->get();
 
         // Status ratio (doughnut) (chart 3)
-        $statusCounts = [
+        $statusCounts = collect([
             'Pending' => $pending,
             'Approved' => $approved,
             'Rejected' => $rejected,
             'Completed' => $completed
-        ];
+        ]);
 
         // Top active users (chart 4)
         $topUsers = Requisition::select('requested_by', DB::raw('count(*) as total'))

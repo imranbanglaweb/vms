@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\RequisitionStatusChangedMail;
 use Illuminate\Support\Facades\Mail;
+use App\Events\RequisitionCreated;
+use App\Events\RequisitionStatusUpdated;
 class RequisitionController extends Controller
 {
    
@@ -291,6 +293,10 @@ public function validateAjax(Request $request)
 //     "warning",
 //     route('requisitions.index')
 // );
+
+
+event(new RequisitionCreated($requisition)); // after creating
+
 
         return response()->json([
             'status' => 'success',

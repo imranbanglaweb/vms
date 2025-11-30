@@ -1,79 +1,158 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="body;background:#fff;">
-<div class="container-fluid p-4 bg-white rounded shadow-sm">
-<br>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0"><i class="fa fa-tachometer-alt me-2 text-primary"></i> Dashboard Overview</h4>
 
+<style>
+    /* Top Summary Cards */
+.card-summary {
+    background-color: transparent;        /* No background */
+    border: 1px solid #666;           /* Primary border color */
+    border-radius: 1rem;                  /* Rounded corners */
+    padding: 1.5rem 1rem;                 /* Spacing inside */
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    cursor: pointer;
+}
+
+.card-summary:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: #6610f2;               /* Highlight border on hover */
+}
+
+
+.card-summary i {
+    font-size: 4.2rem;
+    margin-bottom: 0.7rem;
+    color: #0d6efd;
+    transition: color 0.3s;
+}
+
+.card-summary:hover i {
+    color: #6610f2;                       /* Icon color on hover */
+}
+
+
+.card-summary h4 {
+    font-size: 3.6rem;
+    font-weight: 800;
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.5px;
+}
+
+
+.card-summary p {
+    font-size: 2.3rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0;
+    letter-spacing: 0.2px;
+}
+
+</style>
+<section role="main" class="content-body" style="background: #f5f6fa;">
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary"><i class="fa fa-tachometer-alt me-2"></i>Dashboard Overview</h3>
+
+        <!-- Notifications & Refresh -->
         <div class="d-flex align-items-center gap-2">
-            <button id="refreshNow" class="btn btn-outline-primary btn-sm"><i class="fa fa-sync"></i> Refresh</button>
-            <div class="position-relative">
-                <i class="fa fa-bell fa-lg"></i>
-                <span id="liveNotifCount" class="badge bg-danger position-absolute" style="top:-8px; right:-8px; display:none;">0</span>
+            <button id="refreshNow" class="btn btn-outline-primary btn-sm"><i class="fa fa-sync me-1"></i> Refresh</button>
+            <div class="position-relative dropdown">
+                <i class="fa fa-bell fa-lg text-secondary dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer;"></i>
+                <span id="liveNotifCount" class="badge bg-danger position-absolute rounded-circle" style="top:-8px; right:-8px; display:none;">0</span>
+                <ul class="dropdown-menu dropdown-menu-end p-2" style="width:300px;" id="notifDropdown">
+                    <li class="text-center text-muted small">No new notifications</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    {{-- Cards --}}
-    <div class="row mb-4" id="cardsRow">
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Total</div>
-                <h3 id="cardTotal">{{ $total }}</h3>
+    <!-- Top Summary Cards -->
+    <div class="row g-4 mb-4">
+        @php 
+            $cards = [
+                ['label'=>'Total', 'value'=>$total, 'color'=>'#0d6efd', 'icon'=>'fa-layer-group'],
+                ['label'=>'Pending', 'value'=>$pending, 'color'=>'#ffc107', 'icon'=>'fa-hourglass-half'],
+                ['label'=>'Approved', 'value'=>$approved, 'color'=>'#20c997', 'icon'=>'fa-check-circle'],
+                ['label'=>'Rejected', 'value'=>$rejected, 'color'=>'#dc3545', 'icon'=>'fa-times-circle'],
+                ['label'=>'Completed', 'value'=>$completed, 'color'=>'#28a745', 'icon'=>'fa-flag-checkered'],
+                ['label'=>'Cancelled', 'value'=>$cancelled ?? 0, 'color'=>'#6c757d', 'icon'=>'fa-ban'],
+            ];
+        @endphp
+
+        @foreach($cards as $card)
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card card-summary shadow-sm border-0 rounded-4 text-center py-4 hover-shadow position-relative"
+                 style="transition: transform 0.3s;" data-bs-toggle="tooltip" data-bs-placement="top"
+                 title="Last 7 days trend">
+                <div class="mb-2">
+                    @if($card['label'] === 'Total')
+                        <i class="fa fa-list" style="color:#0d6efd; font-size:4.2rem;"></i>
+                    @elseif($card['label'] === 'Pending')
+                        <i class="fa fa-lock" style="color:#ffc107; font-size:4.2rem;"></i>
+                    @else
+                        <i class="fa {{ $card['icon'] }}" style="color:{{ $card['color'] }}; font-size:4.2rem;"></i>
+                    @endif
+                </div>
+                <h4 class="fw-bold mb-1" style="color: {{ $card['color'] }}; font-size: 2.6rem;">{{ $card['value'] }}</h4>
+                <p class="fw-semibold mb-1" style="font-size: 1.3rem; color: #333;">{{ $card['label'] }}</p>
+                <canvas id="sparkline-{{ $card['label'] }}" height="40"></canvas>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Pending</div>
-                <h3 id="cardPending">{{ $pending }}</h3>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Approved</div>
-                <h3 id="cardApproved">{{ $approved }}</h3>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Rejected</div>
-                <h3 id="cardRejected">{{ $rejected }}</h3>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Completed</div>
-                <h3 id="cardCompleted">{{ $completed }}</h3>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card text-center shadow-sm p-3">
-                <div class="small text-muted">Cancelled</div>
-                <h3 id="cardCancelled">{{ $cancelled ?? 0 }}</h3>
+        @endforeach
+    </div>
+
+    <!-- Status Progress Bars -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow-sm rounded-4 p-3">
+                <h6 class="fw-bold text-dark mb-3">Status Progress</h6>
+                <div class="row g-3">
+                    @php
+                        $statuses = [
+                            ['label'=>'Pending','value'=>$pending ?? 0,'color'=>'#ffc107'],
+                            ['label'=>'Approved','value'=>$approved ?? 0,'color'=>'#20c997'],
+                            ['label'=>'Completed','value'=>$completed ?? 0,'color'=>'#0d6efd'],
+                        ];
+                    @endphp
+                    @foreach($statuses as $status)
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ $status['label'] }}</span>
+                            <span>{{ $status['value'] }}</span>
+                        </div>
+                        <div class="progress rounded-pill" style="height:8px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ ($total>0)?($status['value']/$total)*100:0 }}%; background: {{ $status['color'] }}"></div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Charts & Analytics -->
     <div class="row g-4">
-
-        {{-- Left column: Monthly + Dept pie --}}
         <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Monthly Requisitions (Last 12 months)</h6>
+            <!-- Monthly Requisitions -->
+            <div class="card shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 text-dark">Monthly Requisitions (Last 12 months)</h6>
+                    <small class="text-muted">Updated live</small>
                 </div>
                 <div class="card-body">
                     <canvas id="monthlyChart" height="120"></canvas>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0">Department-wise Requests</h6>
+                    <div class="card shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="fw-bold mb-0 text-dark">Department-wise Requests</h6>
                         </div>
                         <div class="card-body">
                             <canvas id="deptPieChart" height="200"></canvas>
@@ -82,9 +161,9 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0">Status Ratio</h6>
+                    <div class="card shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="fw-bold mb-0 text-dark">Status Ratio</h6>
                         </div>
                         <div class="card-body">
                             <canvas id="statusDoughnut" height="200"></canvas>
@@ -93,10 +172,10 @@
                 </div>
             </div>
 
-            {{-- Top users --}}
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Top Active Users</h6>
+            <!-- Top Users Horizontal Chart -->
+            <div class="card shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h6 class="fw-bold mb-0 text-dark">Top Active Users</h6>
                 </div>
                 <div class="card-body">
                     <canvas id="topUsersChart" height="80"></canvas>
@@ -104,30 +183,31 @@
             </div>
         </div>
 
-        {{-- Right column: Timeline + latest table --}}
+        <!-- Right Column: Timeline & Latest Requisitions -->
         <div class="col-lg-4">
-
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Recent Workflow Activity</h6>
+            <!-- Recent Workflow Timeline -->
+            <div class="card shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h6 class="fw-bold mb-0 text-dark">Recent Workflow Activity</h6>
                 </div>
                 <div class="card-body" id="timelineContainer" style="max-height:420px; overflow:auto;">
                     @foreach($timeline as $item)
-                        <div class="mb-3">
+                        <div class="mb-3 p-2 rounded-3 hover-bg-light" title="{{ $item->remarks ?? '' }}">
                             <div class="small text-muted">{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y - h:i A') }} by {{ $item->user_name }}</div>
-                            <div class="fw-bold">{{ $item->action }}</div>
-                            @if($item->remarks)<div class="small text-muted">{{ $item->remarks }}</div>@endif
+                            <div class="fw-semibold text-dark">{{ $item->action }}</div>
+                            @if($item->remarks)<div class="small text-secondary">{{ $item->remarks }}</div>@endif
                         </div>
                     @endforeach
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Latest Requisitions</h6>
+            <!-- Latest Requisitions Table -->
+            <div class="card shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h6 class="fw-bold mb-0 text-dark">Latest Requisitions</h6>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm table-hover mb-0">
+                    <table class="table table-hover table-sm mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
@@ -138,14 +218,19 @@
                         </thead>
                         <tbody id="latestTableBody">
                             @foreach($latest as $r)
-                                <tr>
+                                <tr class="align-middle">
                                     <td>{{ $r->id }}</td>
                                     <td>{{ $r->requestedBy->name ?? 'N/A' }}</td>
                                     <td>{{ \Carbon\Carbon::parse($r->travel_date)->format('d M Y') }}</td>
                                     <td>
-                                        <span class="badge {{ $r->status == 3 ? 'bg-success' : ($r->status == 4 ? 'bg-danger' : 'bg-warning') }}">
-                                            {{ $r->status_text ?? $r->status }}
-                                        </span>
+                                        @php
+                                            $badgeClass = match($r->status) {
+                                                3 => 'bg-success',
+                                                4 => 'bg-danger',
+                                                default => 'bg-warning',
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }}">{{ $r->status_text ?? $r->status }}</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -153,150 +238,94 @@
                     </table>
                 </div>
             </div>
-
         </div>
-    </div>
 
+    </div>
 </div>
-<br>
-<br>
-<br>
-<br>
 </section>
 @endsection
 
-@push('scripts')
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@push('styles')
+<style>
+.hover-shadow:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
+.hover-bg-light:hover { background-color: #f8f9fa; }
+.card { font-family: 'Inter', sans-serif; }
+h3,h4,h5,h6 { font-weight: 700; }
+.badge { font-size: 0.9rem; }
+</style>
+@endpush
 
+@push('scripts')
+<!-- <script src="{{ asset('/js/dashboard.js') }}"></script> -->
+ @vite(['resources/js/app.js', 'resources/js/dashboard.js'])
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 $(function(){
-    // ---------- INITIAL DATA FROM BLADE (server rendered)
-    const monthLabels = {!! json_encode($monthLabels) !!};
-    const monthlyData = {!! json_encode($monthlyData) !!};
-    const deptData = {!! json_encode($deptData) !!};
-    const statusCounts = {!! json_encode($statusCounts) !!};
-    const topUsers = {!! json_encode($topUsers) !!};
 
-    // ---------- CHARTS
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyChart = new Chart(monthlyCtx, {
+    // Tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(el){ return new bootstrap.Tooltip(el); });
+
+    // Top Summary Sparklines
+    @foreach($cards as $card)
+    const ctx{{ $loop->index }} = document.getElementById('sparkline-{{ $card['label'] }}').getContext('2d');
+    new Chart(ctx{{ $loop->index }}, {
+        type:'line',
+        data:{ labels: {!! json_encode($sparklineLabels[$card['label']] ?? []) !!}, 
+               datasets:[{ data:{!! json_encode($sparklineData[$card['label']] ?? []) !!}, 
+                           borderColor:'{{ $card['color'] }}', tension:0.4, fill:false, pointRadius:0 }] },
+        options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{display:false} } }
+    });
+    @endforeach
+
+    // Main Charts
+    const monthlyChart = new Chart(document.getElementById('monthlyChart'), {
         type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [{
-                label: 'Requisitions',
-                backgroundColor: '#0d6efd',
-                data: monthlyData
-            }]
-        },
-        options: { responsive:true, scales:{ y:{ beginAtZero: true } } }
+        data: { labels: {!! json_encode($monthLabels) !!}, datasets:[{ label:'Requisitions', data: {!! json_encode($monthlyData) !!}, backgroundColor:'#0d6efd' }] },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{font:{size:14}} }, x:{ticks:{font:{size:14}}} } }
     });
 
-    const deptLabels = deptData.map(d => d.label);
-    const deptValues = deptData.map(d => d.value);
-    const deptCtx = document.getElementById('deptPieChart').getContext('2d');
-    const deptPieChart = new Chart(deptCtx, {
+    const deptPieChart = new Chart(document.getElementById('deptPieChart'), {
         type:'pie',
-        data: { labels: deptLabels, datasets: [{ data: deptValues }] },
-        options: { responsive:true }
+        data:{ labels: {!! json_encode($deptData->pluck('label')) !!}, datasets:[{ data: {!! json_encode($deptData->pluck('value')) !!}, backgroundColor:['#0d6efd','#ffc107','#20c997','#dc3545','#6c757d','#6610f2'] }]},
+        options:{ responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:14}}} } }
     });
 
-    const statusLabels = Object.keys(statusCounts);
-    const statusValues = Object.values(statusCounts);
-    const statusCtx = document.getElementById('statusDoughnut').getContext('2d');
-    const statusDoughnut = new Chart(statusCtx, {
+    const statusDoughnut = new Chart(document.getElementById('statusDoughnut'), {
         type:'doughnut',
-        data: { labels: statusLabels, datasets: [{ data: statusValues }] },
-        options: { responsive:true }
+        data:{ labels: {!! json_encode($statusCounts->keys()) !!}, datasets:[{ data: {!! json_encode($statusCounts->values()) !!}, backgroundColor:['#ffc107','#20c997','#dc3545','#0d6efd','#6c757d'] }] },
+        options:{ responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:14}}}} }
     });
 
-    const topUserLabels = topUsers.map(u => u.name);
-    const topUserValues = topUsers.map(u => u.total);
-    const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
-    const topUsersChart = new Chart(topUsersCtx, {
+    const topUsersChart = new Chart(document.getElementById('topUsersChart'), {
         type:'bar',
-        data: { labels: topUserLabels, datasets: [{ data: topUserValues, backgroundColor:'#20c997' }] },
-        options: { responsive:true, indexAxis: 'y' }
+        data:{ labels: {!! json_encode($topUsers->pluck('name')) !!}, datasets:[{ data: {!! json_encode($topUsers->pluck('total')) !!}, backgroundColor:'#20c997' }] },
+        options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:14}}}, y:{ticks:{font:{size:14}}} } }
     });
 
-    // ---------- LIVE AJAX REFRESH
-    function applyLiveData(data) {
-        // cards
-        $('#cardTotal').text(data.total);
-        $('#cardPending').text(data.pending);
-        $('#cardApproved').text(data.approved);
-        $('#cardRejected').text(data.rejected);
-        $('#cardCompleted').text(data.completed);
+    // Refresh button
+    $('#refreshNow').on('click', function(){ location.reload(); });
 
-        // latest table
-        let rows = '';
-        data.latest.forEach(function(r){
-            rows += `<tr>
-                        <td>${r.id}</td>
-                        <td>${r.requested_by_name ?? (r.requested_by || 'N/A')}</td>
-                        <td>${(new Date(r.travel_date)).toLocaleDateString()}</td>
-                        <td><span class="badge ${r.status==3 ? 'bg-success' : (r.status==4 ? 'bg-danger' : 'bg-warning')}">${r.status_text ?? r.status}</span></td>
-                    </tr>`;
-        });
-        $('#latestTableBody').html(rows);
-
-        // dept pie update (simple)
-        if (data.deptData && Array.isArray(data.deptData)) {
-            deptPieChart.data.labels = data.deptData.map(d=>d.label);
-            deptPieChart.data.datasets[0].data = data.deptData.map(d=>d.value);
-            deptPieChart.update();
-        }
-    }
-
-    // fetch live
-    function fetchLive(){
-        $.get("{{ route('admin.dashboard.data') }}")
+    // Auto-refresh notifications
+    function fetchNotifications(){
+        $.get("{{ route('admin.notifications.unread') }}")
             .done(function(res){
-                // normalize latest rows: add requested_by_name for client
-                res.latest.forEach(function(r){
-                    r.requested_by_name = (r.requested_by && r.requested_by.name) ? r.requested_by.name : (r.requested_by_name || '');
-                });
-                applyLiveData(res);
-            })
-            .fail(function(){ console.warn('dashboard live fetch failed'); });
+                let dropdown = $('#notifDropdown').empty();
+                if(res.length>0){
+                    res.forEach(n=>{
+                        dropdown.append(`<li class="small p-2 border-bottom">${n.message}<br><span class="text-muted small">${n.time}</span></li>`);
+                    });
+                    $('#liveNotifCount').text(res.length).show();
+                } else {
+                    dropdown.append('<li class="text-center text-muted small">No new notifications</li>');
+                    $('#liveNotifCount').hide();
+                }
+            });
     }
+    fetchNotifications();
+    setInterval(fetchNotifications,10000);
 
-    // manual refresh button
-    $('#refreshNow').on('click', function(){ fetchLive(); toastr.info('Dashboard refreshed'); });
-
-    // auto poll every 10s
-    const autoRefresh = setInterval(fetchLive, 10000);
-
-    // ---------- REALTIME (ECHO) listener, optional
-    try {
-        if (typeof Echo !== 'undefined') {
-            Echo.private('dashboard')
-                .listen('RequisitionCreated', (e) => {
-                    toastr.info('New requisition created');
-                    // update small UI immediately
-                    fetchLive();
-                })
-                .listen('RequisitionStatusUpdated', (e) => {
-                    toastr.info('Requisition status updated');
-                    fetchLive();
-                });
-        }
-    } catch(err) {
-        console.warn('Echo not configured or error: ', err);
-    }
-
-    // ---------- Notification bell count (simple)
-    function fetchNotifCount() {
-        $.get("{{ url('/admin/notifications/unread-count') }}").done(function(res){
-            if(res.count && res.count > 0) {
-                $('#liveNotifCount').text(res.count).show();
-            } else $('#liveNotifCount').hide();
-        }).fail(()=>{ $('#liveNotifCount').hide(); });
-    }
-    fetchNotifCount();
-    setInterval(fetchNotifCount, 15000);
-
-}); // document ready
+});
 </script>
 @endpush

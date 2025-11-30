@@ -396,7 +396,7 @@ $('#requisitionForm').submit(function (e) {
                 // Reset form on success
                 setTimeout(function() {
                     if (res.redirect_url) {
-                        window.location.href = res.redirect_url;
+                        // window.location.href = res.redirect_url;
                     } else {
                         form.reset();
                         // Reset passenger table
