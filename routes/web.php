@@ -84,10 +84,17 @@ Route::prefix('maintenance-vendors')->middleware('auth')->group(function(){
 // Maintenance Schedule Routes
 Route::prefix('maintenance-schedules')->middleware('auth')->group(function(){
     Route::get('/', [MaintenanceScheduleController::class, 'index'])->name('maintenance.schedules.index');
+    Route::get('/create', [MaintenanceScheduleController::class, 'create'])->name('maintenance.schedules.create');
     Route::post('/store', [MaintenanceScheduleController::class, 'store'])->name('maintenance.schedules.store');
-    Route::get('/edit/{schedule}', [MaintenanceScheduleController::class, 'edit'])->name('maintenance.schedules.edit');
+    Route::get('/edit/{schedule}', [MaintenanceScheduleController::class, 'edit'])->name('maintenance-schedules.edit');
     Route::post('/update/{schedule}', [MaintenanceScheduleController::class, 'update'])->name('maintenance.schedules.update');
-    Route::delete('/delete/{schedule}', [MaintenanceScheduleController::class, 'destroy'])->name('maintenance.schedules.destroy');
+    Route::delete('/delete/{schedule}', [MaintenanceScheduleController::class, 'destroy'])->name('maintenance-schedules.destroy');
+      // Optional: if you want a separate "show" page
+    Route::get('/{id}', [MaintenanceScheduleController::class, 'show'])->name('maintenance-schedules.show');
+    // AJAX helpers
+Route::post('maintenance-schedules/toggle-active/{id}', [MaintenanceScheduleController::class, 'toggleActive'])
+    ->name('maintenance-schedules.toggleActive');
+
 });
 
 

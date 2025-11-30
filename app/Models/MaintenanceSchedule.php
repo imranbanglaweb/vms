@@ -14,6 +14,7 @@ class MaintenanceSchedule extends Model
         'due_km',
         'frequency',
         'scheduled_at', 
+        'created_by', 
         'notes','active'
     ];
 
