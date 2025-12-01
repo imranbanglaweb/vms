@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\MaintenanceSchedule;
 use App\Models\Vehicle;
 use App\Models\MaintenanceType;
+use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Facades\DataTables;
 use App\Models\MaintenanceVendor;
 
 class MaintenanceScheduleController extends Controller
@@ -19,6 +21,46 @@ class MaintenanceScheduleController extends Controller
         $vendors = MaintenanceVendor::all();
         return view('admin.dashboard.maintenance.schedules.index', compact('schedules','vehicles','types','vendors'));
     }
+
+    public function server(Request $request)
+{
+    $query = MaintenanceSchedule::with(['vehicle', 'type']);
+
+    if ($request->vehicle_id) {
+        $query->where('vehicle_id', $request->vehicle_id);
+    }
+
+    if ($request->maintenance_type_id) {
+        $query->where('maintenance_type_id', $request->maintenance_type_id);
+    }
+
+    if ($request->status !== null && $request->status !== '') {
+        $query->where('active', $request->status);
+    }
+
+    return DataTables::of($query)
+        ->addIndexColumn()
+        ->addColumn('vehicle', fn($r) => $r->vehicle->vehicle_name)
+        ->addColumn('type', fn($r) => $r->type->name)
+        ->addColumn('active_status', fn($r) =>
+            $r->active
+                ? '<span class="badge bg-success">Active</span>'
+                : '<span class="badge bg-danger">Inactive</span>'
+        )
+        ->addColumn('actions', function($r){
+            return '
+                <a href="/maintenance-schedules/'.$r->id.'/edit" class="btn btn-warning btn-sm">
+                    <i class="fa fa-edit"></i>
+                </a>
+                <button data-id="'.$r->id.'" class="btn btn-danger btn-sm deleteBtn">
+                    <i class="fa fa-minus"></i>
+                </button>
+            ';
+        })
+        ->rawColumns(['active_status','actions'])
+        ->make(true);
+}
+
 
     public function create()
     {

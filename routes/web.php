@@ -51,17 +51,32 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\MaintenanceVendorController;
 use App\Http\Controllers\MaintenanceScheduleController;
+use App\Http\Controllers\MaintenanceRequisitionController;
+use App\Http\Controllers\MaintenanceCategoryController;
   
 
-  Route::prefix('maintenance')->middleware('auth')->group(function(){
-    Route::get('/', [MaintenanceController::class,'index'])->name('maintenance.index');
-    Route::get('/create', [MaintenanceController::class,'create'])->name('maintenance.create');
-    Route::post('/create', [MaintenanceController::class,'storeSchedule'])->name('maintenance.store');
-    Route::get('/record/{id}', [MaintenanceController::class,'recordForm'])->name('maintenance.record.form');
-    Route::post('/record/{id}', [MaintenanceController::class,'recordMaintenance'])->name('maintenance.record');
-    Route::post('/schedule/{id}/deactivate', [MaintenanceController::class,'markScheduleInactive'])->name('maintenance.schedule.deactivate');
-    Route::get('/due/list', [MaintenanceController::class,'dueList'])->name('maintenance.due.list');
+Route::prefix('maintenance-categories')->group(function () {
+    Route::get('/', [MaintenanceCategoryController::class, 'index'])->name('maintenance-categories.index'); // DataTable
+    Route::post('/', [MaintenanceCategoryController::class, 'store'])->name('maintenance-categories.store'); // Create / Update
+    Route::get('/{id}/edit', [MaintenanceCategoryController::class, 'edit'])->name('maintenance-categories.edit'); // Get data for edit
+    Route::delete('/{id}', [MaintenanceCategoryController::class, 'destroy'])->name('maintenance-categories.destroy'); // Delete
 });
+
+  Route::prefix('maintenance')->middleware('auth')->group(function(){
+    Route::get('/', [MaintenanceRequisitionController::class,'index'])->name('maintenance.index');
+    Route::get('/create', [MaintenanceRequisitionController::class,'create'])->name('maintenance.create');
+    Route::post('/store', [MaintenanceRequisitionController::class,'storeSchedule'])->name('maintenance.store');
+});
+
+//   Route::prefix('maintenance-schedule')->middleware('auth')->group(function(){
+//     Route::get('/', [MaintenanceController::class,'index'])->name('maintenance.index');
+//     Route::get('/create', [MaintenanceController::class,'create'])->name('maintenance.create');
+//     Route::post('/store', [MaintenanceController::class,'storeSchedule'])->name('maintenance.store');
+//     Route::get('/record/{id}', [MaintenanceController::class,'recordForm'])->name('maintenance.record.form');
+//     Route::post('/record/{id}', [MaintenanceController::class,'recordMaintenance'])->name('maintenance.record');
+//     Route::post('/schedule/{id}/deactivate', [MaintenanceController::class,'markScheduleInactive'])->name('maintenance.schedule.deactivate');
+//     Route::get('/due/list', [MaintenanceController::class,'dueList'])->name('maintenance.due.list');
+// });
 
 Route::prefix('maintenance-types')->middleware('auth')->group(function(){
     Route::get('/', [MaintenanceTypeController::class, 'index'])->name('maintenance.types.index');
@@ -94,6 +109,8 @@ Route::prefix('maintenance-schedules')->middleware('auth')->group(function(){
     // AJAX helpers
 Route::post('maintenance-schedules/toggle-active/{id}', [MaintenanceScheduleController::class, 'toggleActive'])
     ->name('maintenance-schedules.toggleActive');
+Route::get('maintenance-schedules/server/load', [MaintenanceScheduleController::class, 'server'])
+    ->name('maintenance.schedules.server');
 
 });
 

@@ -7,6 +7,8 @@ use App\Models\MaintenanceSchedule;
 use App\Models\MaintenanceRecord;
 use App\Models\Vehicle;
 use App\Models\Vendor;
+use App\Models\MaintenanceCategory;
+use App\Models\Employee;
 use App\Models\MaintenanceType;
 use Carbon\Carbon;
 
@@ -30,10 +32,12 @@ class MaintenanceController extends Controller
     {
         $vehicles = Vehicle::all();
         $types = MaintenanceType::all();
+        $employees = Employee::all();
+        $categories  = MaintenanceCategory::all();
         $vendors = Vendor::all();
         $schedules = MaintenanceSchedule::all();
 
-        return view('admin.dashboard.maintenance.create', compact('vehicles','types','vendors','schedules'));
+        return view('admin.dashboard.maintenance.create', compact('vehicles','types','vendors','schedules', 'employees','categories'));
     }
 
     public function storeSchedule(Request $request)
