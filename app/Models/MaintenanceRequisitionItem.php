@@ -14,6 +14,7 @@ class MaintenanceRequisitionItem extends Model
         'qty',
         'unit_price',
         'total_price',
+        'created_by',
     ];
 
     public function requisition()

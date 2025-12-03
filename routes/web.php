@@ -65,7 +65,7 @@ Route::prefix('maintenance-categories')->group(function () {
   Route::prefix('maintenance')->middleware('auth')->group(function(){
     Route::get('/', [MaintenanceRequisitionController::class,'index'])->name('maintenance.index');
     Route::get('/create', [MaintenanceRequisitionController::class,'create'])->name('maintenance.create');
-    Route::post('/store', [MaintenanceRequisitionController::class,'storeSchedule'])->name('maintenance.store');
+    Route::post('/store', [MaintenanceRequisitionController::class,'store'])->name('maintenance.store');
 });
 
 //   Route::prefix('maintenance-schedule')->middleware('auth')->group(function(){
@@ -423,7 +423,20 @@ Route::get('notifications', [NotificationController::class, 'index'])
 
 Route::post('menus/reorder', [MenuController::class, 'menuoder'])->name('menus.reorder');
 
-    Route::resource('permissions', PermissionController::class);
+// routes/web.php
+Route::middleware(['auth'])->group(function () {
+    // Display the permissions page
+    Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    
+    // DataTables AJAX endpoint
+    Route::get('/permissions/list', [PermissionController::class, 'list'])->name('permissions.list');
+    // routes/web.php
+Route::post('/permissions/validate', [PermissionController::class, 'validatePermission'])->name('permissions.validate');
+    // CRUD routes
+    Route::resource('permissions', PermissionController::class)->except(['index']);
+});
+    // Route::resource('permissions', PermissionController::class);
+    //  Route::get('permissions/list', [PermissionController::class, 'list'])->name('permissions.list'); // AJAX for DataTables
     Route::resource('menus', MenuController::class);
     Route::get('settings', [SettingController::class,'index'])->name('settings');
     Route::post('settings/store', [SettingController::class,'store'])->name('settings.store');

@@ -20,13 +20,13 @@
 		
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/font-awesome/css/font-awesome.css" />
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/magnific-popup/magnific-popup.css" />
-		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/bootstrap-datepicker/css/datepicker3.css" />
+		<!-- <link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/bootstrap-datepicker/css/datepicker3.css" /> -->
 
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/select2/select2.css" />
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/jquery-datatables-bs3/assets/css/datatables.css" />
 		<!-- Specific Page Vendor CSS -->
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/jquery-ui/css/ui-lightness/jquery-ui-1.10.4.custom.css" />
-		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/bootstrap-multiselect/bootstrap-multiselect.css" />
+		<!-- <link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/bootstrap-multiselect/bootstrap-multiselect.css" /> -->
 		<link rel="stylesheet" href="{{ asset('public/admin_resource/')}}/assets/vendor/morris/morris.css" />
 
 		<!-- Theme CSS -->

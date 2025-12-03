@@ -101,7 +101,7 @@ input.border-danger, select.border-danger {
         </div>
 
         {{-- Form --}}
-        <form id="requisitionForm" action="{{ route('requisitions.store') }}" method="POST">
+        <form id="requisitionForm" action="{{ route('maintenance.store') }}" method="POST">
             @csrf
             <div class="card shadow-sm rounded-3 border-0">
                 <div class="card-header py-3">
@@ -208,7 +208,7 @@ input.border-danger, select.border-danger {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <select name="items[0][category_id]" class="form-select categorySelect  select2">
+                                        <select name="items[0][category_id]" class="form-select categorySelect">
                                             <option value="">Select</option>
                                             @foreach($categories as $cat)
                                                 <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
@@ -272,9 +272,143 @@ input.border-danger, select.border-danger {
 </section>
 
 <!-- SweetAlert2 -->
+ 	<!-- Core JS Files - Use only one version of jQuery -->
+<script src="{{ asset('public/admin_resource/assets/vendor/jquery/jquery.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
+$(document).ready(function () {
+
+    // Initialize Select2 for static fields
+    $('.select2').select2();
+
+    let row = 1;
+
+    // Add new row
+    $("#addRow").on("click", function () {
+        let newRow = `
+            <tr>
+                <td>
+                    <select name="items[${row}][category_id]" class="form-select categorySelect select2Dynamic">
+                        <option value="">Select</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td><input type="text" name="items[${row}][item_name]" class="form-control itemName"></td>
+                <td><input type="number" name="items[${row}][qty]" class="form-control qty text-center" value="1"></td>
+                <td><input type="number" name="items[${row}][unit_price]" class="form-control unitPrice text-end" value="0"></td>
+                <td><input type="number" name="items[${row}][total_price]" class="form-control totalPrice text-end" readonly></td>
+                <td><button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-minus"></i></button></td>
+            </tr>
+        `;
+
+        $("#itemsTable tbody").append(newRow);
+
+        // Re-init Select2 for dynamically added dropdowns
+        $(".select2Dynamic").select2({
+            width: "100%"
+        });
+
+        row++;
+    });
+
+    // Remove row
+    $(document).on("click", ".removeRow", function () {
+        $(this).closest("tr").remove();
+        calculateTotals();
+    });
+
+    // Value change triggers calculation
+    $(document).on("input", ".qty, .unitPrice, #chargeAmount", function () {
+        calculateTotals();
+    });
+
+    function calculateTotals() {
+        let totalParts = 0;
+
+        $("#itemsTable tbody tr").each(function () {
+            let qty = $(this).find(".qty").val() || 0;
+            let price = $(this).find(".unitPrice").val() || 0;
+            let total = qty * price;
+
+            $(this).find(".totalPrice").val(total.toFixed(2));
+            totalParts += total;
+        });
+
+        $("#totalPartsCost").val(totalParts.toFixed(2));
+
+        let chargeAmount = parseFloat($("#chargeAmount").val()) || 0;
+        $("#grandTotal").val((totalParts + chargeAmount).toFixed(2));
+    }
+
+    // AJAX Submit
+    $("#requisitionForm").on("submit", function (e) {
+        e.preventDefault();
+
+        let form = $(this);
+        let formData = form.serialize();
+
+        // Validate required fields
+        let requiredFields = [
+            "#requisitionType", "#priority", "#vehicleSelect",
+            "#maintenanceType", "#maintenanceDate", "#serviceTitle"
+        ];
+
+        let missing = false;
+        requiredFields.forEach(function (f) {
+            if ($(f).val() === "") missing = true;
+        });
+
+        if (missing) {
+            Swal.fire("Required Fields Missing", "Please fill all fields!", "warning");
+            return;
+        }
+
+        // Validate items
+        let invalidRow = false;
+        $("#itemsTable tbody tr").each(function () {
+            let category = $(this).find(".categorySelect").val();
+            let itemName = $(this).find(".itemName").val();
+            let qty = $(this).find(".qty").val();
+            let unitPrice = $(this).find(".unitPrice").val();
+
+            if (!category || !itemName || !qty || !unitPrice) {
+                invalidRow = true;
+                return false;
+            }
+        });
+
+        if (invalidRow) {
+            Swal.fire("Invalid Item", "Please complete all item rows!", "warning");
+            return;
+        }
+
+        // AJAX request
+        $.ajax({
+            url: form.attr("action"),
+            method: "POST",
+            data: formData,
+            success: function (res) {
+                Swal.fire("Success", res.message, "success");
+
+                // Reload or redirect
+                setTimeout(() => {
+                    window.location.href = "{{ route('requisitions.index') }}";
+                }, 1500);
+            },
+            error: function (xhr) {
+                Swal.fire("Error", "Something went wrong!", "error");
+            }
+        });
+    });
+
+});
+</script>
+
+
+
+<!-- <script>
 let row = 1;
 
 // Add new row
@@ -371,7 +505,7 @@ document.getElementById("requisitionForm").addEventListener("submit", function(e
         let qty = tr.querySelector(".qty").value;
         let unitPrice = tr.querySelector(".unitPrice").value;
 
-        alert(category);
+        // alert(itemName);
 
         if (!category || !itemName || !qty || !unitPrice) {
             Swal.fire({
@@ -386,5 +520,5 @@ document.getElementById("requisitionForm").addEventListener("submit", function(e
     // All validations passed, submit form
     this.submit();
 });
-</script>
+</script> -->
 @endsection

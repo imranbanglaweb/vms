@@ -343,7 +343,7 @@
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js') }}"></script>
 	<!-- Popper (CDN; integrity removed because some installs reported SRI mismatch). If CDN fails, fallback to local copy. -->
 	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous" onerror="(function(){var s=document.createElement('script');s.src='{{ asset('public/admin_resource/assets/vendor/popper/popper.min.js') }}';s.crossOrigin='anonymous';document.head.appendChild(s);})();"></script>
-	<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+	<!-- <script src="{{ asset('public/admin_resource/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script> -->
 	<!-- theme's common.js not found in some installs; rely on theme.js below. If you need custom common utilities, add public/admin_resource/assets/vendor/common/common.js -->
 	<script src="{{ asset('public/admin_resource/assets/vendor/nanoscroller/nanoscroller.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/magnific-popup/magnific-popup.js') }}"></script>
@@ -396,37 +396,37 @@
 	</div>
 
 	<!-- Add in head section -->
-	<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css"> -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 
 	<!-- Add before closing body tag -->
-	<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script> -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
 	<!-- Add this in the head section -->
-	<!-- <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script> -->
+	 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet"> 
+	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
 	<!-- Replace the TinyMCE initialization script with this -->
 	<script>
 	// Initialize Summernote
-	// function initSummernote(selector = '.summernote') {
-	// 	$(selector).summernote({
-	// 		height: 100,
-	// 		toolbar: [
-	// 			['style', ['bold', 'italic', 'underline', 'clear']],
-	// 			['font', ['strikethrough']],
-	// 			['para', ['ul', 'ol']],
-	// 			['insert', ['link']],
-	// 			['view', ['fullscreen', 'codeview']],
-	// 		],
-	// 		callbacks: {
-	// 			onChange: function(contents) {
-	// 				$(this).val(contents).trigger('change');
-	// 			}
-	// 		}
-	// 	});
-	// }
+	function initSummernote(selector = '.summernote') {
+		$(selector).summernote({
+			height: 100,
+			toolbar: [
+				['style', ['bold', 'italic', 'underline', 'clear']],
+				['font', ['strikethrough']],
+				['para', ['ul', 'ol']],
+				['insert', ['link']],
+				['view', ['fullscreen', 'codeview']],
+			],
+			callbacks: {
+				onChange: function(contents) {
+					$(this).val(contents).trigger('change');
+				}
+			}
+		});
+	}
 
-	// // Initialize Summernote when document is ready
+	// Initialize Summernote when document is ready
     //     $(document).ready(function() {
 	// 	initSummernote();
 	// });
@@ -440,128 +440,129 @@
 	<!-- Add this to your existing script section -->
 	<script>
 	// Global function to toggle loading overlay
-	// function toggleLoading(show = true) {
-	// 	if (show) {
-	// 		$('.loading-overlay').fadeIn();
-	// 	} else {
-	// 		$('.loading-overlay').fadeOut();
-	// 	}
-	// }
+	function toggleLoading(show = true) {
+		if (show) {
+			$('.loading-overlay').fadeIn();
+		} else {
+			$('.loading-overlay').fadeOut();
+		}
+	}
 
 	// Global function to show form errors
-	// function showFormErrors(form, errors) {
-	// 	$.each(errors, function(field, messages) {
-	// 		var input = form.find(`[name="${field}"]`);
-	// 		input.addClass('is-invalid');
-	// 		input.siblings('.invalid-feedback').html(messages[0]);
+	function showFormErrors(form, errors) {
+		$.each(errors, function(field, messages) {
+			var input = form.find(`[name="${field}"]`);
+			input.addClass('is-invalid');
+			input.siblings('.invalid-feedback').html(messages[0]);
 			
-	// 		// Special handling for Select2
-	// 		if (input.hasClass('select2')) {
-	// 			input.next('.select2-container').find('.select2-selection').addClass('is-invalid');
-	// 		}
-	// 	});
-	// }
+			// Special handling for Select2
+			if (input.hasClass('select2')) {
+				input.next('.select2-container').find('.select2-selection').addClass('is-invalid');
+			}
+		});
+	}
 
 	// Global function to clear form errors
-	// function clearFormErrors(form) {
-	// 	form.find('.is-invalid').removeClass('is-invalid');
-	// 	form.find('.invalid-feedback').html('');
-	// 	form.find('.select2-selection').removeClass('is-invalid');
-	// 	$('#modal-alert-container').empty();
-	// }
+	function clearFormErrors(form) {
+		form.find('.is-invalid').removeClass('is-invalid');
+		form.find('.invalid-feedback').html('');
+		form.find('.select2-selection').removeClass('is-invalid');
+		$('#modal-alert-container').empty();
+	}
 
 	// Global function to show modal alerts
-	// function showModalAlert(type, message) {
-	// 	var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-	// 	var alert = `
-	// 		<div class="alert ${alertClass} alert-dismissible fade show">
-	// 			${message}
-	// 			<button type="button" class="close" data-dismiss="alert">&times;</button>
-	// 		</div>
-	// 	`;
-	// 	$('#modal-alert-container').html(alert);
-	// }
+	function showModalAlert(type, message) {
+		var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+		var alert = `
+			<div class="alert ${alertClass} alert-dismissible fade show">
+				${message}
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+			</div>
+		`;
+		$('#modal-alert-container').html(alert);
+	}
 
 	// Global function to show alerts (SweetAlert2)
-	// function showAlert(type, message) {
-	// 	const Toast = Swal.mixin({
-	// 		toast: true,
-	// 		position: 'top-end',
-	// 		showConfirmButton: false,
-	// 		timer: 3000,
-	// 		timerProgressBar: true
-	// 	});
+	function showAlert(type, message) {
+		const Toast = Swal.mixin({
+			toast: true,
+			position: 'top-end',
+			showConfirmButton: false,
+			timer: 3000,
+			timerProgressBar: true
+		});
 
-	// 	Toast.fire({
-	// 		icon: type,
-	// 		title: message
-	// 	});
-	// }
+		Toast.fire({
+			icon: type,
+			title: message
+		});
+	}
 
 	// Global function to handle form submissions
-	// function submitForm(form) {
-	// 	$.ajax({
-	// 		url: form.attr('action'),
-	// 		method: form.attr('method'),
-	// 		data: form.serialize(),
-	// 		beforeSend: function() {
-	// 			toggleLoading(true);
-	// 			form.find('button[type="submit"]').prop('disabled', true);
-	// 		},
-	// 		success: function(response) {
-	// 			if (response.success) {
-	// 				$('.modal').modal('hide');
-	// 				showAlert('success', response.message);
-	// 				// Reload the table or page after successful submission
-	// 				setTimeout(function() {
-	// 					window.location.reload();
-	// 				}, 1000);
-	// 			} else {
-	// 				showModalAlert('error', response.message || 'Error occurred');
-	// 			}
-	// 		},
-	// 		error: function(xhr) {
-	// 			if (xhr.responseJSON && xhr.responseJSON.errors) {
-	// 				showFormErrors(form, xhr.responseJSON.errors);
-	// 				showModalAlert('error', 'Please correct the errors below.');
-	// 			} else {
-	// 				showModalAlert('error', 'An error occurred while processing your request.');
-	// 			}
-	// 		},
-	// 		complete: function() {
-	// 			toggleLoading(false);
-	// 			form.find('button[type="submit"]').prop('disabled', false);
-	// 		}
-	// 	});
-	// }
+	function submitForm(form) {
+		$.ajax({
+			url: form.attr('action'),
+			method: form.attr('method'),
+			data: form.serialize(),
+			beforeSend: function() {
+				toggleLoading(true);
+				form.find('button[type="submit"]').prop('disabled', true);
+			},
+			success: function(response) {
+				if (response.success) {
+					$('.modal').modal('hide');
+					showAlert('success', response.message);
+					// Reload the table or page after successful submission
+					setTimeout(function() {
+						window.location.reload();
+					}, 1000);
+				} else {
+					showModalAlert('error', response.message || 'Error occurred');
+				}
+			},
+			error: function(xhr) {
+				if (xhr.responseJSON && xhr.responseJSON.errors) {
+					showFormErrors(form, xhr.responseJSON.errors);
+					showModalAlert('error', 'Please correct the errors below.');
+				} else {
+					showModalAlert('error', 'An error occurred while processing your request.');
+				}
+			},
+			complete: function() {
+				toggleLoading(false);
+				form.find('button[type="submit"]').prop('disabled', false);
+			}
+		});
+	}
 
 	// Initialize Summernote in modals
-	// $(document).on('shown.bs.modal', function() {
-	// 	$('.summernote').summernote({
-	// 		height: 200,
-	// 		toolbar: [
-	// 			['style', ['bold', 'italic', 'underline', 'clear']],
-	// 			['font', ['strikethrough']],
-	// 			['para', ['ul', 'ol']],
-	// 			['height', ['height']]
-	// 		]
-	// 	});
-	// });
+	$(document).on('shown.bs.modal', function() {
+		$('.summernote').summernote({
+			height: 200,
+			toolbar: [
+				['style', ['bold', 'italic', 'underline', 'clear']],
+				['font', ['strikethrough']],
+				['para', ['ul', 'ol']],
+				['height', ['height']]
+			]
+		});
+	});
 
 	// Clean up Summernote when modal is closed
-// 	$(document).on('hidden.bs.modal', function() {
-// 		$('.summernote').summernote('destroy');
-// });
+	$(document).on('hidden.bs.modal', function() {
+		$('.summernote').summernote('destroy');
+});
 		</script>
 
 	<!-- In the head section -->
-	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.css"> -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.css"> 
 
 	<!-- Before closing body tag -->
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js"></script> -->
+	 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> -->
+		<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
 
 	</body>
 </html>

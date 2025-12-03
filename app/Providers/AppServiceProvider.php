@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         \URL::forceRootUrl(config('app.url'));
 
         view()->composer(['admin.dashboard.dashboard', 'admin.dashboard.common.sidebar'], function ($view) {
-$sidebar_menus = Menu::orderBy('menu_oder','ASC')->where('menu_parent',0)->get();
+$sidebar_menus = Menu::orderBy('id','ASC')->where('menu_parent',0)->get();
      
         $view->with('sidebar_menus', $sidebar_menus);
         });

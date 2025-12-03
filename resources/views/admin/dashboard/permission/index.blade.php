@@ -1,79 +1,246 @@
 @extends('admin.dashboard.master')
 
-
 @section('main_content')
+<br>
 <section role="main" class="content-body">
-<div class="row">
-    <div class="col-lg-12 margin-tb">
-        <div class="pull-left">
-            <h2>Permission Management</h2>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="pull-left">
+                <h2>Permission Management</h2>
+            </div>
+            <div class="pull-right">
+         
+                    <a class="btn btn-success" href="{{ route('permissions.create') }}"> 
+                        <i class="fa fa-plus"></i> Add Permission
+                    </a>
+              
+            </div>
         </div>
-        <div class="pull-right">
-        @can('permission-create')
-            <a class="btn btn-success" href="{{ route('permissions.create') }}"> <i class="fa fa-plus"></i>    Add Permission</a>
-            @endcan
+    </div>
+
+    @if ($message = Session::get('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if ($message = Session::get('danger'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <a href="#" class="fa fa-caret-down"></a>
+                <a href="#" class="fa fa-times"></a>
+            </div>
+            <h2 class="panel-title">Permissions List</h2>
+        </header>
+        <div class="panel-body">
+            <table class="table table-bordered table-striped mb-none" id="permissionsTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Table</th>
+                        <th width="280px">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this permission?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" style="display: inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-@if ($message = Session::get('success'))
-    <div class="alert alert-success">
-        <p>{{ $message }}</p>
-    </div>
-@endif
+<!-- JavaScript Libraries -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
 
-@if ($message = Session::get('danger'))
-    <div class="alert alert-danger">
-        <p>{{ $message }}</p>
-    </div>
-@endif
+<script>
+$(document).ready(function() {
+    // Initialize DataTables with server-side processing
+    var table = $('#permissionsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('permissions.list') }}",
+            type: "GET",
+            error: function(xhr, error, thrown) {
+                console.log("AJAX Error:", xhr.responseText);
+            }
+        },
+        columns: [
+            {
+                data: 'DT_RowIndex',
+                name: 'DT_RowIndex',
+                orderable: false,
+                searchable: false,
+                width: '5%'
+            },
+            {
+                data: 'name',
+                name: 'name',
+                width: '45%'
+            },
+            
+            {
+                data: 'table_name',
+                name: 'table_name',
+                width: '35%'
+            },
+            {
+                data: 'action',
+                name: 'action',
+                orderable: false,
+                searchable: false,
+                width: '50%'
+            }
+        ],
+        order: [[1, 'asc']], // Default sort by name
+        lengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, 'All']
+        ],
+        pageLength: 10,
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'colvis',
+                text: 'Show/Hide Columns',
+                className: 'btn btn-secondary btn-sm'
+            }
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search permissions...",
+            lengthMenu: "_MENU_ records per page",
+            zeroRecords: "No permissions found",
+            info: "Showing _START_ to _END_ of _TOTAL_ permissions",
+            infoEmpty: "Showing 0 to 0 of 0 permissions",
+            infoFiltered: "(filtered from _MAX_ total permissions)",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
 
-                        <section class="panel">
-                            <header class="panel-heading">
-                                <div class="panel-actions">
-                                    <a href="#" class="fa fa-caret-down"></a>
-                                    <a href="#" class="fa fa-times"></a>
-                                </div>
+    // Handle delete button clicks
+    $(document).on('click', '.delete-btn', function(e) {
+        e.preventDefault();
+        var deleteUrl = $(this).data('url');
+        var deleteForm = $('#deleteForm');
+        
+        // Set form action
+        deleteForm.attr('action', deleteUrl);
+        
+        // Show modal
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+        
+        // Handle form submission
+        deleteForm.off('submit').on('submit', function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                url: deleteUrl,
+                type: 'DELETE',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Close modal
+                    deleteModal.hide();
+                    
+                    // Show success message
+                    if(response.success) {
+                        // Reload DataTable
+                        table.ajax.reload();
                         
-                               
-                            </header>
-                            <div class="panel-body">
-    <table class="table table-bordered table-striped mb-none" id="myTable">
-<thead>
-      <tr>
-     <th>No</th>
-     <th>Name</th>
-     <th width="280px">Action</th>
-  </tr>
-</thead>
-  <tbody>
-    @foreach ($permissions as $key => $permission)
-    <tr>
-        <td>{{ $key+1 }}</td>
-        <td>{{ $permission->name }}</td>
-        <td>
-          {{--   <a class="btn btn-info" href="{{ route('permissions.show',$permission->id) }}"> <i class="fa fa-eye"></i> Show</a> --}}
-            @can('permission-edit')
-                <a class="btn btn-primary" href="{{ route('permissions.edit',$permission->name) }}"><i class="fa fa-edit"></i> Edit</a>
-            @endcan
-            @can('permission-delete')
+                        // Show alert
+                        var alertHtml = '<div class="alert alert-success alert-dismissible fade show">' +
+                            response.success +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                            '</div>';
+                        
+                        $('.alert').remove(); // Remove existing alerts
+                        $('.margin-tb').after(alertHtml);
+                        
+                        // Auto-remove alert after 5 seconds
+                        setTimeout(function() {
+                            $('.alert').alert('close');
+                        }, 5000);
+                    }
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                    alert('Error deleting permission');
+                }
+            });
+        });
+    });
+    
+    // Close modal handler
+    $('#deleteModal').on('hidden.bs.modal', function () {
+        $('#deleteForm').off('submit');
+    });
+});
+</script>
 
-                {!! Form::open(['method' => 'DELETE','route' => ['permissions.destroy', $permission->id],'style'=>'display:inline']) !!}
-                    <i class="fa fa-trash-o"></i> 
-                     {!! Form::submit('Delete', ['class' => 'btn btn-danger']) !!}
-                {!! Form::close() !!}
-            @endcan
-        </td>
-    </tr>
-    @endforeach
-  </tbody>
-</table>
-</section>
-</div>
-</div>
-</div>
-</section>
+<!-- Make sure Bootstrap JS is loaded (if not already in layout) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<style>
+    .dataTables_wrapper .dataTables_filter {
+        float: right;
+        text-align: right;
+    }
+    .dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+    .dataTables_wrapper .dt-buttons {
+        float: left;
+        margin-right: 10px;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
 
 @endsection

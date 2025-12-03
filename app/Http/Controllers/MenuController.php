@@ -40,20 +40,39 @@ class MenuController extends Controller
     {
         $this->middleware('auth');
     }
-    public function index(Request $request)
-    {
-        
-          $menus = Menu::orderBy('menu_oder','ASC')->paginate(100);
-        return view('admin.dashboard.menus.index',compact('menus'))
-            ->with('i', ($request->input('page', 1) - 1) * 5);
+  
+    
+        public function index(Request $request)
+        {
+        if ($request->ajax()) {
+        $menus = Menu::select(['id', 'menu_name', 'menu_type', 'menu_icon', 'menu_url', 'menu_permission','menu_oder']);
+            return DataTables::of($menus)
+                ->addIndexColumn() // adds DT_RowIndex for row number
+                ->addColumn('menu_icon', function($row) {
+                    return '<i class="'.$row->menu_icon.'"></i>';
+                })
+                ->addColumn('action', function($row){
+                    $btn = '';
+                    if(auth()->user()->can('menu-edit')) {
+                        $btn .= '<a href="'.route('menus.edit', $row->id).'" class="btn btn-primary btn-sm me-1">
+                                    <i class="fa fa-edit"></i>
+                                </a>';
+                    }
+                    if(auth()->user()->can('menu-delete')) {
+                        $btn .= '<button class="btn btn-danger btn-sm deleteUser" data-menuid="'.$row->id.'">
+                                    <i class="fa fa-minus-circle"></i>
+                                </button>';
+                    }
+                    return $btn;
+                })
+                ->rawColumns(['menu_icon','action']) // render HTML
+                ->make(true);
+        }
+        return view('admin.dashboard.menus.index');
 
-    }
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function create()
     {
          // $menus = Menu::get();
@@ -222,8 +241,21 @@ class MenuController extends Controller
     }
 
 
+//    public function menuoder(Request $request)
+//     {
+//         $orderData = $request->order; // array of {id, newPosition}
 
-     public function menuoder(Request $request)
+//         dd($orderData);
+
+//         foreach ($orderData as $item) {
+//             Menu::where('id', $item['id'])->update(['menu_oder' => $item['newPosition']]);
+//         }
+
+//         return response()->json(['success' => true]);
+//     }
+
+
+ public function menuoder(Request $request)
     {
         \Log::info('Menu reorder request:', $request->all());
         
@@ -273,11 +305,10 @@ class MenuController extends Controller
             ], 500);
         }
     }
-
-    public function reorder(Request $request)
+        public function reorder(Request $request)
     {
         try {
-            $order = $request->input('order', []);
+            $order = $request->input('menu_oder', []);
             $this->updateMenuOrder($order);
             
             return response()->json([
@@ -306,4 +337,6 @@ class MenuController extends Controller
             }
         }
     }
+
+  
 }

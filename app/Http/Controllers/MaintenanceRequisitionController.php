@@ -9,58 +9,87 @@ use App\Models\Employee;
 use App\Models\MaintenanceType;
 use App\Models\MaintenanceVendor;
 use App\Models\MaintenanceSchedule;
+use Illuminate\Support\Facades\Auth;
 use App\Models\MaintenanceRequisitionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
 class MaintenanceRequisitionController extends Controller
 {
+    
     public function index(Request $request)
-{
+    {
     if ($request->ajax()) {
-        $query = MaintenanceRequisition::with(['vehicle','employee']);
+
+        $query = MaintenanceRequisition::with(['vehicle','employee'])
+            ->select('maintenance_requisitions.*'); // IMPORTANT FIX
 
         // Filters
-        if($request->vehicle){
-            $query->whereHas('vehicle', function($q) use ($request){
+        if ($request->vehicle) {
+            $query->whereHas('vehicle', function ($q) use ($request) {
                 $q->where('vehicle_no', 'like', "%{$request->vehicle}%");
             });
         }
-        if($request->employee){
-            $query->whereHas('employee', function($q) use ($request){
+
+        if ($request->employee) {
+            $query->whereHas('employee', function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->employee}%");
             });
         }
-        if($request->type){
+
+        if ($request->type) {
             $query->where('requisition_type', $request->type);
         }
-        if($request->priority){
+
+        if ($request->priority) {
             $query->where('priority', $request->priority);
         }
 
         return DataTables::of($query)
             ->addIndexColumn()
-            ->addColumn('vehicle', function($row){ return $row->vehicle->vehicle_no ?? '-'; })
-            ->addColumn('employee', function($row){ return $row->employee->name ?? '-'; })
-            ->addColumn('grand_total', function($row){ return '$'.number_format($row->grand_total ?? 0, 2); })
+
+            ->addColumn('vehicle', function($row){
+                return $row->vehicle->vehicle_no ?? '-';
+            })
+
+            ->addColumn('employee', function($row){
+                return $row->employee->name ?? '-';
+            })
+
+            ->addColumn('grand_total', function($row){
+                return '$' . number_format($row->grand_total ?? 0, 2);
+            })
+
             ->addColumn('status', function($row){
-                $color = $row->status == 'Approved' ? 'green' : ($row->status == 'Rejected' ? 'red' : 'orange');
+                $color = match($row->status) {
+                    'Approved' => 'green',
+                    'Rejected' => 'red',
+                    default     => 'orange'
+                };
                 return '<span style="color:'.$color.';font-weight:bold;">'.$row->status.'</span>';
             })
+
             ->addColumn('actions', function($row){
-                $view = '<a href="'.route("requisitions.show",$row->id).'" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>';
-                $edit = '<a href="'.route("requisitions.edit",$row->id).'" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>';
-                $delete = '<form action="'.route("requisitions.destroy",$row->id).'" method="POST" class="d-inline" onsubmit="return confirm(\'Are you sure?\')">'.
-                          csrf_field().method_field('DELETE').
-                          '<button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button></form>';
-                return $view.' '.$edit.' '.$delete;
+                return '
+                    <a href="'.route("requisitions.show",$row->id).'" class="btn btn-info btn-sm">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                    <a href="'.route("requisitions.edit",$row->id).'" class="btn btn-warning btn-sm">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <button data-id="'.$row->id.'" class="btn btn-danger btn-sm deleteBtn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                ';
             })
+
             ->rawColumns(['status','actions'])
             ->make(true);
     }
 
     return view('admin.dashboard.maintenance.index');
     }
+
     public function create()
     {
                 $vehicles = Vehicle::all();
@@ -97,7 +126,7 @@ class MaintenanceRequisitionController extends Controller
                 'charge_bear_by' => $request->charge_bear_by,
                 'charge_amount' => $request->charge_amount,
                 'remarks' => $request->remarks,
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
 
             $total_parts_cost = 0;
@@ -113,6 +142,7 @@ class MaintenanceRequisitionController extends Controller
                     'qty' => $row['qty'],
                     'unit_price' => $row['unit_price'],
                     'total_price' => $total,
+                    'created_by' => Auth::id(),
                 ]);
 
                 $total_parts_cost += $total;
