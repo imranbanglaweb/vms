@@ -775,6 +775,7 @@ class ComposerStaticInit76263817b114701ce8947ab2985659ae
         'App\\Http\\Controllers\\LicneseTypeController' => __DIR__ . '/../..' . '/app/Http/Controllers/LicneseTypeController.php',
         'App\\Http\\Controllers\\LocationController' => __DIR__ . '/../..' . '/app/Http/Controllers/LocationController.php',
         'App\\Http\\Controllers\\LogHistoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/LogHistoryController.php',
+        'App\\Http\\Controllers\\MaintenanceCategoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/MaintenanceCategoryController.php',
         'App\\Http\\Controllers\\MaintenanceController' => __DIR__ . '/../..' . '/app/Http/Controllers/MaintenanceController.php',
         'App\\Http\\Controllers\\MaintenanceRequisitionController' => __DIR__ . '/../..' . '/app/Http/Controllers/MaintenanceRequisitionController.php',
         'App\\Http\\Controllers\\MaintenanceScheduleController' => __DIR__ . '/../..' . '/app/Http/Controllers/MaintenanceScheduleController.php',

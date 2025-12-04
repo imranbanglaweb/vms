@@ -1,7 +1,9 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body">
+<br>
+<br>
+<section role="main" class="content-body" style="background-color: #f8f9fa;">
 <div class="row">
     <div class="col-lg-12 margin-tb">
         <div class="pull-left">
@@ -23,9 +25,7 @@
     </ul>
   </div>
 @endif
-<div class="pull-right">
-            <a class="btn btn-primary" href="{{ route('users.index') }}"> Back</a>
-        </div>
+
 <form id="usertForm" action="{{ route('users.store') }}" method="post" enctype="multipart/form-data">
     @csrf
 
@@ -36,7 +36,7 @@
             <select name="employee_id" class="form-control select2 employee_id">
                 <option value="">Please Select</option>
             @foreach($employee_lists as $list)
-                <option value="{{ $list->id}}">{{ $list->employee_name }} -- {{  $list->employee_id}}</option>
+                <option value="{{ $list->id}}">{{ $list->name }} -- {{  $list->employee_code}}</option>
             @endforeach
             </select>
             <div class="invalid-feedback"></div>
@@ -122,7 +122,7 @@
              </div>
     <div class="col-xs-12 col-sm-12 col-md-12 text-center">
         <button type="submit" class="btn btn-primary">
-            <i class="fa fa-save"></i> Save Document
+            <i class="fa fa-save"></i> Save User
         </button>
     </div>
 </div>

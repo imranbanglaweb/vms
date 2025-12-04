@@ -192,13 +192,15 @@ class UserController extends Controller
 
     $input = $request->all();
     $input['password'] = bcrypt($input['password']);
-
+    
+    
     $employee_list = DB::table('employees')->where('id',$request->employee_id)->first();
-    $employee_id = $employee_list->employee_id;
+    $employee_code = $employee_list->employee_code;
     $department_id = $employee_list->department_id;
     $unit_id = $employee_list->unit_id;
-    $location_id = $employee_list->location_id;
-
+    // $location_id = $employee_list->location_id;
+    
+    // dd($employee_code);
     try {
         DB::beginTransaction();
 
@@ -212,7 +214,7 @@ class UserController extends Controller
             // 'created_by' => auth()->id()
 
             'name'             => $request->user_name,
-            'user_name'        => $employee_id,
+            'user_name'        => $employee_code,
             'email'            => $request->email,
             'cell_phone'       => $request->cell_phone,
             'password'         => Hash::make($request['password']),
@@ -221,7 +223,7 @@ class UserController extends Controller
             // 'role_id'          => $request->input('roles'),
             // 'company_id'       => $request->company_id,
             'department_id'    => $department_id,
-            'location_id'      => $location_id,
+            // 'location_id'      => $location_id,
             'created_by'       => Auth::id(),
         ];
 

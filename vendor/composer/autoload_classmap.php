@@ -51,6 +51,7 @@ return array(
     'App\\Http\\Controllers\\LicneseTypeController' => $baseDir . '/app/Http/Controllers/LicneseTypeController.php',
     'App\\Http\\Controllers\\LocationController' => $baseDir . '/app/Http/Controllers/LocationController.php',
     'App\\Http\\Controllers\\LogHistoryController' => $baseDir . '/app/Http/Controllers/LogHistoryController.php',
+    'App\\Http\\Controllers\\MaintenanceCategoryController' => $baseDir . '/app/Http/Controllers/MaintenanceCategoryController.php',
     'App\\Http\\Controllers\\MaintenanceController' => $baseDir . '/app/Http/Controllers/MaintenanceController.php',
     'App\\Http\\Controllers\\MaintenanceRequisitionController' => $baseDir . '/app/Http/Controllers/MaintenanceRequisitionController.php',
     'App\\Http\\Controllers\\MaintenanceScheduleController' => $baseDir . '/app/Http/Controllers/MaintenanceScheduleController.php',

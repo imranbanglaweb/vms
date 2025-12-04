@@ -343,7 +343,7 @@
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js') }}"></script>
 	<!-- Popper (CDN; integrity removed because some installs reported SRI mismatch). If CDN fails, fallback to local copy. -->
 	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous" onerror="(function(){var s=document.createElement('script');s.src='{{ asset('public/admin_resource/assets/vendor/popper/popper.min.js') }}';s.crossOrigin='anonymous';document.head.appendChild(s);})();"></script>
-	<!-- <script src="{{ asset('public/admin_resource/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script> -->
+	<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
 	<!-- theme's common.js not found in some installs; rely on theme.js below. If you need custom common utilities, add public/admin_resource/assets/vendor/common/common.js -->
 	<script src="{{ asset('public/admin_resource/assets/vendor/nanoscroller/nanoscroller.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/magnific-popup/magnific-popup.js') }}"></script>
@@ -561,7 +561,7 @@
 	 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js"></script>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
 
 	</body>
