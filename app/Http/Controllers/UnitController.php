@@ -55,7 +55,7 @@ class UnitController extends Controller
         }
 
         try {
-            $query = Unit::select(['id','unit_name','unit_code']);
+            $query = Unit::select(['id','unit_name','unit_code', 'description']);
 
             $dt = DataTables::of($query)
                 ->addIndexColumn()

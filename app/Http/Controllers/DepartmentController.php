@@ -13,161 +13,94 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    
+
+  // Show view
     public function index()
     {
-        $units = Unit::orderBy('unit_name')->get();
+        $units = Unit::all();
         return view('admin.dashboard.department.index', compact('units'));
     }
 
-    /**
-     * Server-side data endpoint for departments (DataTables)
-     */
-    public function data(Request $request)
+    // Data for DataTables
+    public function data()
     {
-        $query = DB::table('departments')
-            ->leftJoin('units','departments.unit_id','units.id')
-            ->select('departments.id as id','departments.department_name','departments.department_code','departments.description','units.unit_name');
+        $departments = Department::with('unit')->select('departments.*');
 
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('action', function($row){
-                $editBtn = "<button class='btn btn-sm btn-primary editDepartment' data-id='".$row->id."' data-name='".htmlspecialchars($row->department_name, ENT_QUOTES)."' data-code='".htmlspecialchars($row->department_code, ENT_QUOTES)."' data-unit='".htmlspecialchars($row->unit_name, ENT_QUOTES)."'><i class='fa fa-edit'></i></button> ";
-                $delBtn = "<button class='btn btn-sm btn-danger deleteUser' data-did='".$row->id."'><i class='fa fa-minus-circle'></i></button>";
-                $btn = $editBtn . $delBtn;
-                return $btn;
+        return datatables()->of($departments)
+            ->addColumn('unit_name', function($dept){
+                return $dept->unit->unit_name ?? '';
             })
-            ->rawColumns(['action'])
+            ->addColumn('action', function($dept){
+                $edit = '<button class="btn btn-sm btn-primary editBtn" data-id="'.$dept->id.'"> <i class="fa fa-edit"></i></button>';
+                $delete = '<button class="btn btn-sm btn-danger deleteBtn" data-id="'.$dept->id.'"><i class="fa fa-minus-circle"></i></button>';
+                    return $edit.' '.$delete;
+                return $edit.' '.$delete;
+            })
             ->make(true);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    // Store / Update
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'unit_id' => 'required',
-            'department_name' => 'required',
-        ]);
+        $rules = [
+            'unit_id' => 'required|exists:units,id',
+            'department_name' => 'required|string|max:255',
+            'department_code' => 'required|string|max:50|unique:departments,department_code,'.$request->id,
+            'status' => 'required|in:0,1'
+        ];
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->all()], 400);
+        $validator = Validator::make($request->all(), $rules);
+
+        if($validator->fails()){
+            return response()->json(['errors'=>$validator->errors()], 422);
         }
 
-        $department = Department::updateOrCreate([
-            'id' => $request->id
-        ], [
-            'unit_id' => $request->unit_id,
-            'department_name' => $request->department_name,
-            'department_code' => $request->department_code,
-            'description' => $request->description,
-               'created_by'     => Auth::id(),
-        ]);
-
-        return response()->json('Department saved successfully');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Department  $department
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Department $department)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Department  $department
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Department $department)
-    {
-        $units = Unit::orderBy('unit_name')->get();
-        return view('admin.dashboard.department.edit', compact('department','units'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Department  $department
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Department $department)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Department  $department
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Department $department)
-    {
-        $department->delete();
-        if (request()->ajax()) {
-            return response()->json(['ok' => true, 'message' => 'Department deleted']);
-        }
-
-        return redirect()->route('departments.index')->with('danger', 'Department deleted');
-    }
-
-    /**
-     * Return companies related to a unit (for AJAX select population).
-     */
-    public function unitWiseCompany(Request $request)
-    {
-        $unit_id = $request->get('unit_id');
-
-        // Try to infer company from Unit if possible, otherwise return all companies
-        $companies = collect();
-        if ($unit_id) {
-            $unit = Unit::find($unit_id);
-            if ($unit && isset($unit->company_id) && $unit->company_id) {
-                $companies = Company::where('id', $unit->company_id)->get(['id', 'name']);
+        if($request->id){
+            // Update
+            $dept = Department::find($request->id);
+            if(!$dept){
+                return response()->json(['message'=>'Department not found'], 404);
             }
+        } else {
+            $dept = new Department();
+            $dept->created_by = Auth::id() ?? 1;
         }
 
-        if ($companies->isEmpty()) {
-            // Company model uses "company_name" column
-            $companies = Company::select('id', 'company_name')->orderBy('company_name')->get();
-        }
+        $dept->unit_id = $request->unit_id;
+        $dept->department_name = $request->department_name;
+        $dept->department_code = $request->department_code;
+        $dept->department_short_name = $request->department_short_name;
+        $dept->location = $request->location;
+        $dept->description = $request->description;
+        $dept->status = $request->status;
+        $dept->updated_by = Auth::id() ?? 1;
+        $dept->save();
 
-        // Normalize key expected by front-end (company_name)
-        $company_list = $companies->map(function ($c) {
-            return ['id' => $c->id, 'company_name' => $c->company_name];
-        });
-
-        return response()->json(['company_list' => $company_list]);
+        $msg = $request->id ? 'Department updated successfully' : 'Department created successfully';
+        return response()->json(['message'=>$msg]);
     }
 
-    /**
-     * Return departments for a given unit (for AJAX select population).
-     */
+    // Edit (return JSON)
+    public function edit($id)
+    {
+        $dept = Department::find($id);
+        if(!$dept){
+            return response()->json(['message'=>'Department not found'], 404);
+        }
+        return response()->json($dept);
+    }
+
+    // Delete
+    public function destroy($id)
+    {
+        $dept = Department::find($id);
+        if(!$dept){
+            return response()->json(['message'=>'Department not found'], 404);
+        }
+        $dept->delete();
+        return response()->json(['message'=>'Department deleted successfully']);
+    }
     public function unitWiseDepartment(Request $request)
     {
         $unit_id = $request->get('unit_id');
@@ -189,4 +122,8 @@ class DepartmentController extends Controller
 
         return response()->json(['department_list' => $department_list]);
     }
+
+    
+
+
 }

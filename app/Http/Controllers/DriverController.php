@@ -96,7 +96,20 @@ class DriverController extends Controller
         'driver'  => $driver,
     ]);
 }
+  // edit view (separate page)
+    public function edit($id)
+    {
+        $driver = Driver::find($id);
+        if (!$driver) {
+            return redirect()->route('drivers.index')->with('danger','Driver not found');
+        }
+        $units = Unit::orderBy('unit_name')->get();
+        $departments = Department::orderBy('department_name')->get();
+        $licenseTypes = Licnese_type::orderBy('type_name')->get();
+        $employees = Employee::orderBy('name')->get();
 
+        return view('admin.dashboard.driver.edit', compact('driver','units','departments','licenseTypes','employees'));
+    }
 
     public function getEmployeeDetails($id)
     {
@@ -135,10 +148,16 @@ class DriverController extends Controller
      */
 
 
-    public function data()
+   public function data()
 {
     if (request()->ajax()) {
-        $drivers = Driver::select([
+
+        $drivers = Driver::with([
+            'unit:id,unit_name',
+            'department:id,department_name',
+            'licenseType:id,type_name'
+        ])
+        ->select([
             'id',
             'unit_id',
             'department_id',
@@ -146,7 +165,7 @@ class DriverController extends Controller
             'license_number',
             'nid',
             'employee_nid',
-            'license_type',
+            'license_type_id',       // If this is an ID, rename column to license_type_id
             'license_issue_date',
             'date_of_birth',
             'joining_date',
@@ -156,33 +175,64 @@ class DriverController extends Controller
             'working_time_slot',
             'leave_status',
             'photograph'
-        ])->latest();
+        ])
+        ->latest();
 
         return DataTables::of($drivers)
             ->addIndexColumn()
-            ->addColumn('action', function($row){
-                return '
-                    <button class="btn btn-sm btn-primary editDriver" 
-                        data-id="'.$row->id.'" 
-                        data-name="'.$row->driver_name.'" 
-                        data-phone="'.$row->mobile.'">
-                        <i class="fa fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger deleteUser" 
-                        data-did="'.$row->id.'">
-                        <i class="fa fa-trash"></i>
-                    </button>';
+
+            // Show Unit Name
+            ->addColumn('unit_name', function($row){
+                return $row->unit->unit_name ?? '-';
             })
-            ->editColumn('driver_name', function($row){
-                return $row->driver_name;
+
+            // Show Department Name
+            ->addColumn('department_name', function($row){
+                return $row->department->department_name ?? '-';
             })
+
+            // Show License Type Name
+            ->addColumn('license_type_name', function($row){
+                return $row->licenseType->type_name ?? '-';
+            })
+
+            // Show Driver Photo
+            ->addColumn('photo', function($row){
+                if ($row->photograph) {
+                    $url = asset('uploads/drivers/' . $row->photograph);
+                    return '<img src="'. $url .'" width="40" height="40" class="rounded-circle" />';
+                }
+                return '<span class="badge bg-secondary">No Photo</span>';
+            })
+
+            // Clean Mobile Field
             ->editColumn('mobile', function($row){
                 return $row->mobile ?? '-';
             })
-            ->rawColumns(['action'])
+
+            // Joining Date format
+            ->editColumn('joining_date', function($row){
+                return $row->joining_date ? date('d M, Y', strtotime($row->joining_date)) : '-';
+            })
+
+            // Action buttons
+            ->addColumn('action', function($row){
+                $editUrl = route('drivers.edit', $row->id);
+
+                $btn  = '<a href="'. e($editUrl) .'" class="btn btn-sm btn-primary me-1">';
+                $btn .= '<i class="fa fa-edit"></i></a>';
+
+                $btn .= '<button class="btn btn-sm btn-danger deleteUser" data-did="'. $row->id .'">';
+                $btn .= '<i class="fa fa-minus-circle"></i></button>';
+
+                return $btn;
+            })
+
+            ->rawColumns(['photo', 'action'])
             ->make(true);
     }
 }
+
     public function getEmployeeInfo(Request $request)
     {
         $employee_code = $request->get('employee_code');

@@ -56,27 +56,38 @@ class LocationController extends Controller
     /**
      * Server-side data endpoint for locations
      */
-    public function data(Request $request)
-    {
-        $query = DB::table('locations')
-            ->leftJoin('units','locations.unit_id','=','units.id')
-            ->select('locations.id as id','locations.location_name','locations.address','locations.location_code','units.unit_name')
-            ->whereNull('locations.deleted_at');
+    public function data()
+{
+    $query = \DB::table('locations')
+        ->leftJoin('units', 'locations.unit_id', '=', 'units.id')
+        ->select(
+            'locations.id as l_id',
+            'locations.location_name',
+            'locations.address',
+            'units.unit_name'
+        )
+        ->whereNull('locations.deleted_at');
 
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('action', function($row){
-                // emit buttons compatible with the client-side modal-based editor
-                $ln = htmlspecialchars($row->location_name ?? '', ENT_QUOTES);
-                $addr = htmlspecialchars($row->address ?? '', ENT_QUOTES);
-                $unit = htmlspecialchars($row->unit_name ?? '', ENT_QUOTES);
-                $editBtn = "<button class=\"btn btn-sm btn-primary editLocation\" data-id=\"{$row->id}\" data-name=\"{$ln}\" data-address=\"{$addr}\" data-unit=\"{$unit}\"> <i class=\"fa fa-edit\"></i></button>";
-                $deleteBtn = "<button class=\"btn btn-sm btn-danger deleteUser\" data-lid=\"{$row->id}\"><i class=\"fa fa-minus-circle\"></i></button>";
-                return $editBtn . ' ' . $deleteBtn;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
-    }
+    return DataTables::of($query)
+        ->addIndexColumn()
+        ->addColumn('action', function($row){
+            $editBtn = '<button class="btn btn-sm btn-primary editLocation" data-id="'.$row->l_id.'" data-name="'.$row->location_name.'" data-address="'.$row->address.'" data-unit="'.$row->unit_name.'"><i class="fa fa-edit"></i></button>';
+            $delBtn = '<button class="btn btn-sm btn-danger deleteUser" data-lid="'.$row->l_id.'"><i class="fa fa-minus"></i></button>';
+            return $editBtn.' '.$delBtn;
+        })
+        ->filter(function ($query) {
+            if (request()->has('search') && $search = request('search')['value']) {
+                $search = strtolower($search);
+                $query->where(function ($q) use ($search) {
+                    $q->whereRaw('LOWER(locations.location_name) like ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(units.unit_name) like ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(locations.address) like ?', ["%{$search}%"]);
+                });
+            }
+        })
+        ->rawColumns(['action'])
+        ->make(true);
+}
 
     /**
      * Show the form for creating a new resource.

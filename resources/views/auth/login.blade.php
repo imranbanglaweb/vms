@@ -10,7 +10,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
 
     <style>
-
         body {
             margin: 0;
             padding: 0;
@@ -85,18 +84,384 @@
             background: #2980b9;
         }
 
-        /* RIGHT PANEL */
+        /* RIGHT PANEL - ENHANCED ROAD VIEW */
         .login-right {
             flex: 1;
             position: relative;
             overflow: hidden;
+            background: linear-gradient(to bottom, #0a1a2d, #1a3a5f);
         }
 
-        .bg-road {
-            height: 100vh;
+        .road-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            background: url('public/admin_resource/assets/images/city-road-bg.jpg') no-repeat center center/cover;
-            filter: brightness(0.55);
+            height: 60%;
+            perspective: 800px;
+            overflow: hidden;
+        }
+
+        .road-surface {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: 
+                /* Road surface */
+                linear-gradient(to right, 
+                    #333 0%, 
+                    #444 2%, 
+                    #333 4%, 
+                    #444 6%,
+                    #333 8%,
+                    #2a2a2a 100%
+                ),
+                /* Road texture */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 49.5%,
+                    #555 49.5%,
+                    #555 50.5%,
+                    transparent 50.5%,
+                    transparent 100%
+                ),
+                /* Lane markings */
+                linear-gradient(90deg,
+                    transparent 45%,
+                    #ffd700 45%,
+                    #ffd700 46%,
+                    transparent 46%,
+                    transparent 54%,
+                    #ffd700 54%,
+                    #ffd700 55%,
+                    transparent 55%
+                ),
+                /* Road center dashed line */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 40px,
+                    #ffd700 40px,
+                    #ffd700 60px,
+                    transparent 60px
+                );
+            background-size: 100% 100%, 100px 100%, 100% 5px, 100px 10px;
+            background-position: 0 0, 0 0, 0 50%, 0 50%;
+            background-repeat: repeat-x, repeat-x, repeat-x, repeat-x;
+            animation: roadMove 4s linear infinite;
+            transform-origin: bottom;
+            transform: rotateX(60deg) scaleY(2);
+            filter: brightness(0.8) contrast(1.2);
+        }
+
+        .road-shoulder {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #555, #666, #555);
+            z-index: 2;
+        }
+
+        .road-shoulder::before,
+        .road-shoulder::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 20%;
+            background: repeating-linear-gradient(
+                90deg,
+                #666,
+                #666 10px,
+                #777 10px,
+                #777 20px
+            );
+        }
+
+        .road-shoulder::before {
+            left: 0;
+        }
+
+        .road-shoulder::after {
+            right: 0;
+        }
+
+        /* MOVING CAR - PERSPECTIVE ADJUSTED */
+        .car-container {
+            position: absolute;
+            bottom: 30%;
+            left: 0;
+            width: 280px;
+            height: 120px;
+            animation: carDrive 8s linear infinite;
+            z-index: 15;
+            transform-style: preserve-3d;
+        }
+
+        .car-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            border-radius: 15px 15px 5px 5px;
+            box-shadow: 
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 2px 0 rgba(255,255,255,0.1);
+            transform: rotateX(10deg) scaleY(0.8);
+            overflow: hidden;
+        }
+
+        .car-window {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            width: 40%;
+            height: 30px;
+            background: linear-gradient(135deg, #87CEEB, #E0F6FF);
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .car-window:nth-child(2) {
+            left: auto;
+            right: 20px;
+        }
+
+        .car-headlight {
+            position: absolute;
+            top: 40px;
+            width: 20px;
+            height: 10px;
+            background: #FFD700;
+            border-radius: 10px;
+            box-shadow: 0 0 15px 5px #FFD700;
+        }
+
+        .car-headlight:nth-child(3) {
+            left: 10px;
+        }
+
+        .car-headlight:nth-child(4) {
+            right: 10px;
+        }
+
+        .car-wheel {
+            position: absolute;
+            bottom: -15px;
+            width: 35px;
+            height: 35px;
+            background: #222;
+            border-radius: 50%;
+            border: 3px solid #444;
+            animation: wheelSpin 1s linear infinite;
+        }
+
+        .car-wheel::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: #666;
+            border-radius: 50%;
+        }
+
+        .car-wheel:nth-child(5) {
+            left: 30px;
+        }
+
+        .car-wheel:nth-child(6) {
+            right: 30px;
+        }
+
+        .car-shadow {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(1.5) scaleY(0.3);
+            width: 80%;
+            height: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+            z-index: 14;
+        }
+
+        /* ROADSIDE ELEMENTS */
+        .roadside {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .tree {
+            position: absolute;
+            bottom: 20px;
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            animation: treeMove 15s linear infinite;
+        }
+
+        .tree::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #228B22, #006400);
+            border-radius: 50%;
+        }
+
+        .tree:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .tree:nth-child(2) { left: 30%; animation-delay: 2s; }
+        .tree:nth-child(3) { left: 50%; animation-delay: 4s; }
+        .tree:nth-child(4) { left: 70%; animation-delay: 6s; }
+        .tree:nth-child(5) { left: 90%; animation-delay: 8s; }
+
+        .lamp-post {
+            position: absolute;
+            bottom: 20px;
+            width: 5px;
+            height: 100px;
+            background: linear-gradient(to right, #666, #888, #666);
+            animation: treeMove 20s linear infinite;
+        }
+
+        .lamp-post::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+            border-radius: 50%;
+            box-shadow: 0 0 20px 5px #FFD700;
+        }
+
+        .lamp-post:nth-child(6) { left: 20%; animation-delay: 1s; }
+        .lamp-post:nth-child(7) { left: 60%; animation-delay: 5s; }
+
+        /* SKY AND BACKGROUND */
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to bottom, #1a3a5f, #2a5298, #3498db);
+            overflow: hidden;
+        }
+
+        .cloud {
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 40px;
+            animation: cloudMove 30s linear infinite;
+            filter: blur(2px);
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .cloud::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 15px;
+        }
+
+        .cloud::after {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            right: 15px;
+        }
+
+        .cloud:nth-child(1) { top: 20%; animation-delay: 0s; }
+        .cloud:nth-child(2) { top: 30%; animation-delay: 10s; }
+        .cloud:nth-child(3) { top: 15%; animation-delay: 20s; }
+
+        /* ANIMATIONS */
+        @keyframes roadMove {
+            0% { transform: rotateX(60deg) scaleY(2) translateX(0); }
+            100% { transform: rotateX(60deg) scaleY(2) translateX(-50%); }
+        }
+
+        @keyframes carDrive {
+            0% { 
+                transform: translateX(-300px) translateY(0) rotateY(0deg);
+                filter: brightness(1);
+            }
+            10% { 
+                transform: translateX(10%) translateY(-2px) rotateY(5deg);
+                filter: brightness(1.2);
+            }
+            50% { 
+                transform: translateX(50%) translateY(0) rotateY(0deg);
+                filter: brightness(1);
+            }
+            90% { 
+                transform: translateX(90%) translateY(-2px) rotateY(-5deg);
+                filter: brightness(1.2);
+            }
+            100% { 
+                transform: translateX(110%) translateY(0) rotateY(0deg);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes wheelSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes treeMove {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100px); }
+        }
+
+        @keyframes cloudMove {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-200px); }
+        }
+
+        /* HEADLIGHT BEAM */
+        .headlight-beam {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 500px;
+            height: 150px;
+            background: linear-gradient(90deg, 
+                rgba(255,215,0,0.4) 0%,
+                rgba(255,215,0,0.2) 30%,
+                rgba(255,215,0,0.1) 60%,
+                transparent 100%);
+            clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+            animation: carDrive 8s linear infinite;
+            filter: blur(10px);
+            z-index: 12;
+            opacity: 0.6;
         }
 
         /* COMPANY TITLE + TAGLINE */
@@ -106,93 +471,19 @@
             left: 50px;
             z-index: 20;
             color: #fff;
-            text-shadow: 0 0 10px rgba(0,0,0,0.6);
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
 
         .system-text h1 {
             font-size: 42px;
             font-weight: 700;
+            margin-bottom: 10px;
         }
 
         .system-text p {
             font-size: 18px;
             opacity: .9;
-        }
-
-        /* MOVING CAR */
-        .car-animation {
-            position: absolute;
-            bottom: 60px;
-            left: -300px;
-            width: 280px;
-            animation: carMove 8s linear infinite;
-            z-index: 15;
-        }
-        
-
-        @keyframes carMove {
-            0% { left: -300px; }
-            100% { left: 110%; }
-        }
-
-        .car-glow {
-            position: absolute;
-            bottom: 40px;
-            width: 180px;
-            height: 20px;
-            left: -300px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            filter: blur(10px);
-            animation: carMove 8s linear infinite;
-        }
-
-        /* --- 1. FOG ANIMATION --- */
-        .fog {
-            position: absolute;
-            top: 0;
-            left: -200px;
-            width: 500px;
-            height: 100vh;
-            background: url('public/admin_resource/assets/images/fog.png') no-repeat center/cover;
-            opacity: 0.22;
-            animation: fogMove 20s linear infinite;
-            z-index: 5;
-        }
-
-        @keyframes fogMove {
-            0% { left: -300px; }
-            100% { left: 110%; }
-        }
-
-        /* --- 2. MOVING LIGHT TRAILS --- */
-        .light-trail {
-            position: absolute;
-            bottom: 120px;
-            height: 4px;
-            width: 200px;
-            background: rgba(0, 180, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0,180,255,0.8);
-            left: -250px;
-            border-radius: 5px;
-            animation: trailMove 4s linear infinite;
-            z-index: 12;
-        }
-
-        .light-trail:nth-child(2) {
-            bottom: 150px;
-            animation-delay: 1s;
-        }
-
-        .light-trail:nth-child(3) {
-            bottom: 180px;
-            animation-delay: 2s;
-        }
-
-        @keyframes trailMove {
-            0% { left: -300px; opacity: 0; }
-            10% { opacity: 1; }
-            100% { left: 120%; opacity: 0; }
+            color: #FFD700;
         }
 
         @media(max-width: 850px) {
@@ -203,25 +494,29 @@
             .login-right {
                 display: none;
             }
+            
+            .system-text h1 {
+                font-size: 32px;
+            }
+            
+            .system-text p {
+                font-size: 16px;
+            }
         }
-
     </style>
 </head>
 
 <body>
 
 <div class="login-wrapper">
-
     <!-- LEFT SIDE LOGIN -->
     <div class="login-left">
         <div class="login-box">
-
             <img src="{{ asset('public/admin_resource/assets/images/vault-logo.webp') }}" alt="Logo">
             <h3>Login</h3>
 
             <form method="POST" action="{{ route('login') }}">
                 @csrf
-
                 <div class="form-group position-relative">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text"
@@ -250,29 +545,53 @@
         </div>
     </div>
 
-    <!-- RIGHT SIDE WITH ANIMATIONS -->
+    <!-- RIGHT SIDE WITH ENHANCED ROAD VIEW -->
     <div class="login-right">
-        <div class="bg-road"></div>
-
-        <!-- TITLE + TAGLINE -->
-        <div class="system-text">
-            <h1>TRANSPORT & <SPAN Style="color:yellowgreen">VEHICLE</SPAN> AUTOMATION</h1>
-            <p>Smart Logistics. Better Operations.</p>
+        <!-- SKY -->
+        <div class="sky">
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
         </div>
 
-        <!-- Fog Layer -->
-        <div class="fog"></div>
+        <!-- ROAD CONTAINER -->
+        <div class="road-container">
+            <!-- ROADSIDE ELEMENTS -->
+            <div class="roadside">
+                <div class="tree"></div>
+                <div class="tree"></div>
+                <div class="tree"></div>
+                <div class="tree"></div>
+                <div class="tree"></div>
+                <div class="lamp-post"></div>
+                <div class="lamp-post"></div>
+            </div>
+            
+            <!-- ROAD -->
+            <div class="road-surface"></div>
+            <div class="road-shoulder"></div>
+            
+            <!-- CAR WITH HEADLIGHT -->
+            <div class="headlight-beam"></div>
+            <div class="car-container">
+                <div class="car-shadow"></div>
+                <div class="car-body">
+                    <div class="car-window"></div>
+                    <div class="car-window"></div>
+                    <div class="car-headlight"></div>
+                    <div class="car-headlight"></div>
+                    <div class="car-wheel"></div>
+                    <div class="car-wheel"></div>
+                </div>
+            </div>
+        </div>
 
-        <!-- Light Trails -->
-        <div class="light-trail"></div>
-        <div class="light-trail"></div>
-        <div class="light-trail"></div>
-
-        <!-- Car Animation -->
-        <img src="public/admin_resource/assets/images/car.png" class="car-animation">
-        <div class="car-glow"></div>
+        <!-- COMPANY TEXT -->
+        <div class="system-text">
+            <h1>TRANSPORT & <span style="color:#FFD700">VEHICLE</span> AUTOMATION</h1>
+            <p>Smart Logistics. Better Operations.</p>
+        </div>
     </div>
-
 </div>
 
 </body>

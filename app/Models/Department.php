@@ -10,6 +10,7 @@ class Department extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'id',
         'unit_id',
         'department_name',
         'department_code',

@@ -90,6 +90,17 @@ class Driver extends Model
         ][$this->availability_status] ?? 'secondary';
     }
 
+    public function unit() {
+    return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function department() {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+  
+
+
 
 
 }
