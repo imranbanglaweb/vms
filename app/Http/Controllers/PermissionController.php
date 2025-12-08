@@ -59,14 +59,14 @@ class PermissionController extends Controller
             // Edit button - Always show for testing, then add permission check
             if (true) { // Change to: if(auth()->user()->can('permission-edit'))
                 $actionBtn .= '<a href="' . route('permissions.edit', $row->id) . '" class="btn btn-primary btn-sm me-1">';
-                $actionBtn .= '<i class="fa fa-edit"></i> Edit';
+                $actionBtn .= '<i class="fa fa-edit"></i>';
                 $actionBtn .= '</a> ';
             }
             
             // Delete button
             if (true) { // Change to: if(auth()->user()->can('permission-delete'))
                 $actionBtn .= '<button type="button" class="btn btn-danger btn-sm delete-btn" data-url="' . route('permissions.destroy', $row->id) . '">';
-                $actionBtn .= '<i class="fa fa-trash"></i> Delete';
+                $actionBtn .= '<i class="fa fa-minus-circle"></i>';
                 $actionBtn .= '</button>';
             }
             
@@ -170,80 +170,7 @@ class PermissionController extends Controller
         'message' => 'Permission name is available.'
     ]);
 }
-    // public function store(Request $request)
-    // {
-    //           $this->validate($request, [
-    //         'key' => 'required|unique:roles,name',
-    //         // 'key' => 'required',
-    //     ]);
-
-    // $name = str_replace('_', ' ', $request->input('key'));
-    // $name = ucwords($name);
-
-    // $data = [
-    //     'name' =>$request->input('key'),
-    //     'key' =>$name,
-    //     'guard_name' =>'web',
-    //     'table_name' =>$request->input('table_name'),
-    // ];
-
-    //     $role = Permission::create($data);
-    //     // $role->syncPermissions($request->input('permission'));
     
-    //     return redirect()->route('permissions.create')
-    //                     ->with('success','Permission Added Successfully');
-    // }
-
- 
-
-    // public function store(Request $request)
-    //     {
-    //         try {
-    //             $validated = $request->validate([
-    //                 'name' => 'required|string|max:255|unique:permissions,name',
-    //                 'key' => 'nullable|string|max:100',
-    //                 'table_name' => 'nullable|string|max:100',
-    //                 'is_user_defined' => 'nullable|boolean',
-    //                 'description' => 'nullable|string|max:500'
-    //             ]);
-
-    //             // Set default values
-    //             $validated['is_user_defined'] = $request->has('is_user_defined') ? 1 : 0;
-                
-
-    //             $name = str_replace('_', ' ', $request->name);
-    //             // dd($name);
-    //             $name = ucwords($name);
-
-    //             $data = [
-    //                 'name' =>$request->name,
-    //                 'key' =>$name,
-    //                 'guard_name' =>'web',
-    //                 'table_name' =>$request->table_name,
-    //             ];
-
-    //                 $role = Permission::create($data);
-    //                 // $role->syncPermissions($request->input('permission'));
-    //             // $permission = Permission::create($validated);
-
-    //             return response()->json([
-    //                 'success' => true,
-    //                 'message' => 'Permission created successfully!',
-    //                 // 'data' => $permission
-    //             ], 201);
-                
-    //         } catch (ValidationException $e) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'errors' => $e->errors()
-    //             ], 422);
-    //         } catch (\Exception $e) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Error creating permission: ' . $e->getMessage()
-    //             ], 500);
-    //         }
-    //     }
 
         public function store(Request $request)
     {
@@ -301,54 +228,53 @@ class PermissionController extends Controller
                 ->with('danger', 'Error creating permission: ' . $e->getMessage());
         }
     }
-    public function show($id)
+        public function show($id)
+        {
+            //
+        }
+
+
+    public function edit(Permission $permission)
     {
-        //
+        return view('admin.dashboard.permission.edit', compact('permission'));
     }
-
-
-    public function edit($name)
-    {
-             $permission_edit = DB::table('permissions')->where('name',$name)->first();
-        $permission = Permission::get();
-        // $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.permission_id",$id)
-        //     ->pluck('role_has_permissions.permission_id')
-        //     ->all();
-
-        // return dd($permission_edit);
-
-             return view('admin.dashboard.permission.edit',compact('permission_edit','permission','name'));
-    }
-
    
-    public function update(Request $request, $id)
+   // Update permission
+    public function update(Request $request, Permission $permission)
     {
-          $this->validate($request, [
-            'permission' => 'required',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:permissions,name,' . $permission->id,
+            'key' => 'nullable|string',
+            'table_name' => 'nullable|string',
+            'description' => 'nullable|string',
+            'is_user_defined' => 'nullable|boolean',
         ]);
 
+        if($validator->fails()){
+            return response()->json(['errors'=>$validator->errors()], 422);
+        }
 
-        $data = array(
-            'name' =>$request->input('permission'),
-            'table_name' =>$request->input('table_name')
-        );
+        $permission->update([
+            'name' => $request->name,
+            'key' => $request->key,
+            'table_name' => $request->table_name,
+            'description' => $request->description,
+            'is_user_defined' => $request->has('is_user_defined') ? 1 : 0,
+        ]);
 
-
-        $affected = DB::table('permissions')
-              ->where('name',$id)
-              ->update($data);
-    
-        // $role->syncPermissions($request->input('permission'));
-    
-        return redirect()->route('permissions.index')
-                        ->with('success','Permission Updated successfully');
+        return response()->json(['message'=>'Permission updated successfully!']);
     }
- public function destroy($id)
+
+         public function destroy($id)
         {
+
+            // dd($id);
             $permission = Permission::findOrFail($id);
             $permission->delete();
 
-            return redirect()->route('permissions.index')->with('success', 'Permission deleted successfully.');
+             return response()->json([
+                    'success' => 'Permission deleted successfully'
+                ]);
         }
     
   

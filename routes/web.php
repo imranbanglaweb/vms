@@ -53,6 +53,7 @@ use App\Http\Controllers\MaintenanceVendorController;
 use App\Http\Controllers\MaintenanceScheduleController;
 use App\Http\Controllers\MaintenanceRequisitionController;
 use App\Http\Controllers\MaintenanceCategoryController;
+// use App\Http\Controllers\RoleController;
   
 
 Route::prefix('maintenance-categories')->group(function () {
@@ -116,17 +117,22 @@ Route::get('maintenance-schedules/server/load', [MaintenanceScheduleController::
 
 
 
+
 Route::group(['middleware' => ['auth']], function() {
 Route::redirect('/', 'login');
 
+  // DataTables AJAX
+Route::get('roles/data', [RoleController::class, 'data'])->name('roles.data');
+    Route::resource('documents', '\App\Http\Controllers\Admin\DocumentController');
     // Master Data Management
     // Route::group(['prefix' => 'master', 'as' => 'master.'], function() {
     //     Route::resource('projects', ProjectController::class);
     //     Route::resource('lands', LandController::class);
     //     Route::resource('document-types', DocumentTypeController::class);
     // });
+Route::resource('roles', RoleController::class);
 
-    Route::resource('documents', '\App\Http\Controllers\Admin\DocumentController');
+
 
     Route::resource('projects', ProjectController::class);
 
@@ -342,7 +348,7 @@ Route::get('/admin/notifications/unread-count', function(){
 })->name('notifications.unread');
 
 Auth::routes();
-Route::resource('roles', RoleController::class);
+
 
     Route::resource('supports', SupportController::class);
 Route::any('emergency-task', [SupportController::class,'emergencytask'])->name('emergency-task');
@@ -391,7 +397,9 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
     Route::resource('employees', EmployeeController::class);
 
 
-    Route::resource('license-types', LicneseTypeController::class);
+    // If you want custom data endpoint for DataTables:
+        Route::get('license-types/data', [LicneseTypeController::class, 'data'])->name('license-types.data');
+        Route::resource('license-types', LicneseTypeController::class);
 
     // Categories resource (some views expect routes like categories.index)
     if (class_exists(\App\Http\Controllers\CategoryController::class)) {
@@ -433,7 +441,7 @@ Route::middleware(['auth'])->group(function () {
     // routes/web.php
 Route::post('/permissions/validate', [PermissionController::class, 'validatePermission'])->name('permissions.validate');
     // CRUD routes
-    Route::resource('permissions', PermissionController::class)->except(['index']);
+    Route::resource('permissions', PermissionController::class);
 });
     // Route::resource('permissions', PermissionController::class);
     //  Route::get('permissions/list', [PermissionController::class, 'list'])->name('permissions.list'); // AJAX for DataTables

@@ -4,145 +4,99 @@ namespace App\Http\Controllers;
 
 use App\Models\Licnese_type;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 use Yajra\DataTables\Facades\DataTables;
-
 
 class LicneseTypeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
+    // INDEX VIEW
+    public function index()
     {
-        // If AJAX/DataTables request, return server-side JSON
-        if ($request->ajax()) {
-            $query = Licnese_type::select(['id', 'type_name', 'description', 'status', 'created_at']);
-            return DataTables::of($query)
-                ->addColumn('actions', function ($row) {
-                    $edit = '<a href="' . route('license-types.edit', $row->id) . '" class="btn btn-sm btn-primary me-1">Edit</a>';
-                    $delete = "<form method='POST' action='" . route('license-types.destroy', $row->id) . "' style='display:inline'>" . csrf_field() . method_field('DELETE') . "<button type='submit' class='btn btn-sm btn-danger' onclick='return confirm(\'Delete?\')'>Delete</button></form>";
-                    return $edit . $delete;
-                })
-                ->rawColumns(['actions'])
-                ->make(true);
-        }
-
-        // Non-AJAX: render view
-        if (View::exists('admin.dashboard.license_types.index')) {
-            return view('admin.dashboard.license_types.index');
-        }
-
-        return response()->json(Licnese_type::orderBy('type_name')->get());
+        return view('admin.dashboard.license_types.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    // DATATABLES SERVER-SIDE
+    public function data()
     {
-        if (View::exists('admin.dashboard.license_types.create')) {
-            return view('admin.dashboard.license_types.create');
-        }
-        return abort(404);
+        $query = Licnese_type::select(['id', 'type_name', 'description', 'status', 'created_at'])->orderBy('id', 'desc');
+
+        return DataTables::of($query)
+            ->addIndexColumn() // DT_RowIndex
+            ->editColumn('status', function ($row) {
+                return $row->status == 1
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-danger">Inactive</span>';
+            })
+            ->addColumn('actions', function ($row) {
+                return '
+                    <button class="btn btn-sm btn-primary editBtn" data-id="' . $row->id . '"><i class="fa fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '"><i class="fa fa-minus-circle"></i></button>
+                ';
+            })
+            ->rawColumns(['status', 'actions'])
+            ->make(true);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    // STORE NEW LICENSE TYPE
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'type_name' => 'required|string|max:191|unique:licnese_types,type_name',
             'description' => 'nullable|string',
-            // 'status' => 'nullable|in:Active,Inactive',
+            'status' => 'nullable|integer|in:0,1'
         ]);
-        // ensure status default
-        $data = $validated;
-        // $data['status'] = $request->input('status', 'Active');
+
+        $data = $request->only(['type_name', 'description']);
+        $data['status'] = $request->status ?? 1;
         $data['created_by'] = auth()->id() ?? 1;
 
-        // create the record
         $type = Licnese_type::create($data);
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['message' => 'License type created', 'type' => $type], 201);
-        }
-
-        return redirect()->route('license-types.index')->with('success', 'License type created');
+        return response()->json([
+            'success' => true,
+            'message' => 'License type created successfully',
+            'data' => $type
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Licnese_type  $licnese_type
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Licnese_type $licnese_type)
+    // EDIT - GET DATA FOR MODAL
+    public function edit($id)
     {
-        if (View::exists('admin.dashboard.license_types.show')) {
-            return view('admin.dashboard.license_types.show', compact('licnese_type'));
-        }
-        return response()->json($licnese_type);
+        $type = Licnese_type::findOrFail($id);
+        return response()->json($type);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Licnese_type  $licnese_type
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Licnese_type $licnese_type)
+    // UPDATE LICENSE TYPE
+    public function update(Request $request, $id)
     {
-        if (View::exists('admin.dashboard.license_types.edit')) {
-            return view('admin.dashboard.license_types.edit', compact('licnese_type'));
-        }
-        return response()->json($licnese_type);
-    }
+        $type = Licnese_type::findOrFail($id);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Licnese_type  $licnese_type
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Licnese_type $licnese_type)
-    {
-        $validated = $request->validate([
-            'type_name' => 'required|string|max:191|unique:licnese_types,type_name,' . $licnese_type->id,
+        $request->validate([
+            'type_name' => 'required|string|max:191|unique:licnese_types,type_name,' . $type->id,
             'description' => 'nullable|string',
-            'status' => 'nullable|in:Active,Inactive',
+            'status' => 'nullable|integer|in:0,1'
         ]);
 
-        $licnese_type->update($validated + ['updated_by' => auth()->id() ?? 1]);
+        $data = $request->only(['type_name', 'description', 'status']);
+        $data['updated_by'] = auth()->id() ?? 1;
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['message' => 'License type updated', 'type' => $licnese_type]);
-        }
+        $type->update($data);
 
-        return redirect()->route('license-types.index')->with('success', 'License type updated');
+        return response()->json([
+            'success' => true,
+            'message' => 'License type updated successfully',
+            'data' => $type
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Licnese_type  $licnese_type
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Licnese_type $licnese_type)
+    // DELETE
+    public function destroy($id)
     {
-        $licnese_type->delete();
-        if (request()->ajax() || request()->wantsJson()) {
-            return response()->json(['message' => 'License type deleted']);
-        }
-        return redirect()->route('license-types.index')->with('success', 'License type deleted');
+        $type = Licnese_type::findOrFail($id);
+        $type->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Deleted successfully'
+        ]);
     }
 }

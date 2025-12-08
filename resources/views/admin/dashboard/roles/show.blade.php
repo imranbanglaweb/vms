@@ -19,7 +19,7 @@
     <div class="col-xs-12 col-sm-12 col-md-12">
         <div class="form-group">
             <strong>Name:</strong>
-            {{ $role->name }}
+         {{ optional($role)->name ?? 'N/A' }}
             <hr>
         </div>
     </div>
@@ -30,6 +30,7 @@
             <br>
                 @foreach($rolePermissions as $v)
                     <label class="label label-success">{{ $v->name }}<br></label>
+                    
                 <br>
                 @endforeach
             @endif

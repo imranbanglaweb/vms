@@ -35,7 +35,7 @@
             <strong>Select Employee:</strong>
             <select name="employee_id" class="form-control select2 employee_id">
                 <option value="">Please Select</option>
-            @foreach($employee_lists as $list)
+            @foreach($employees as $list)
                 <option value="{{ $list->id}}">{{ $list->name }} -- {{  $list->employee_code}}</option>
             @endforeach
             </select>

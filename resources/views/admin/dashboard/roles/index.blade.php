@@ -1,58 +1,73 @@
 @extends('admin.dashboard.master')
+
 @section('main_content')
-<section role="main" class="content-body">
-<div class="row">
-    <div class="col-lg-12 margin-tb">
-        <div class="pull-left">
+<section class="content-body" style="background-color: #f8f9fa; padding: 20px;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Role Management</h2>
-        </div>
-        <div class="pull-right">
-        @can('role-create')
-            <a class="btn btn-success" href="{{ route('roles.create') }}"> Create New Role</a>
+            @can('role-create')
+            <a href="{{ route('roles.create') }}" class="btn btn-success pull-right"><i class="fa fa-plus"></i> Create Role</a>
             @endcan
+            <br>
+            <br>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <table id="rolesTable" class="table table-striped table-hover table-bordered" style="width:100%">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Created At</th>
+                            <th width="200px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
-
-
-@if ($message = Session::get('success'))
-    <div class="alert alert-success">
-        <p>{{ $message }}</p>
-    </div>
-@endif
-
-
-<table class="table table-bordered">
-  <tr>
-     <th>No</th>
-     <th>Name</th>
-     <th width="280px">Action</th>
-  </tr>
-    @foreach ($roles as $key => $role)
-    <tr>
-        <td>{{ ++$i }}</td>
-        <td>{{ $role->name }}</td>
-        <td>
-            <a class="btn btn-info" href="{{ route('roles.show',$role->id) }}">
-                <i class="fa fa-eye"></i>
-            Show</a>
-            @can('role-edit')
-                <a class="btn btn-primary" href="{{ route('roles.edit',$role->id) }}">
-                    <i class="fa fa-edit"></i> Edit</a>
-            @endcan
-            @can('role-delete')
-                {!! Form::open(['method' => 'DELETE','route' => ['roles.destroy', $role->id],'style'=>'display:inline']) !!}
-                    {!! Form::submit('Delete', ['class' => 'btn btn-danger']) !!}
-                {!! Form::close() !!}
-            @endcan
-        </td>
-    </tr>
-    @endforeach
-</table>
-
-
-{!! $roles->render() !!}
-
-
 </section>
 @endsection
+
+@push('scripts')
+<script>
+$(function() {
+    $('#rolesTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: '{{ route("roles.data") }}',
+    columns: [
+        { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+        { data: 'name', name: 'name' },
+        { data: 'created_at', name: 'created_at' },
+        { data: 'actions', name: 'actions', orderable: false, searchable: false }
+    ]
+});
+
+
+    // Delete role
+    $(document).on('click', '.deleteBtn', function() {
+        let id = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete!'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                $.ajax({
+                    url: '/roles/' + id,
+                    method: 'DELETE',
+                    data: {_token: "{{ csrf_token() }}"},
+                    success: function(res) {
+                        table.ajax.reload();
+                        Swal.fire('Deleted!', res.message, 'success');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+@endpush

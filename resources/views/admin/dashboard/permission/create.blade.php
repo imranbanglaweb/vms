@@ -1,7 +1,7 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="background-color:#f1f4f8;">
+<section role="main" class="content-body" style="background-color: #f8f9fa; padding: 20px;">
     <div class="row">
         <div class="col-12">
             <nav aria-label="breadcrumb">
@@ -231,7 +231,7 @@
 </section>
 
 <!-- Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+<div class="modal" id="successModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 bg-success text-white">

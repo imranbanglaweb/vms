@@ -1,14 +1,12 @@
 <?php
     
 namespace App\Http\Controllers;
-
-
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use DB;
-    
+use Yajra\DataTables\Facades\DataTables;   
 class RoleController extends Controller
 {
     /**
@@ -18,10 +16,10 @@ class RoleController extends Controller
      */
     function __construct()
     {
-        //  $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','store']]);
-        //  $this->middleware('permission:role-create', ['only' => ['create','store']]);
-        //  $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
-        //  $this->middleware('permission:role-delete', ['only' => ['destroy']]);
+         $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','store']]);
+         $this->middleware('permission:role-create', ['only' => ['create','store']]);
+         $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
+         $this->middleware('permission:role-delete', ['only' => ['destroy']]);
     }
     
     /**
@@ -36,11 +34,27 @@ class RoleController extends Controller
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
     
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    
+    public function data()
+    {
+
+        // dd('working');
+        $roles = Role::select(['id', 'name', 'created_at']);
+
+        return DataTables::of($roles)
+            ->addIndexColumn()
+            ->addColumn('actions', function($row){
+                return '
+                    <a href="'.route("roles.show", $row->id).'" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
+                    <a href="'.route("roles.edit", $row->id).'" class="btn btn-sm btn-primary"><i class="fa fa-edit"></i></a>
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'"><i class="fa fa-minus-circle"></i></button>
+                ';
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
+    }
+
+
     public function create()
     {
         // $permission = Permission::get();
@@ -92,21 +106,30 @@ $general_permissions = DB::table('permissions')
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        $role = Role::find($id);
-        $rolePermissions = Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
-            ->where("role_has_permissions.role_id",$id)
-            ->get();
     
-        return view('admin.dashboard.roles.show',compact('role','rolePermissions'));
+    {
+        // $role = Role::find($id);
+        // $rolePermissions = Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
+        //     ->where("role_has_permissions.role_id",$id)
+        //     ->get();
+    
+        // return view('admin.dashboard.roles.show',compact('role','rolePermissions'));
+
+
+         $role = Role::find($id);
+    if (!$role) {
+        return redirect()->route('roles.index')->with('error', 'Role not found');
+    }
+
+    // Get role permissions
+    $rolePermissions = $role->permissions;
+
+    return view('admin.dashboard.roles.show', compact('role', 'rolePermissions'));
+
+
     }
     
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function edit($id)
     {
         $role = Role::find($id);

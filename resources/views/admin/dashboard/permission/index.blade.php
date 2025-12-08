@@ -2,7 +2,7 @@
 
 @section('main_content')
 <br>
-<section role="main" class="content-body">
+<section role="main" class="content-body" style="background-color: #f8f9fa; padding: 20px;">
     <div class="row">
         <div class="col-lg-12">
             <div class="pull-left">
@@ -33,13 +33,7 @@
     @endif
 
     <section class="panel">
-        <header class="panel-heading">
-            <div class="panel-actions">
-                <a href="#" class="fa fa-caret-down"></a>
-                <a href="#" class="fa fa-times"></a>
-            </div>
-            <h2 class="panel-title">Permissions List</h2>
-        </header>
+      
         <div class="panel-body">
             <table class="table table-bordered table-striped mb-none" id="permissionsTable" style="width:100%">
                 <thead>
@@ -93,6 +87,13 @@
 
 <script>
 $(document).ready(function() {
+
+    $.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+    }
+});
+
     // Initialize DataTables with server-side processing
     var table = $('#permissionsTable').DataTable({
         processing: true,
@@ -163,58 +164,43 @@ $(document).ready(function() {
     });
 
     // Handle delete button clicks
+   
     $(document).on('click', '.delete-btn', function(e) {
+    e.preventDefault();
+
+    let deleteUrl = $(this).data('url');
+    $('#deleteForm').attr('action', deleteUrl);
+
+    let deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+
+    $('#deleteForm').off('submit').on('submit', function(e) {
         e.preventDefault();
-        var deleteUrl = $(this).data('url');
-        var deleteForm = $('#deleteForm');
-        
-        // Set form action
-        deleteForm.attr('action', deleteUrl);
-        
-        // Show modal
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-        
-        // Handle form submission
-        deleteForm.off('submit').on('submit', function(e) {
-            e.preventDefault();
-            
-            $.ajax({
-                url: deleteUrl,
-                type: 'DELETE',
-                data: $(this).serialize(),
-                success: function(response) {
-                    // Close modal
-                    deleteModal.hide();
-                    
-                    // Show success message
-                    if(response.success) {
-                        // Reload DataTable
-                        table.ajax.reload();
-                        
-                        // Show alert
-                        var alertHtml = '<div class="alert alert-success alert-dismissible fade show">' +
-                            response.success +
-                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                            '</div>';
-                        
-                        $('.alert').remove(); // Remove existing alerts
-                        $('.margin-tb').after(alertHtml);
-                        
-                        // Auto-remove alert after 5 seconds
-                        setTimeout(function() {
-                            $('.alert').alert('close');
-                        }, 5000);
-                    }
-                },
-                error: function(xhr) {
-                    console.log(xhr.responseText);
-                    alert('Error deleting permission');
-                }
-            });
+
+        $.ajax({
+            url: deleteUrl,
+            type: 'DELETE',
+            success: function(response) {
+
+                deleteModal.hide();
+                $('#permissionsTable').DataTable().ajax.reload();
+
+                // Show success alert
+                $('section.content-body').prepend(`
+                    <div class="alert alert-success alert-dismissible fade show">
+                        ${response.success}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `);
+            },
+            error: function(xhr) {
+                console.log(xhr.responseText);
+                alert("Delete failed");
+            }
         });
     });
-    
+});
+
     // Close modal handler
     $('#deleteModal').on('hidden.bs.modal', function () {
         $('#deleteForm').off('submit');
@@ -239,7 +225,7 @@ $(document).ready(function() {
     }
     .btn-sm {
         padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+        font-size: 1.475rem;
     }
 </style>
 

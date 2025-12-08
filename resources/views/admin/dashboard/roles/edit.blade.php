@@ -2,7 +2,7 @@
 
 
 @section('main_content')
-<section role="main" class="content-body">
+<section role="main" class="content-body" style="background-color: #f8f9fa; padding: 20px;">
 <div class="row">
     <div class="col-lg-12 margin-tb">
         <div class="pull-left">
