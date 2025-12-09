@@ -78,7 +78,7 @@ class MaintenanceRequisitionController extends Controller
                         <i class="fa fa-edit"></i>
                     </a>
                     <button data-id="'.$row->id.'" class="btn btn-danger btn-sm deleteBtn">
-                        <i class="fa fa-trash"></i>
+                        <i class="fa fa-minus"></i>
                     </button>
                 ';
             })
@@ -243,6 +243,7 @@ class MaintenanceRequisitionController extends Controller
         // destroy function
     public function destroy($id)
     {
+        // dd($id);
         MaintenanceRequisition::findOrFail($id)->delete();
         return back()->with('success', 'Requisition deleted');
     }

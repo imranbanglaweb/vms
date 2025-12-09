@@ -139,6 +139,51 @@ $(document).ready(function() {
         table.draw();
     });
 
+      // Delete button click
+    $('#requisitionsTable').on('click', '.deleteBtn', function() {
+        var id = $(this).data('id');
+
+    var urlTemplate = '{{ route("maintenance.destroy", "id") }}';
+    var deleteURL = urlTemplate.replace('id', id);
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete the requisition!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    // url: '/maintenance/' + id,
+                    url: deleteURL,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire(
+                            'Deleted!',
+                            response.success,
+                            'success'
+                        );
+                        table.ajax.reload(null, false); // reload DataTable
+                    },
+                    error: function(xhr) {
+                        Swal.fire(
+                            'Error!',
+                            'Something went wrong while deleting.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    });
+
 });
 </script>
 @endsection
