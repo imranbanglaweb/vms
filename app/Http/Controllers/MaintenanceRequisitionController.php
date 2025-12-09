@@ -49,7 +49,7 @@ class MaintenanceRequisitionController extends Controller
             ->addIndexColumn()
 
             ->addColumn('vehicle', function($row){
-                return $row->vehicle->vehicle_no ?? '-';
+                return $row->vehicle->vehicle_name ?? '-';
             })
 
             ->addColumn('employee', function($row){
@@ -71,10 +71,10 @@ class MaintenanceRequisitionController extends Controller
 
             ->addColumn('actions', function($row){
                 return '
-                    <a href="'.route("requisitions.show",$row->id).'" class="btn btn-info btn-sm">
+                    <a href="'.route("maintenance.show",$row->id).'" class="btn btn-info btn-sm">
                         <i class="fa fa-eye"></i>
                     </a>
-                    <a href="'.route("requisitions.edit",$row->id).'" class="btn btn-warning btn-sm">
+                    <a href="'.route("maintenance.edit",$row->id).'" class="btn btn-warning btn-sm">
                         <i class="fa fa-edit"></i>
                     </a>
                     <button data-id="'.$row->id.'" class="btn btn-danger btn-sm deleteBtn">
@@ -157,13 +157,90 @@ class MaintenanceRequisitionController extends Controller
 
         return redirect()->route('requisitions.index')->with('success', 'Requisition Created Successfully!');
     }
-
-    public function show($id)
+    // edit function
+    public function edit($id)
     {
-        $data = MaintenanceRequisition::with('items', 'vehicle', 'employee')->findOrFail($id);
-        return view('maintenance.requisition.show', compact('data'));
+        $requisition = MaintenanceRequisition::with('items')->findOrFail($id);
+        $vehicles = Vehicle::all();
+        $types = MaintenanceType::all();
+        $employees = Employee::all();
+        $categories = MaintenanceCategory::all();
+        $vendors = MaintenanceVendor::all();
+
+        return view('admin.dashboard.maintenance.edit', compact('requisition','vehicles','types','employees','categories','vendors'));
     }
 
+    // update function
+
+    public function update(Request $request, $id)
+        {
+            $requisition = MaintenanceRequisition::with('items')->findOrFail($id);
+
+            DB::transaction(function () use ($request, $requisition) {
+                // Update main requisition
+                $requisition->update([
+                    'requisition_type' => $request->requisition_type,
+                    'priority' => $request->priority,
+                    'employee_id' => $request->employee_id,
+                    'vehicle_id' => $request->vehicle_id,
+                    'maintenance_type_id' => $request->maintenance_type_id,
+                    'maintenance_date' => $request->maintenance_date,
+                    'service_title' => $request->service_title,
+                    'charge_bear_by' => $request->charge_bear_by,
+                    'charge_amount' => $request->charge_amount,
+                    'remarks' => $request->remarks,
+                ]);
+
+                $total_parts_cost = 0;
+
+                // Delete old items
+                $requisition->items()->delete();
+
+                // Insert updated items
+                foreach ($request->items as $row) {
+                    $total = $row['qty'] * $row['unit_price'];
+
+                    MaintenanceRequisitionItem::create([
+                        'requisition_id' => $requisition->id,
+                        'category_id' => $row['category_id'],
+                        'item_name' => $row['item_name'],
+                        'qty' => $row['qty'],
+                        'unit_price' => $row['unit_price'],
+                        'total_price' => $total,
+                        'created_by' => Auth::id(),
+                    ]);
+
+                    $total_parts_cost += $total;
+                }
+
+                // Update totals
+                $requisition->update([
+                    'total_parts_cost' => $total_parts_cost,
+                    'total_cost' => $total_parts_cost + $request->charge_amount,
+                ]);
+            });
+
+            return redirect()->route('requisitions.index')->with('success', 'Requisition updated successfully!');
+        }
+
+
+    // show function
+     public function show($id)
+        {
+            $data = MaintenanceRequisition::with([
+                'vehicle',
+                'employee',
+                'vehicle.vehicleType',  
+                'items.category',         // still correct — category model pulls from maintenance_categories table
+                'maintenanceType'
+            ])->findOrFail($id);
+
+            $categories = MaintenanceCategory::all(); // optional if view needs dropdown
+
+            return view('admin.dashboard.maintenance.show', compact('data','categories'));
+        }
+
+        // destroy function
     public function destroy($id)
     {
         MaintenanceRequisition::findOrFail($id)->delete();

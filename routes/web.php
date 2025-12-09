@@ -63,11 +63,9 @@ Route::prefix('maintenance-categories')->group(function () {
     Route::delete('/{id}', [MaintenanceCategoryController::class, 'destroy'])->name('maintenance-categories.destroy'); // Delete
 });
 
-  Route::prefix('maintenance')->middleware('auth')->group(function(){
-    Route::get('/', [MaintenanceRequisitionController::class,'index'])->name('maintenance.index');
-    Route::get('/create', [MaintenanceRequisitionController::class,'create'])->name('maintenance.create');
-    Route::post('/store', [MaintenanceRequisitionController::class,'store'])->name('maintenance.store');
-});
+    //  Maintenance Requisition Routes
+     Route::resource('maintenance', MaintenanceRequisitionController::class);
+
 
 //   Route::prefix('maintenance-schedule')->middleware('auth')->group(function(){
 //     Route::get('/', [MaintenanceController::class,'index'])->name('maintenance.index');

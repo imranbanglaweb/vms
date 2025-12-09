@@ -1,223 +1,236 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body">
+<style>
+    .page-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
 
-<div class="container-fluid mt-4">
+    .card {
+        border-radius: 10px !important;
+        padding: 5px;
+    }
 
-    <!-- TITLE + BACK BUTTON -->
-    <div class="d-flex justify-content-between mb-3">
-        <h3 class="fw-bold">
-            <i class="fa fa-file-alt me-2"></i> Requisition Details
-        </h3>
+    .card-header {
+        font-size: 16px;
+        padding: 15px 20px;
+        border-radius: 10px 10px 0 0 !important;
+    }
 
-        <a href="{{ route('requisitions.index') }}" class="btn btn-secondary">
-            <i class="fa fa-arrow-left"></i> Back
-        </a>
-    </div>
+    .card-body {
+        font-size: 14px;
+        padding: 25px !important;
+    }
 
-    <!-- SUMMARY CARDS -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm p-3">
-                <h6 class="text-muted">Requisition No</h6>
-                <h5>{{ $requisition->requisition_no }}</h5>
-            </div>
+    .info-label {
+        font-weight: 400;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #222;
+    }
+
+    .table th {
+        font-size: 15px !important;
+        padding: 10px !important;
+    }
+
+    .table td {
+        font-size: 14px !important;
+        padding: 10px !important;
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+    }
+</style>
+<section class="content-body" style="background-color:#fff; padding: 20px;">
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-primary">
+                <i class="fa fa-eye me-2"></i> Requisition Details
+            </h3>
+            <a href="{{ route('maintenance.index') }}" class="btn btn-secondary btn-sm">
+                <i class="fa fa-arrow-left"></i> Back
+            </a>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm p-3">
-                <h6 class="text-muted">Vehicle</h6>
-                <h5>{{ $requisition->vehicle->vehicle_no ?? '-' }}</h5>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm p-3">
-                <h6 class="text-muted">Employee</h6>
-                <h5>{{ $requisition->employee->name ?? '-' }}</h5>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm p-3">
-                <h6 class="text-muted">Status</h6>
-                <h5>
-                    @if($requisition->status == 'Approved')
-                        <span class="badge bg-success">Approved</span>
-                    @elseif($requisition->status == 'Rejected')
-                        <span class="badge bg-danger">Rejected</span>
-                    @else
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    @endif
-                </h5>
-            </div>
-        </div>
-    </div>
 
-    <!-- DETAILS -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3"><i class="fa fa-info-circle me-2"></i> Details</h5>
+        <!-- BASIC INFO CARD -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <strong>Requisition Summary</strong>
+            </div>
 
-            <div class="row">
-                <div class="col-md-4">
-                    <p><strong>Type:</strong> {{ $requisition->requisition_type }}</p>
+            <div class="card-body row">
+
+                <div class="col-md-6 mb-3">
+                    <strong>Requisition No:</strong><br>
+                    {{ $data->requisition_no }}
                 </div>
-                <div class="col-md-4">
-                    <p><strong>Priority:</strong> {{ $requisition->priority }}</p>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Date:</strong><br>
+                    {{ $data->maintenance_date }}
                 </div>
-                <div class="col-md-4">
-                    <p><strong>Date:</strong> {{ $requisition->date }}</p>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Type:</strong><br>
+                    {{ $data->requisition_type }}
                 </div>
-                <div class="col-md-12">
-                    <p><strong>Description:</strong> {{ $requisition->description ?? '-' }}</p>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Priority:</strong><br>
+                    <span class="badge 
+                    @if($data->priority=='High') bg-danger
+                    @elseif($data->priority=='Medium') bg-warning
+                    @elseif($data->priority=='Low') bg-success
+                    @else bg-secondary @endif">
+                    {{ $data->priority }}</span>
                 </div>
+
+                <div class="col-md-6 mb-3">
+                    <strong>Status:</strong><br>
+                    @php
+                        $color = $data->status == 'Approved' ? 'success' :
+                                 ($data->status == 'Rejected' ? 'danger' : 'warning');
+                    @endphp
+                    <span class="badge bg-{{ $color }}">{{ $data->status }}</span>
+                </div>
+
             </div>
         </div>
-    </div>
 
-    <!-- ITEMS TABLE -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
+        <!-- VEHICLE & EMPLOYEE -->
+        <div class="row">
 
-            <h5 class="fw-bold mb-3"><i class="fa fa-list me-2"></i> Items</h5>
+            <!-- Vehcile Details -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <strong>Vehicle Information</strong>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Vehicle No:</strong> {{ $data->vehicle->vehicle_name ?? 'N/A' }}</p>
+                        <p><strong>Model:</strong> {{ $data->vehicle->model ?? 'N/A' }}</p>
+                        <p><strong>Type:</strong> {{ $data->vehicle->vehicleType->name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="itemsTable">
-                    <thead class="table-light">
+            <!-- Employee Details -->
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <strong>Employee Information</strong>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Name:</strong> {{ $data->employee->name ?? 'N/A' }}</p>
+                        <p><strong>Phone:</strong> {{ $data->employee->phone ?? 'N/A' }}</p>
+                        <p><strong>Department:</strong> {{ $data->employee->department_name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SERVICE DETAILS -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <strong>Service Information</strong>
+            </div>
+
+            <div class="card-body">
+
+                <p><strong>Service Title:</strong> {{ $data->service_title }}</p>
+
+                <p><strong>Charge Bear By:</strong> {{ $data->charge_bear_by }}</p>
+
+                <p><strong>Service Charge:</strong> 
+                    <span class="fw-bold">${{ number_format($data->charge_amount, 2) }}</span>
+                </p>
+
+                <p><strong>Remarks:</strong><br>
+                    {{ $data->remarks ?? 'N/A' }}
+                </p>
+
+            </div>
+        </div>
+
+        <!-- ITEM LIST -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                <strong>Parts / Items Used</strong>
+            </div>
+
+            <div class="card-body table-responsive">
+
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th>#</th>
                             <th>Category</th>
-                            <th>Item Name</th>
-                            <th>Qty</th>
-                            <th>Unit Price</th>
-                            <th>Total</th>
-                            <th>Action</th>
+                            <th>Item</th>
+                            <th width="90">Qty</th>
+                            <th width="120">Unit Price</th>
+                            <th width="120">Total</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        @foreach ($requisition->items as $index => $item)
-                        <tr data-item='@json($item)' class="itemRow" style="cursor:pointer;">
-                            <td>{{ $index+1 }}</td>
-                            <td>{{ $item->category->name ?? '-' }}</td>
+                        @foreach($data->items as $item)
+                        <tr>
+                            <td>{{ $item->category->category_name ?? 'N/A' }}</td>
                             <td>{{ $item->item_name }}</td>
-                            <td>{{ $item->qty }}</td>
-                            <td>{{ number_format($item->unit_price,2) }}</td>
-                            <td>{{ number_format($item->total,2) }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info viewItemBtn">
-                                    <i class="fa fa-eye"></i>
-                                </button>
-                            </td>
+                            <td class="text-center">{{ $item->qty }}</td>
+                            <td class="text-end">${{ number_format($item->unit_price, 2) }}</td>
+                            <td class="text-end fw-bold">${{ number_format($item->total_price, 2) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
+
                 </table>
-            </div>
 
+            </div>
         </div>
-    </div>
 
-    <!-- TOTAL COST -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3"><i class="fa fa-dollar-sign me-2"></i> Cost Summary</h5>
+        <!-- TOTAL COST SUMMARY -->
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
 
-            <h4 class="text-success">Grand Total: 
-                ${{ number_format($requisition->grand_total,2) }}
-            </h4>
+                <div class="row text-end">
+
+                    <div class="col-md-12">
+                        <h5><strong>Parts Cost:</strong>
+                            ${{ number_format($data->total_parts_cost, 2) }}
+                        </h5>
+
+                        <h5><strong>Service Charge:</strong>
+                            ${{ number_format($data->charge_amount, 2) }}
+                        </h5>
+
+                        <hr>
+
+                        <h3 class="fw-bold text-primary">
+                            Grand Total: ${{ number_format($data->total_cost, 2) }}
+                        </h3>
+                    </div>
+
+                </div>
+
+            </div>
         </div>
+
     </div>
-
-    <!-- APPROVE / REJECT BUTTONS -->
-    <div class="text-end mb-5">
-        <button class="btn btn-success me-2" id="approveBtn"><i class="fa fa-check"></i> Approve</button>
-        <button class="btn btn-danger" id="rejectBtn"><i class="fa fa-times"></i> Reject</button>
-    </div>
-
-</div>
-
-<!-- ITEM DETAILS MODAL -->
-<div class="modal fade" id="itemModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Item Details</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body" id="modalContent">
-                <!-- Filled Dynamically -->
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-
-        </div>
-    </div>
-</div>
 
 </section>
-@endsection
 
-@section('scripts')
-<script>
-$(document).ready(function () {
-
-    // Open item modal on row click or button click
-    $('.viewItemBtn, .itemRow').on('click', function () {
-
-        let item = $(this).closest('tr').data('item');
-
-        let html = `
-            <table class="table table-bordered">
-                <tr><th>Category</th><td>${item.category?.name ?? '-'}</td></tr>
-                <tr><th>Item Name</th><td>${item.item_name}</td></tr>
-                <tr><th>Quantity</th><td>${item.qty}</td></tr>
-                <tr><th>Unit Price</th><td>$${item.unit_price}</td></tr>
-                <tr><th>Total</th><td>$${item.total}</td></tr>
-                <tr><th>Description</th><td>${item.description ?? '-'}</td></tr>
-            </table>
-        `;
-
-        $('#modalContent').html(html);
-        $('#itemModal').modal('show');
-    });
-
-
-    // Approve
-    $('#approveBtn').click(function () {
-        updateStatus("Approved");
-    });
-
-    // Reject
-    $('#rejectBtn').click(function () {
-        updateStatus("Rejected");
-    });
-
-    function updateStatus(status) {
-        Swal.fire({
-            title: `Confirm ${status}?`,
-            icon: "warning",
-            showCancelButton: true,
-        }).then((res) => {
-            if (res.isConfirmed) {
-                $.ajax({
-                    url: "{{ route('requisitions.updateStatus', $requisition->id) }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        status: status
-                    },
-                    success: function (data) {
-                        Swal.fire("Success!", data.message, "success");
-                        location.reload();
-                    }
-                });
-            }
-        });
-    }
-
-});
-</script>
 @endsection

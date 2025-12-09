@@ -37,15 +37,21 @@ class UserController extends Controller
 
     return DataTables::of($users)
         ->addIndexColumn() // DT_RowIndex
-        ->editColumn('user_image', function($row){
-            $imageUrl = asset('images/default.png');
+        // ->editColumn('user_image', function($row){
+        //     $imageUrl = asset('images/default.png');
 
-            if ($row->user_image && Storage::exists('users/'.$row->user_image)) {
-                $imageUrl = asset('storage/users/'.$row->user_image);
-            }
+        //     if ($row->user_image && Storage::exists('users/'.$row->user_image)) {
+        //         $imageUrl = asset('storage/users/'.$row->user_image);
+        //     }
 
-            return '<img src="'.$imageUrl.'" width="40" height="40" class="rounded-circle" onerror="this.src=\''.asset('images/default.png').'\';">';
+        //     return '<img src="'.$imageUrl.'" width="40" height="40" class="rounded-circle" onerror="this.src=\''.asset('images/default.png').'\';">';
+        // })
+
+       ->editColumn('user_image', function($row){
+            return $row->user_image; // just the filename
         })
+
+
         ->addColumn('action', function ($row) {
             return '
                 <button data-id="'.$row->id.'" class="btn btn-sm btn-danger deleteUser"><i class="fa fa-minus-circle"></i></button>
@@ -53,13 +59,7 @@ class UserController extends Controller
             ';
         })
 
-        ->editColumn('user_image', function($row){
-    $imagePath = 'images/default.png';
-    if ($row->user_image && Storage::disk('public')->exists('users/'.$row->user_image)) {
-        $imagePath = 'storage/users/'.$row->user_image;
-    }
-    return asset($imagePath);
-})
+   
 
         ->rawColumns(['action','user_image'])
         ->order(function ($query) {
@@ -122,6 +122,7 @@ class UserController extends Controller
 
             $userData = [
                 'name'          => $request->user_name,
+                'employee_id'   => $request->employee_id,
                 'user_name'     => $employee->employee_code,
                 'email'         => $request->email,
                 'password'      => Hash::make($request->password),
@@ -131,12 +132,27 @@ class UserController extends Controller
                 'created_by'    => Auth::id(),
             ];
 
+            // if ($request->hasFile('user_image')) {
+            //     $file = $request->file('user_image');
+            //     $fileName = time().'_'.$file->getClientOriginalName();
+            //     $file->storeAs('users', $fileName);
+            //     $userData['user_image'] = $fileName;
+            // }
+
             if ($request->hasFile('user_image')) {
                 $file = $request->file('user_image');
+
                 $fileName = time().'_'.$file->getClientOriginalName();
-                $file->storeAs('users', $fileName);
+
+                // Save to your correct path
+                $file->move(
+                    public_path('admin_resource/assets/images/user_image'),
+                    $fileName
+                );
+
                 $userData['user_image'] = $fileName;
             }
+
 
             $user = User::create($userData);
             $user->assignRole($request->roles);
@@ -156,7 +172,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        $roles = Role::pluck('name','name')->all();
+        $roles = Role::pluck('name')->all();
         $userRole = $user->roles->pluck('name','name')->all();
         $employees = Employee::orderBy('employee_order','ASC')->get();
 
@@ -167,51 +183,99 @@ class UserController extends Controller
         UPDATE USER
     ------------------------------------------------------------------ */
     public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(),[
-            'name'=>'required',
-            'email'=>'required|email|unique:users,email,'.$id,
-            'roles'=>'required'
-        ]);
+        {
+            $user = User::findOrFail($id);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            // Validate
+            $request->validate([
+                // 'name' => 'required|string|max:255',
+                'employee_id' => 'required',
+                'user_type'   => 'required',
+                'user_name'   => 'required|string|max:255',
+                'email'       => "required|email|unique:users,email,$id",
+                'phone'       => 'nullable|string|max:20',
+                'roles'       => 'required',
+                'password'    => 'nullable|min:6|same:confirm-password',
+                'user_image'  => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            ]);
+
+            // UPDATE FIELDS
+                $user->employee_id = $request->employee_id;
+                $user->user_type   = $request->user_type;
+                $user->name        = $request->user_name;
+                $user->email       = $request->email;
+                $user->cell_phone       = $request->phone;
+
+
+            $employee = Employee::find($request->employee_id);
+                if ($employee) {
+                    $user->department_id = $employee->department_id;
+                    $user->unit_id       = $employee->unit_id;
+                    $user->user_name     = $employee->employee_code;
+                }
+
+                 // OPTIONAL PASSWORD UPDATE
+                if (!empty($request->password)) {
+                    $user->password = Hash::make($request->password);
+                }
+
+            // If new image uploaded
+            if ($request->hasFile('user_image')) {
+
+                // Delete old image if exists
+
+                if ($user->user_image) {
+                    $oldImagePath = public_path('admin_resource/assets/images/user_image/'.$user->user_image);
+
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                // SAVE NEW IMAGE
+                $file = $request->file('user_image');
+                $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('admin_resource/assets/images/user_image'),
+                    $fileName
+                );
+
+                $user->user_image = $fileName;
+            }
+
+            // Save updates
+            $user->save();
+
+            // UPDATE ROLE
+            $user->syncRoles([$request->roles]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User updated successfully!'
+            ]);
         }
 
-        $user = User::find($id);
-
-        $data = [
-            'name'=>$request->name,
-            'email'=>$request->email,
-        ];
-
-        if ($request->password) {
-            $data['password'] = Hash::make($request->password);
-        }
-
-        $user->update($data);
-
-        DB::table('model_has_roles')->where('model_id',$id)->delete();
-        $user->assignRole($request->roles);
-
-        return redirect()->route('users.index')->with('success','User updated successfully');
-    }
 
     /* ------------------------------------------------------------------
         DELETE USER
     ------------------------------------------------------------------ */
-    public function destroy($id)
-    {
-        $user = User::find($id);
+        public function destroy($id)
+        {
+            $user = User::find($id);
 
-        if (!$user) return response()->json(['error'=>'User not found'],404);
+            if (!$user) return response()->json(['error'=>'User not found'],404);
 
-        if ($user->user_image && Storage::exists('users/'.$user->user_image)) {
-            Storage::delete('users/'.$user->user_image);
+            if ($user->user_image) {
+                $path = public_path('admin_resource/assets/images/user_image/'.$user->user_image);
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+            }
+
+            $user->delete();
+
+            return response()->json(['success'=>'User deleted successfully']);
         }
 
-        $user->delete();
-
-        return response()->json(['success'=>'User deleted successfully']);
-    }
 }

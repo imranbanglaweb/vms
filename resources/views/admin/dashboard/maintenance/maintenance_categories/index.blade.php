@@ -1,7 +1,7 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section class="content-body" style="background-color:#f1f4f8;">
+<section class="content-body" style="background-color:#fff;">
 <div class="container mt-4">
 
     <h3 class="fw-bold mb-3">

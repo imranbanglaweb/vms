@@ -1,17 +1,18 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section class="content-body py-5">
+<section class="content-body" style="background-color:#fff;">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold text-primary"><i class="fa fa-tools me-2"></i> Maintenance Requisitions</h3>
-            <a href="{{ route('maintenance.create') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('maintenance.create') }}" class="btn btn-primary btn-sm pull-right">
                 <i class="fa fa-plus me-1"></i> Create New
             </a>
         </div>
-
+<br>
+<br>
         {{-- Filters --}}
-        <div class="row mb-3 g-2">
+        <div class="row mb-3">
             <div class="col-md-3">
                 <input type="text" id="searchVehicle" class="form-control" placeholder="Search Vehicle">
             </div>
@@ -19,7 +20,7 @@
                 <input type="text" id="searchEmployee" class="form-control" placeholder="Search Employee">
             </div>
             <div class="col-md-3">
-                <select id="searchType" class="form-select">
+                <select id="searchType" class="form-select form-control">
                     <option value="">All Types</option>
                     <option value="Maintenance">Maintenance</option>
                     <option value="Breakdown">Breakdown</option>
@@ -27,7 +28,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <select id="searchPriority" class="form-select">
+                <select id="searchPriority" class="form-select form-control">
                     <option value="">All Priorities</option>
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -36,7 +37,7 @@
                 </select>
             </div>
         </div>
-
+<hr>
         {{-- Requisitions Table --}}
         <div class="table-responsive">
             <table class="table table-hover table-bordered align-middle" id="requisitionsTable">
@@ -86,7 +87,7 @@ $(document).ready(function() {
         serverSide: true,
         responsive: true,
         paging: true,
-        searching: true,
+        searching: false,
         autoWidth: false,
 
         dom: 'Bfrtip',   // Export buttons
@@ -109,13 +110,13 @@ $(document).ready(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', className: "text-center", orderable: false, searchable: false },
 
-            { data: 'id', name: 'id', className: "text-center" },
+            { data: 'requisition_no', name: 'requisition_no', className: "text-center" },
 
             { data: 'requisition_type', name: 'requisition_type', className: "text-center" },
 
             { data: 'priority', name: 'priority', className: "text-center" },
 
-            { data: 'vehicle', name: 'vehicle.vehicle_no' },
+            { data: 'vehicle', name: 'vehicle' },
 
             { data: 'employee', name: 'employee.name' },
 

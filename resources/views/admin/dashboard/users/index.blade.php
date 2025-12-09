@@ -137,12 +137,16 @@ $(document).ready(function() {
     name: 'user_image', 
     orderable: false, 
     searchable: false, 
-    render: function(data, type, full, meta) {
-        var imgPath = data 
-            ? "{{ asset('storage/users') }}/" + data 
-            : "{{ asset('images/default.png') }}";
-        return '<img src="' + imgPath + '" height="50" onerror="this.onerror=null;this.src=\'{{ asset('images/default.png') }}\';"/>';
-    }
+ render: function(data, type, full, meta) {
+    var basePath = "{{ asset('public/admin_resource/assets/images/user_image') }}";
+    var fallback = "{{ asset('public/admin_resource/assets/images/default.png') }}";
+
+    var imgSrc = data ? basePath + '/' + data : fallback;
+
+    return '<img src="' + imgSrc + '" height="50" width="50" class="rounded-circle" ' +
+           'onerror="this.onerror=null;this.src=\'' + fallback + '\'"/>';
+}
+
             },
 
             { data: 'action', name: 'action', orderable: false, searchable: false }

@@ -24,7 +24,7 @@ class MaintenanceRequisitionItem extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(MaintenanceCategory::class, 'category_id');
     }
     
 }

@@ -10,6 +10,8 @@ class MaintenanceCategory extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'maintenance_categories'; // ✅ FIX ADDED
+
     protected $fillable = [
         'parent_id',
         'category_name',
@@ -21,38 +23,31 @@ class MaintenanceCategory extends Model
         'updated_by',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONSHIPS
-    |--------------------------------------------------------------------------
-    */
-
-    // 🔹 Self Relationship (Parent Category)
+    // Parent Category
     public function parent()
     {
         return $this->belongsTo(MaintenanceCategory::class, 'parent_id');
     }
 
-    // 🔹 Self Relationship (Sub Categories / Children)
+    // Sub Categories
     public function children()
     {
         return $this->hasMany(MaintenanceCategory::class, 'parent_id');
     }
 
-    // 🔹 Relationship with Requisition Items
-    // Your item migration uses: category_id
+    // Requisition Items Relation
     public function requisitionItems()
     {
         return $this->hasMany(MaintenanceRequisitionItem::class, 'category_id');
     }
 
-    // 🔹 Created By User
+    // Created By
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // 🔹 Updated By User
+    // Updated By
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');

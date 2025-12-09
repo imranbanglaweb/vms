@@ -40,8 +40,13 @@ class MaintenanceRequisition extends Model
         return $this->belongsTo(MaintenanceType::class);
     }
 
+   
+
     public function items()
     {
         return $this->hasMany(MaintenanceRequisitionItem::class, 'requisition_id');
     }
+   
+
+    
 }
