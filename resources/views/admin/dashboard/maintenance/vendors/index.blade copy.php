@@ -1,6 +1,43 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+<style>
+  .card-premium {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .form-label-premium { font-weight: 600; color: #495057; }
+  .form-control-premium {
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: 1.5rem;
+  }
+  .form-error { color: #e74a3b; font-size: 1.575rem; margin-top: .25rem; display: none; }
+
+  .btn-primary-premium, .btn-info-premium, .btn-danger-premium, .btn-secondary-premium {
+    border-radius: 8px;
+    padding: .5rem 1rem;
+    font-size: 1.5rem;
+  }
+  .btn-primary-premium { background: #4e73df; color: #fff; border: none; }
+  .btn-primary-premium:hover { background: #3b5bbf; }
+  .btn-info-premium { background: #36b9cc; color: #fff; border: none; }
+  .btn-info-premium:hover { background: #2c97a3; }
+  .btn-danger-premium { background: #e74a3b; color: #fff; border: none; }
+  .btn-danger-premium:hover { background: #c43c2f; }
+  .btn-secondary-premium { background: #858796; color: #fff; border: none; }
+  .btn-secondary-premium:hover { background: #6c757d; }
+
+  table.table-premium th, table.table-premium td {
+    vertical-align: middle;
+  }
+</style>
+@endpush
 <section role="main" class="content-body">
 <div class="container mt-5">
     <h3 class="fw-bold text-primary mb-4"><i class="fa fa-building me-2"></i> Maintenance Vendors</h3>
@@ -16,7 +53,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Name</label>
-                        <input type="text" class="form-control" name="name" id="name">
+                        <input type="text" class="form-control" name="vendor_name" id="vendor_name">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Contact Person</label>

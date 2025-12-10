@@ -9,7 +9,7 @@
 
             <div class="modal-body">
 
-                <div id="errorAlert" class="alert alert-danger d-none"></div>
+                <div id="errorAlert" class="alert alert-danger d-hi"></div>
 
                 <form id="categoryForm">
                     @csrf

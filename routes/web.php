@@ -79,10 +79,13 @@ Route::prefix('maintenance-categories')->group(function () {
 
 Route::prefix('maintenance-types')->middleware('auth')->group(function(){
     Route::get('/', [MaintenanceTypeController::class, 'index'])->name('maintenance.types.index');
-    Route::post('/store', [MaintenanceTypeController::class, 'store'])->name('maintenance.types.store');
-    Route::get('/edit/{maintenanceType}', [MaintenanceTypeController::class, 'edit'])->name('maintenance.types.edit');
-    Route::post('/update/{maintenanceType}', [MaintenanceTypeController::class, 'update'])->name('maintenance.types.update');
-    Route::delete('/delete/{maintenanceType}', [MaintenanceTypeController::class, 'destroy'])->name('maintenance.types.destroy');
+    Route::post('/store', [MaintenanceTypeController::class, 'store'])->name('maintenance-types.store');
+    Route::get('/edit/{maintenanceType}', [MaintenanceTypeController::class, 'edit'])->name('maintenance-types.edit');
+    Route::put('/update/{maintenanceType}', [MaintenanceTypeController::class, 'update'])->name('maintenance-types.update');
+    Route::delete('/delete/{maintenanceType}', [MaintenanceTypeController::class, 'destroy'])->name('maintenance-types.destroy');
+// and a named route for datatable:
+Route::get('maintenance-types-data', [MaintenanceTypeController::class,'data'])->name('maintenance.types.data');
+
 });
 
 

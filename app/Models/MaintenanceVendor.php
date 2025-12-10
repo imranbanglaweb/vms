@@ -14,6 +14,7 @@ class MaintenanceVendor extends Model
         'contact_person', 
         'email', 
         'phone', 
-        'address'
+        'address',
+        'created_by'
     ];
 }
