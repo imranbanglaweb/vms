@@ -1,10 +1,10 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body">
+<section role="main" class="content-body" style=background-color:#fff;>
 <div class="container">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<br>
+    <div class="d-flex justify-content-between">
         <h4 class="fw-bold text-primary mb-0">
             <i class="fa fa-store"></i> {{ isset($vendor) ? 'Edit Vendor' : 'Add New Vendor' }}
         </h4>

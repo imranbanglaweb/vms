@@ -1,20 +1,22 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<div class="container mt-5">
+<section role="main" class="content-body" style=background-color:#fff;>
+<div class="container-fluid">
     <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+        <div class="card-header">
+            <br>
             <h4 class="mb-0"><i class="bi bi-building"></i> Add New Vendor</h4>
             <a href="{{ route('vendors.index') }}" class="btn btn-light btn-sm">
                 <i class="bi bi-arrow-left"></i> Back
             </a>
         </div>
 
-        <div class="card-body p-4">
+        <div class="card-body">
             <form action="{{ route('vendors.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
-                <div class="row g-4">
+                <div class="row">
                     <!-- Vendor Name -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Vendor Name</label>
@@ -135,4 +137,5 @@
         </div>
     </div>
 </div>
+</section>
 @endsection

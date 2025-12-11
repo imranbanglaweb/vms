@@ -1,6 +1,7 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
+
 <section class="content-body" style="background-color:#fff;">
 <div class="container mt-4">
 
@@ -92,6 +93,7 @@ $(document).ready(function () {
                     errorHtml += "</ul>";
 
                     $('#errorAlert').removeClass('d-none').html(errorHtml);
+                    $('#errorAlert').addClass('alert alert-danger');
 
                     Swal.fire({
                         icon: 'error',

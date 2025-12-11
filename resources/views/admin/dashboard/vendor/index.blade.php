@@ -1,30 +1,17 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<br>
-<br>
-<br>
-<br>
-<br>
-<section role="main" class="content-body">
+
+<section role="main" class="content-body" style="background-color:#fff;">
     <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center">
+        <div class="">
+            <br>
             <h4 class="mb-0"><i class="bi bi-truck"></i> Vendor Management</h4>
 
             <div class="btn-group">
-                <a href="{{ route('vendors.create') }}" class="btn btn-lightbtn btn-success  btn-sm">
+                <a href="{{ route('vendors.create') }}" class="btn btn-success pull-right">
                     <i class="bi bi-plus-circle"></i> Add Vendor
                 </a>
-                <button id="refreshTable" class="btn btn-light btn-sm">
-                    <i class="bi bi-arrow-repeat"></i> Refresh
-                </button>
-                <button id="exportExcel" class="btn btn-success btn-sm">
-                    <i class="bi bi-file-earmark-excel"></i> Export Excel
-                </button>
-                <button id="exportPDF" class="btn btn-danger btn-sm">
-                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
-                </button>
-                <br>
             </div>
         </div>
         <br>
@@ -47,7 +34,6 @@
                         <tr>
                             <th>ID</th>
                             <th>Vendor Name</th>
-                            <!-- <th>Vendor Type</th> -->
                             <th>Contact Person</th>
                             <th>Phone</th>
                             <th>Email</th>
@@ -59,11 +45,14 @@
             </div>
         </div>
     </div>
-</div>
+</section>
+
 @endsection
 
 @push('scripts')
-<script type="text/javascript">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
 $(document).ready(function () {
     $('#loadingOverlay').show();
 
@@ -74,7 +63,6 @@ $(document).ready(function () {
         columns: [
             { data: 'id', name: 'id' },
             { data: 'name', name: 'name' },
-            // { data: 'vendor_type', name: 'vendor_type' },
             { data: 'contact_person', name: 'contact_person' },
             { data: 'contact_number', name: 'contact_number' },
             { data: 'email', name: 'email' },
@@ -83,22 +71,23 @@ $(document).ready(function () {
                 name: 'status',
                 render: function (data) {
                     return data === 'Active'
-                        ? `<span class="badge bg-success"><i class="bi bi-check-circle"></i> ${data}</span>`
-                        : `<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> ${data}</span>`;
+                        ? `<span class="btn btn-success"><i class="fa fa-check-circle"></i> ${data}</span>`
+                        : `<span class="btn btn-secondary"><i class="fa fa-minus-circle"></i> ${data}</span>`;
                 }
             },
             {
                 data: 'action', 
-                name: 'action', 
+                name: 'action',
                 orderable: false, 
                 searchable: false,
                 render: function (data, type, row) {
+                    let editUrl = "{{ route('vendors.edit', ':id') }}".replace(':id', row.id);
                     return `
-                        <a href="/vendors/${row.id}/edit" class="btn btn-sm btn-outline-primary me-1">
-                            <i class="bi bi-pencil-square"></i>
+                        <a href="${editUrl}" class="btn btn-primary me-1">
+                            <i class="fa fa-pencil-square"></i>
                         </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteVendor(${row.id})">
-                            <i class="bi bi-trash"></i>
+                        <button type="button" class="btn btn-danger" onclick="deleteVendor(${row.id})">
+                            <i class="fa fa-minus"></i>
                         </button>`;
                 }
             }
@@ -107,35 +96,51 @@ $(document).ready(function () {
             $('#loadingOverlay').hide();
         }
     });
-
-    // 🔁 Refresh Table
-    $('#refreshTable').on('click', function() {
-        $('#loadingOverlay').show();
-        table.ajax.reload(() => $('#loadingOverlay').hide(), false);
-    });
-
-    // 📤 Export buttons (placeholder)
-    $('#exportExcel').on('click', function() {
-        alert('Excel Export feature coming soon!');
-    });
-
-    $('#exportPDF').on('click', function() {
-        alert('PDF Export feature coming soon!');
-    });
 });
 
+
+/* ============================
+   🗑️ DELETE WITH SweetAlert2  
+============================ */
 function deleteVendor(id) {
-    if (!confirm('Are you sure you want to delete this vendor?')) return;
-    $.ajax({
-        url: `/vendors/${id}`,
-        type: 'DELETE',
-        data: { _token: '{{ csrf_token() }}' },
-        success: function () {
-            $('#vendorsTable').DataTable().ajax.reload();
-            alert('Vendor deleted successfully!');
-        },
-        error: function () {
-            alert('Error deleting vendor.');
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This vendor will be permanently removed!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            $.ajax({
+                // url: `/vendors/${id}`,
+                url:"{{ route('vendors.destroy', ':id') }}".replace(':id', id),
+
+                type: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+
+                success: function (response) {
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Vendor deleted successfully.",
+                        icon: "success",
+                        timer: 1500
+                    });
+
+                    $('#vendorsTable').DataTable().ajax.reload(null, false);
+                },
+
+                error: function () {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Failed to delete vendor.",
+                        icon: "error"
+                    });
+                }
+            });
+
         }
     });
 }
@@ -144,6 +149,7 @@ function deleteVendor(id) {
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
 <style>
     .card {
         border-radius: 12px;
@@ -151,6 +157,7 @@ function deleteVendor(id) {
     .card-header {
         border-top-left-radius: 12px !important;
         border-top-right-radius: 12px !important;
+        background: #0d6efd;
     }
     .btn-group .btn {
         border-radius: 20px !important;
@@ -158,9 +165,6 @@ function deleteVendor(id) {
     }
     .table th, .table td {
         vertical-align: middle !important;
-    }
-    #vendorsTable_wrapper .dataTables_paginate .paginate_button {
-        padding: 0.4rem 0.8rem;
     }
 </style>
 @endpush

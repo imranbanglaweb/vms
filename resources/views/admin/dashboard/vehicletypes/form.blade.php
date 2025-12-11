@@ -1,5 +1,19 @@
-<div class="card shadow-sm border-0 rounded-3 mx-auto" style="max-width: 1000px;">
-    <div class="card-body bg-light p-4">
+@extends('admin.dashboard.master')
+
+@section('main_content')
+<br>
+<br>
+<section class="content-body" style="background-color:#fff;">
+<div class="container">
+
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 800px;">
+         <a href="{{ route('vehicle-type.index') }}" class="btn btn-outline-primary btn-sm">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+        <h4 class="fw-bold mb-3 text-primary">
+            {{ $vehicleType ? 'Edit Vehicle Type' : 'Add Vehicle Type' }}
+        </h4>
+
         <form id="vehicleTypeForm" action="{{ $action }}" method="POST">
             @csrf
             @if($method == 'PUT')
@@ -7,49 +21,41 @@
             @endif
 
             <div class="mb-3">
-                <label class="form-label fw-semibold">Vehicle Type Name *</label>
-                <div class="input-group input-group-lg shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fa fa-car text-secondary"></i></span>
-                    <input type="text" name="name" class="form-control fs-6" 
-                        placeholder="Enter vehicle type name"
-                        value="{{ old('name', $vehicleType->name ?? '') }}">
-                </div>
+                <label class="form-label fw-semibold">Name *</label>
+                <input type="text" name="name" class="form-control"
+                       value="{{ $vehicleType->name ?? '' }}">
                 <small class="text-danger error-text name_error"></small>
             </div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Description</label>
-                <div class="input-group input-group-lg shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fa fa-align-left text-secondary"></i></span>
-                    <textarea name="description" class="form-control fs-6" rows="3" placeholder="Description">{{ old('description', $vehicleType->description ?? '') }}</textarea>
-                </div>
+                <textarea name="description" class="form-control" rows="3">{{ $vehicleType->description ?? '' }}</textarea>
                 <small class="text-danger error-text description_error"></small>
             </div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Status *</label>
-                <div class="input-group input-group-lg shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fa fa-toggle-on text-secondary"></i></span>
-                    <select name="status" class="form-select fs-6">
-                        <option value="1" {{ old('status', $vehicleType->status ?? '') == 1 ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ old('status', $vehicleType->status ?? '') == 0 ? 'selected' : '' }}>Inactive</option>
-                    </select>
-                </div>
+                <select name="status" class="form-select">
+                    <option value="1" {{ isset($vehicleType) && $vehicleType->status == 1 ? 'selected' : '' }}>Active</option>
+                    <option value="0" {{ isset($vehicleType) && $vehicleType->status == 0 ? 'selected' : '' }}>Inactive</option>
+                </select>
                 <small class="text-danger error-text status_error"></small>
             </div>
 
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary px-4 py-2 fs-6" id="submitBtn">
-                    <span class="spinner-border spinner-border-sm d-none" id="loader" role="status"></span>
-                    <i class="fa fa-save"></i> {{ $method == 'PUT' ? 'Update' : 'Save' }}
-                </button>
-            </div>
+            <button type="submit" id="submitBtn" class="btn btn-primary w-100">
+                <span id="loader" class="spinner-border spinner-border-sm d-none"></span>
+                {{ $vehicleType ? 'Update' : 'Save' }}
+            </button>
         </form>
     </div>
+
 </div>
+</section>
+@endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 $(function() {
     $('#vehicleTypeForm').on('submit', function(e) {
@@ -58,57 +64,42 @@ $(function() {
         let form = $(this);
         let url = form.attr('action');
         let method = form.find('input[name="_method"]').val() || 'POST';
-        let formData = form.serialize();
 
-        $('.error-text').text('');
-        $('#loader').removeClass('d-none');
         $('#submitBtn').attr('disabled', true);
+        $('#loader').removeClass('d-none');
+        $('.error-text').text('');
 
         $.ajax({
             url: url,
-            method: method,
-            data: formData,
-            success: function (response) {
-                $('#loader').addClass('d-none');
+            type: method,
+            data: form.serialize(),
+            success: function(response) {
                 $('#submitBtn').attr('disabled', false);
+                $('#loader').addClass('d-none');
 
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    if (method === 'POST') form[0].reset();
-                }
+                Swal.fire({
+                    icon: 'success',
+                    title: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                if (method === 'POST') form[0].reset();
             },
-            error: function (xhr) {
-                $('#loader').addClass('d-none');
+            error: function(xhr) {
                 $('#submitBtn').attr('disabled', false);
+                $('#loader').addClass('d-none');
 
                 if (xhr.status === 422) {
-                    $.each(xhr.responseJSON.errors, function (key, value) {
+                    $.each(xhr.responseJSON.errors, function(key, value) {
                         $('.' + key + '_error').text(value[0]);
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong! Please try again later.'
-                    });
+                    Swal.fire('Error', 'Something went wrong!', 'error');
                 }
             }
         });
     });
 });
 </script>
-
-<style>
-.form-label { font-size: 2rem; color: #000; }
-.input-group-text { width: 45px; justify-content: center; }
-.form-control, .form-select { font-size: 2rem !important; }
-.btn { font-size: 2rem; }
-.card { background-color: #fff; padding: 20px; }
-</style>
 @endpush

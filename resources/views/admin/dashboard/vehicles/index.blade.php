@@ -1,7 +1,7 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section class="content-body mt-4">
+<section role="main" class="content-body" style=background-color:#fff;>
 <div class="container">
 <br>
 <br>
@@ -11,11 +11,12 @@
         <h4 class="fw-bold text-primary mb-0">
             <i class="fa fa-car"></i> Vehicles
         </h4>
-        <a href="{{ route('vehicles.create') }}" class="btn btn-success btn-sm">
+        <a href="{{ route('vehicles.create') }}" class="btn btn-success btn-sm pull-right">
             <i class="fa fa-plus-circle"></i> Add Vehicle
         </a>
     </div>
-
+<br>
+<hr>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif

@@ -1,15 +1,16 @@
+
 <div class="modal " id="categoryModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
 
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title fw-bold">Add / Edit Category</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <!-- <button type="button" class="btn-close" data-bs-dismiss="modal"></button> -->
             </div>
 
             <div class="modal-body">
 
-                <div id="errorAlert" class="alert alert-danger d-hi"></div>
+                <div id="errorAlert" class=""></div>
 
                 <form id="categoryForm">
                     @csrf

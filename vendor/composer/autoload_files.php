@@ -43,4 +43,5 @@ return array(
     '377b22b161c09ed6e5152de788ca020a' => $vendorDir . '/spatie/laravel-permission/src/helpers.php',
     '0b47d6d4a00ca9112ba3953b49e7c9a4' => $vendorDir . '/yajra/laravel-datatables-oracle/src/helper.php',
     'b28282bf56ed60c93bfbfb861c9643eb' => $baseDir . '/app/Helpers/Notify.php',
+    'c71260c1cf084f756474d36b60f4fe08' => $baseDir . '/app/Helpers/MenuHelper.php',
 );

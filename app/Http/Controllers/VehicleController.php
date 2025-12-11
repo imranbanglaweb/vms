@@ -42,10 +42,10 @@ class VehicleController extends Controller
         return datatables()->of($vehicles)
             ->addIndexColumn() // Adds DT_RowIndex
             ->addColumn('department', function($row){
-                return $row->department ? $row->department->name : '-';
+                return $row->department ? $row->department->department_name : '-';
             })
             ->addColumn('driver', function($row){
-                return $row->driver ? $row->driver->name : '-';
+                return $row->driver ? $row->driver->driver_name : '-';
             })
             ->addColumn('status', function($row){
                 return $row->status == 1 

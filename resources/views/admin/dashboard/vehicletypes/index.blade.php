@@ -1,14 +1,10 @@
 @extends('admin.dashboard.master')
-
 @section('main_content')
-<br>
-<br>
-<br>
-<br>
-<section role="main" class="content-body mt-5">
+<section role="main" class="content-body" style="background-color:#fff;">
 <div class="container">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
+        <br>
         <h4 class="fw-bold text-primary mb-0">
             <i class="fa fa-list"></i> Vehicle Types
         </h4>
