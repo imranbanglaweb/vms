@@ -284,25 +284,26 @@ public function validateAjax(Request $request)
             }
         }
 
+
+
         DB::commit();
+        
+   sendNotification(
+        1,
+        "New Requisition Submitted",
+        "A new requisition has been created by ".Auth::user()->name,
+        "warning",
+        route('requisitions.index')
+    );
 
-//         sendNotification(
-//     1, // Admin user id
-//     "New Requisition Submitted",
-//     "A new requisition has been created by ".auth()->user()->name,
-//     "warning",
-//     route('requisitions.index')
-// );
-
-
-event(new RequisitionCreated($requisition)); // after creating
-
+    event(new RequisitionCreated($requisition));
 
         return response()->json([
             'status' => 'success',
             'message' => 'Requisition created successfully!',
             'redirect_url' => route('requisitions.index')
         ], 200);
+        
 
     } catch (\Throwable $e) {
         DB::rollBack();

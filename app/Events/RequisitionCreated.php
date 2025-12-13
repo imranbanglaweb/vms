@@ -2,15 +2,17 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use App\Models\Requisition;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 class RequisitionCreated implements ShouldBroadcast
 {
-    use SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $requisition;
 
@@ -21,17 +23,20 @@ class RequisitionCreated implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('dashboard');
+        return new Channel('admin-notifications');
+    }
+
+    public function broadcastAs()
+    {
+        return 'requisition.created';
     }
 
     public function broadcastWith()
     {
         return [
             'id' => $this->requisition->id,
-            'requested_by_name' => $this->requisition->requestedBy->name ?? 'N/A',
-            'travel_date' => $this->requisition->travel_date,
-            'status' => $this->requisition->status,
-            'status_text' => $this->requisition->status_text,
+            'number' => $this->requisition->requisition_number,
+            'employee' => optional($this->requisition->requestedBy)->name,
         ];
     }
 }

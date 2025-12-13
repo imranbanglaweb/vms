@@ -32,6 +32,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
+        if ($this->app->environment('local')) {
+        // Suppress specific warnings from thecodingmachine/safe
+        set_error_handler(function ($severity, $message, $file, $line) {
+            // Only ignore warnings from thecodingmachine/safe
+            if (strpos($file, 'vendor/thecodingmachine/safe') !== false) {
+                return true; // Ignore warning
+            }
+
+            // Otherwise, use default handler
+            return false;
+        }, E_WARNING);
+}
+
+
         if(config('app.env') === 'production') {
             \URL::forceScheme('https');
         }

@@ -405,6 +405,32 @@
 	 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet"> 
 	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
+
+	<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    Pusher.logToConsole = false;
+
+    const pusher = new Pusher("{{ env('PUSHER_APP_KEY') }}", {
+        cluster: "{{ env('PUSHER_APP_CLUSTER') }}",
+        forceTLS: true
+    });
+
+    const channel = pusher.subscribe('admin-notifications');
+
+    channel.bind('requisition.created', function(data) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: 'New Requisition',
+            html: `<strong>${data.number}</strong><br>Requested by ${data.employee}`,
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true
+        });
+    });
+</script>
+
 	<!-- Replace the TinyMCE initialization script with this -->
 	<script>
 	// Initialize Summernote

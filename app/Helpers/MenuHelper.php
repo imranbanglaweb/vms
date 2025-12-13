@@ -1,33 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
-if (! function_exists('isActiveRoute')) {
-    function isActiveRoute($routeName)
+if (!function_exists('routeBase')) {
+    function routeBase($route)
     {
-        return request()->routeIs($routeName) ? 'active' : '';
+        return explode('.', $route)[0] ?? '';
     }
 }
 
-if (! function_exists('isActiveUrl')) {
+if (!function_exists('isActiveUrl')) {
     function isActiveUrl($routeName)
     {
-        return request()->routeIs($routeName) ? 'sub-nav-active' : '';
+        if (!$routeName) return '';
+
+        $current = Route::currentRouteName();
+
+        return routeBase($current) === routeBase($routeName)
+            ? 'nav-active active'
+            : '';
     }
 }
 
-if (! function_exists('isMenuOpen')) {
-    function isMenuOpen($children)
+if (!function_exists('isMenuOpen')) {
+    function isMenuOpen($menus)
     {
-        foreach ($children as $child) {
-            if (request()->routeIs($child->menu_url)) {
+        $current = Route::currentRouteName();
+
+        foreach ($menus as $menu) {
+
+            if ($menu->menu_url &&
+                routeBase($menu->menu_url) === routeBase($current)) {
                 return 'nav-expanded nav-active';
             }
 
-            $subChildren = DB::table('menus')->where('menu_parent', $child->id)->get();
+            $children = DB::table('menus')
+                ->where('menu_parent', $menu->id)
+                ->get();
 
-            foreach ($subChildren as $sub) {
-                if (request()->routeIs($sub->menu_url)) {
+            foreach ($children as $child) {
+                if ($child->menu_url &&
+                    routeBase($child->menu_url) === routeBase($current)) {
                     return 'nav-expanded nav-active';
                 }
             }
