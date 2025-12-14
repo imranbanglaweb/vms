@@ -445,10 +445,10 @@ Route::post('/permissions/validate', [PermissionController::class, 'validatePerm
     Route::resource('permissions', PermissionController::class);
     Route::post('/push/subscribe', [PushController::class, 'store']);
 
-    Route::get('/test-push', function () {
-    auth()->user()->notify(new \App\Notifications\RequisitionCreated());
-    return 'Push Sent';
-});
+//     Route::get('/test-push', function () {
+//     auth()->user()->notify(new \App\Notifications\RequisitionCreated());
+//     return 'Push Sent';
+// });
 
     
 });

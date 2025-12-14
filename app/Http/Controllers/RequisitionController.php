@@ -8,6 +8,7 @@ use App\Models\Requisition;
 use App\Models\Vehicle;
 use App\Models\Driver;
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Department;
 use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
@@ -18,9 +19,14 @@ use App\Mail\RequisitionStatusChangedMail;
 use Illuminate\Support\Facades\Mail;
 use App\Events\RequisitionCreated;
 use App\Events\RequisitionStatusUpdated;
+use Illuminate\Support\Facades\Notification;
 class RequisitionController extends Controller
 {
    
+     public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function index(Request $request)
 {
@@ -285,6 +291,13 @@ public function validateAjax(Request $request)
         }
 
 
+    $users = User::whereHas('roles', function ($q) {
+        $q->whereIn('name', ['Admin', 'transport']);
+    })
+    ->whereHas('pushSubscriptions')
+    ->get();
+
+    Notification::send($users, new RequisitionCreated($requisition));
 
         DB::commit();
         
