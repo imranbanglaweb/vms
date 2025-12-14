@@ -27,7 +27,6 @@ class TestPushNotification extends Notification
         // return ['webpush'];
          return [WebPushChannel::class, 'database'];
     }
-
     public function toWebPush($notifiable, $notification)
     {
         return (new WebPushMessage)
