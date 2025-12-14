@@ -443,6 +443,14 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/permissions/validate', [PermissionController::class, 'validatePermission'])->name('permissions.validate');
     // CRUD routes
     Route::resource('permissions', PermissionController::class);
+    Route::post('/push/subscribe', [PushController::class, 'store']);
+
+    Route::get('/test-push', function () {
+    auth()->user()->notify(new \App\Notifications\RequisitionCreated());
+    return 'Push Sent';
+});
+
+    
 });
     // Route::resource('permissions', PermissionController::class);
     //  Route::get('permissions/list', [PermissionController::class, 'list'])->name('permissions.list'); // AJAX for DataTables
