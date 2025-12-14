@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushMessage;
+use NotificationChannels\WebPush\WebPushChannel;
 class TestPushNotification extends Notification
 {
     use Queueable;
@@ -23,7 +24,8 @@ class TestPushNotification extends Notification
 
    public function via($notifiable)
     {
-        return ['webpush'];
+        // return ['webpush'];
+         return [WebPushChannel::class, 'database'];
     }
 
     public function toWebPush($notifiable, $notification)
@@ -32,7 +34,8 @@ class TestPushNotification extends Notification
             ->title('VMS Test Notification')
             ->body('If you see this, push is working')
             ->icon('/icon-192.png')
-            ->action('Open App', 'open_app');
+            // ->action('Open App', 'open_app');
+            ->action('View', url('/requisitions'));
     }
     public function toMail($notifiable)
     {
