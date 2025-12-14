@@ -21,23 +21,19 @@ class TestPushNotification extends Notification
         //
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
+   public function via($notifiable)
     {
-        return ['mail'];
+        return ['webpush'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
+    public function toWebPush($notifiable, $notification)
+    {
+        return (new WebPushMessage)
+            ->title('VMS Test Notification')
+            ->body('If you see this, push is working')
+            ->icon('/icon-192.png')
+            ->action('Open App', 'open_app');
+    }
     public function toMail($notifiable)
     {
         return (new MailMessage)
