@@ -186,6 +186,11 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
     // routes/web.php
 // Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
+Route::get('/test-push', function () {
+    auth()->user()->notify(new App\Notifications\TestPushNotification());
+    return 'Push sent';
+});
+
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
 Route::get('/requisitions/{id}/download', [RequisitionController::class, 'downloadPDF'])->name('requisitions.download');

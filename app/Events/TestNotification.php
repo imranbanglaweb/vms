@@ -7,9 +7,9 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class TestNotification implements ShouldBroadcast
+class TestPushNotification extends Notification
 {
-    use SerializesModels;
+    use SerializesModels, Queueable;
 
     public $message;
 
@@ -21,5 +21,21 @@ class TestNotification implements ShouldBroadcast
     public function broadcastOn()
     {
         return new Channel('dashboard');
+    }
+
+    use Queueable;
+
+    public function via($notifiable)
+    {
+        return ['webpush'];
+    }
+
+    public function toWebPush($notifiable, $notification)
+    {
+        return (new WebPushMessage)
+            ->title('VMS Test Notification')
+            ->body('If you see this, push is working')
+            ->icon('/icon-192.png')
+            ->action('Open App', 'open_app');
     }
 }
