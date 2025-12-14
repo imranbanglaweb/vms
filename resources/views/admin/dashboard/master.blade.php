@@ -409,7 +409,7 @@
 	<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 	<script>
 		if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
+    navigator.serviceWorker.register('public/sw.js');
 }
 Notification.requestPermission().then(function(permission) {
     console.log('Permission:', permission);
