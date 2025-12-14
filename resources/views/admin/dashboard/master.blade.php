@@ -406,11 +406,11 @@
 	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
 
-	<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 	<script>
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/public/sw.js')
+        navigator.serviceWorker.register('public/sw.js')
             .then(function (reg) {
                 console.log('✅ SW registered:', reg.scope);
             })
