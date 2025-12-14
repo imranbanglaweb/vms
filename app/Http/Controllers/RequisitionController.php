@@ -168,6 +168,7 @@ class RequisitionController extends Controller
     return view('admin.dashboard.requisition.create', [
         'action'      => route('requisitions.store'),
         'method'      => 'POST',
+        'units' => Unit::all(),
         'requisition' => new Requisition(),
         'vehicles'    => $vehicles,
         'employees'    => $employees,
