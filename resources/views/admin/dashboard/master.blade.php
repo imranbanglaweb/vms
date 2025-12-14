@@ -406,14 +406,14 @@
 	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
 
-	<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+	<!-- <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 	<script>
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('public/sw.js')
         .then(reg => console.log('Service Worker registered:', reg.scope))
         .catch(err => console.error('Service Worker error:', err));
 }
-</script>
+</script> -->
 
 	<script>
 Notification.requestPermission().then(function(permission) {
