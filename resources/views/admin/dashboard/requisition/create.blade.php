@@ -283,7 +283,7 @@ $(function () {
             return;
         }
 
-        $.get("/get-employee-details/" + id, function (res) {
+         $.get("{{ route('employee.details', ':id') }}".replace(':id', id), function (res) {
             row.find('.passenger-department').val(res.department);
             row.find('.passenger-unit').val(res.unit);
         });

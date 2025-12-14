@@ -250,7 +250,7 @@ class EmployeeController extends Controller
 
         public function getEmployeeDetails($id)
         {
-            $employee = Employee::with(['department', 'unit'])->find($id);
+            $employee = Employee::with(['department', 'Unit'])->find($id);
 
             // dd($id);
 
