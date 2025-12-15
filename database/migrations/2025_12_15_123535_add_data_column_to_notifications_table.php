@@ -17,7 +17,6 @@ class AddDataColumnToNotificationsTable extends Migration
              $table->json('data')->nullable()->after('type');
         });
     }
-
     /**
      * Reverse the migrations.
      *
