@@ -1300,3 +1300,7 @@
 #55 D:\\MYProject\\htdocs\\VMS\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
 #56 {main}
 "} 
+[2025-12-14 17:46:18] local.ERROR: Cannot declare class CreatePushSubscriptionsTable, because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot declare class CreatePushSubscriptionsTable, because the name is already in use at D:\\MYProject\\htdocs\\VMS\\database\\migrations\\2025_12_14_124241_create_push_subscriptions_table.php:7)
+[stacktrace]
+#0 {main}
+"} 
