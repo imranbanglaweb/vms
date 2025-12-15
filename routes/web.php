@@ -53,6 +53,7 @@ use App\Http\Controllers\MaintenanceVendorController;
 use App\Http\Controllers\MaintenanceScheduleController;
 use App\Http\Controllers\MaintenanceRequisitionController;
 use App\Http\Controllers\MaintenanceCategoryController;
+use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\RoleController;
   
 
@@ -192,7 +193,10 @@ Route::middleware(['auth'])->get('/test-push', function () {
     return 'Web push sent successfully';
     
 });
-
+Route::post('/push-subscribe', function(Request $request) {
+    Auth::user()->updatePushSubscription($request->endpoint, $request->keys['p256dh'], $request->keys['auth']);
+    return response()->json(['success' => true]);
+});
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 

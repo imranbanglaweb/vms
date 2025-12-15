@@ -408,17 +408,51 @@
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 	<script>
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', function () {
+//         navigator.serviceWorker.register('/public/sw.js')
+//             .then(function (reg) {
+//                 console.log('✅ SW registered:', reg.scope);
+//             })
+//             .catch(function (err) {
+//                 console.error('❌ SW failed:', err);
+//             });
+//     });
+// }
+
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/public/sw.js')
-            .then(function (reg) {
-                console.log('✅ SW registered:', reg.scope);
-            })
-            .catch(function (err) {
-                console.error('❌ SW failed:', err);
-            });
+    navigator.serviceWorker.register('/public/service-worker.js')
+        .then(function(registration) {
+            console.log('Service Worker registered', registration);
+        });
+
+    navigator.serviceWorker.ready.then(async function(registration) {
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array("{{ config('webpush.vapid.public_key') }}")
+        });
+
+        // Send subscription to your server
+        await fetch('/push-subscribe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+            body: JSON.stringify(subscription)
+        });
     });
 }
+
+// helper function
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+}
+
 </script>
 
 	<script>

@@ -1,14 +1,13 @@
 <?php
 use App\Models\Notification;
+use App\Models\User;
+use App\Notifications\TestPushNotification;
 
-function sendNotification($toUser, $title, $message = null, $type = 'info', $link = null)
+function sendNotification($toUserId, $title, $message = null, $type = 'info', $link = null)
 {
-    return Notification::create([
-        'user_id' => $toUser,
-        'from_user_id' => auth()->id(),
-        'title' => $title,
-        'message' => $message,
-        'type' => $type,
-        'link' => $link,
-    ]);
+    $user = User::find($toUserId);
+    if (!$user) return false;
+
+    $user->notify(new TestPushNotification($title, $message, $type, $link));
+    return true;
 }
