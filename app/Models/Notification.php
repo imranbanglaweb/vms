@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
-class Notification extends Model
+use Illuminate\Notifications\DatabaseNotification;
+class Notification extends DatabaseNotification
 {
     protected $table = 'notifications';
-
+protected $casts = [
+        'data' => 'array',
+        'read_at' => 'datetime',
+    ];
     protected $fillable = [
         'user_id',
         'title',
