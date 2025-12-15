@@ -55,7 +55,7 @@ use App\Http\Controllers\MaintenanceRequisitionController;
 use App\Http\Controllers\MaintenanceCategoryController;
 use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\RoleController;
-  
+use App\Notifications\TestPushNotification;  
 
 Route::prefix('maintenance-categories')->group(function () {
     Route::get('/', [MaintenanceCategoryController::class, 'index'])->name('maintenance-categories.index'); // DataTable
