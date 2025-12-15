@@ -189,10 +189,16 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 
 
 Route::middleware(['auth'])->get('/test-push', function () {
-    auth()->user()->notify(new App\Notifications\TestPushNotification());
+    auth()->user()->notify(new TestPushNotification(
+        "Test Notification",            // Title (required)
+        "Web push is working successfully", // Message (optional)
+        "info",                         // Type (optional)
+        url('/dashboard')               // Link (optional)
+    ));
+
     return 'Web push sent successfully';
-    
 });
+
 Route::post('/push-subscribe', function(Request $request) {
     Auth::user()->updatePushSubscription($request->endpoint, $request->keys['p256dh'], $request->keys['auth']);
     return response()->json(['success' => true]);
