@@ -23,7 +23,7 @@ class TestPushNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'webpush'];
+        return ['webpush', 'database'];
     }
 
     public function toDatabase($notifiable)
@@ -38,11 +38,11 @@ class TestPushNotification extends Notification
 
     public function toWebPush($notifiable, $notification)
     {
-        return (new WebPushMessage)
-            ->title($this->title)
-            ->body($this->message)
-            ->icon('/icon.png')
-            ->action('View', $this->link ?? url('/dashboard'));
+       return (new WebPushMessage)
+        ->title('VMS Notification')
+        ->body('Web push is working successfully')
+        ->icon('/icon.png')
+        ->action('Open App', url('/dashboard'));
     }
 }
 

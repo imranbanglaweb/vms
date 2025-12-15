@@ -14,7 +14,7 @@ class CreateNotificationsTable extends Migration
         public function up()
         {
             Schema::create('notifications', function (Blueprint $table) {
-                $table->id();
+                // $table->id();
                 $table->unsignedBigInteger('user_id'); // who will receive
                 $table->unsignedBigInteger('from_user_id')->nullable(); // who triggered event
                 $table->string('title');
