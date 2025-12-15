@@ -10,50 +10,25 @@ use NotificationChannels\WebPush\WebPushMessage;
 use NotificationChannels\WebPush\WebPushChannel;
 class TestPushNotification extends Notification
 {
-    use Queueable;
-
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function via($notifiable)
     {
-        //
+        return ['webpush', 'database'];
     }
 
-   public function via($notifiable)
-    {
-        // return ['webpush'];
-         return [WebPushChannel::class, 'database'];
-    }
     public function toWebPush($notifiable, $notification)
     {
-        return (new WebPushMessage)
-            ->title('VMS Test Notification')
-            ->body('If you see this, push is working')
-            ->icon('/icon-192.png')
-            // ->action('Open App', 'open_app');
-            ->action('View', url('/requisitions'));
-    }
-    public function toMail($notifiable)
-    {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+       return (new WebPushMessage)
+            ->title('VMS Notification')
+            ->body('Web push is working successfully')
+            ->icon('/icon.png')
+            ->action('Open App', url('/dashboard'));
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function toDatabase($notifiable)
     {
         return [
-            //
+            'title' => 'VMS Notification',
+            'message' => 'Web push saved in database',
         ];
     }
 }

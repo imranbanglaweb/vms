@@ -190,6 +190,7 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 Route::middleware(['auth'])->get('/test-push', function () {
     auth()->user()->notify(new App\Notifications\TestPushNotification());
     return 'Web push sent successfully';
+    
 });
 
 
