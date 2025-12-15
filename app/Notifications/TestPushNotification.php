@@ -2,12 +2,13 @@
 
 namespace App\Notifications;
 
+use Illuminate\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushMessage;
 use NotificationChannels\WebPush\WebPushChannel;
+
 class TestPushNotification extends Notification
 {
     public function via($notifiable)
