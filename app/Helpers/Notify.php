@@ -1,5 +1,6 @@
 <?php
-use App\Models\Notification;
+namespace App\Helpers;
+use Illuminate\Notifications\Notification;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
 

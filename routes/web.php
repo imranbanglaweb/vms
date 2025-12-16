@@ -13,6 +13,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\RequisitionApprovalController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\RoomController;
@@ -31,7 +32,6 @@ use App\Http\Controllers\Issue;
 use App\Http\Controllers\SupportTypeController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\IssueregisterLogController;
 use App\Http\Controllers\SupportdetailController;
 use App\Http\Controllers\AssignprojectDepartmentController;
 use App\Http\Controllers\TasktitleController;
@@ -57,6 +57,11 @@ use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\RoleController;
 use App\Notifications\TestPushNotification;  
 
+
+
+// Route::get('/', fn () => redirect()->route('login'));
+
+Auth::routes();
 Route::prefix('maintenance-categories')->group(function () {
     Route::get('/', [MaintenanceCategoryController::class, 'index'])->name('maintenance-categories.index'); // DataTable
     Route::post('/', [MaintenanceCategoryController::class, 'store'])->name('maintenance-categories.store'); // Create / Update
@@ -121,7 +126,7 @@ Route::get('maintenance-schedules/server/load', [MaintenanceScheduleController::
 
 
 Route::group(['middleware' => ['auth']], function() {
-Route::redirect('/', 'login');
+// Route::redirect('/', 'login');
 
   // DataTables AJAX
 Route::get('roles/data', [RoleController::class, 'data'])->name('roles.data');
@@ -188,16 +193,24 @@ Route::get('departments/data', [DepartmentController::class, 'data'])->name('dep
 // Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
 
-Route::middleware(['auth'])->get('/test-push', function () {
-    auth()->user()->notify(new TestPushNotification(
-        "Test Notification",            // Title (required)
-        "Web push is working successfully", // Message (optional)
-        "info",                         // Type (optional)
-        url('/dashboard')               // Link (optional)
-    ));
+// Route::middleware(['auth'])->get('/test-push', function () {
+//     auth()->user()->notify(new TestPushNotification(
+//         "Test Notification",            // Title (required)
+//         "Web push is working successfully", // Message (optional)
+//         "info",                         // Type (optional)
+//         url('/dashboard')               // Link (optional)
+//     ));
 
-    return 'Web push sent successfully';
+//     return 'Web push sent successfully';
+// });
+Route::get('/test-push', function () {
+    auth()->user()->notify(
+        new \App\Notifications\TestPushNotification()
+    );
+    return 'Push sent';
 });
+
+
 
 Route::post('/push-subscribe', function(Request $request) {
     Auth::user()->updatePushSubscription($request->endpoint, $request->keys['p256dh'], $request->keys['auth']);
@@ -366,7 +379,6 @@ Route::get('/admin/notifications/unread-count', function(){
     return response()->json(['count' => \App\Models\Notification::where('user_id', auth()->id())->where('is_read', 0)->count()]);
 })->name('notifications.unread');
 
-Auth::routes();
 
 
     Route::resource('supports', SupportController::class);
@@ -383,7 +395,6 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
         Route::get('/support-details/history/{id}', [\App\Http\Controllers\SupportdetailController::class, 'history'])->name('support-details.history');
     }
 
-    Route::resource('issueregisterlog',IssueregisterLogController::class);
     // Support type routes (guarded)
     if (class_exists(\App\Http\Controllers\SupportTypeController::class)) {
         Route::resource('support_type', \App\Http\Controllers\SupportTypeController::class);
@@ -461,7 +472,7 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/permissions/validate', [PermissionController::class, 'validatePermission'])->name('permissions.validate');
     // CRUD routes
     Route::resource('permissions', PermissionController::class);
-    Route::post('/push/subscribe', [PushController::class, 'store']);
+    // Route::post('/push/subscribe', [PushController::class, 'store']);
 
 //     Route::get('/test-push', function () {
 //     auth()->user()->notify(new \App\Notifications\RequisitionCreated());
@@ -521,5 +532,4 @@ Route::get('/dashboard/pending-approvals', [HomeController::class, 'getPendingAp
 Route::get('/transport/approvals/ajax', [TransportApprovalController::class, 'ajax'])
     ->name('transport.approvals.ajax');
 
-
-
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
