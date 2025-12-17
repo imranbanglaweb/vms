@@ -56,8 +56,8 @@ use App\Http\Controllers\MaintenanceCategoryController;
 use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\RoleController;
 use App\Notifications\TestPushNotification;  
-use NotificationChannels\WebPush\PushSubscriptionController;
-
+// use NotificationChannels\WebPush\PushSubscriptionController;
+use App\Http\Controllers\PushSubscriptionController;
 
 
 // Route::get('/', fn () => redirect()->route('login'));
@@ -218,10 +218,11 @@ Route::get('/test-push', function () {
 //     return response()->json(['success' => true]);
 // });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/push/subscribe', [PushSubscriptionController::class, 'store']);
-    Route::post('/push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
-});
+// Route::middleware('auth')->group(function () {
+Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])
+     ->middleware('auth');
+    Route::post('push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
+// });
 
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');

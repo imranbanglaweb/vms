@@ -410,7 +410,7 @@
 <script>
 if ('serviceWorker' in navigator && 'PushManager' in window) {
 
-    navigator.serviceWorker.register('/public/sw.js')
+    navigator.serviceWorker.register('public/sw.js')
         .then(function (registration) {
 
             return Notification.requestPermission().then(function (permission) {
@@ -430,7 +430,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 
             if (!subscription) return;
 
-            return fetch('/push-subscribe', {
+            return fetch('push-subscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
