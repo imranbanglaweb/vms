@@ -45,6 +45,7 @@ class RequisitionCreated extends Notification
     // }
       public function toWebPush($notifiable, $notification)
     {
+      dd('toWebPush triggered');
         return (new WebPushMessage)
             ->title('New Requisition Submitted')
             ->body('A new requisition has been created')

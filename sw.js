@@ -2,8 +2,7 @@
 
 // Listen for push events
 self.addEventListener('push', function(event) {
-    console.log('Push received');
-
+   console.log('Push received:', event.data ? event.data.text() : 'No data');
     let data = {};
     if (event.data) {
         try {
