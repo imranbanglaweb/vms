@@ -12,7 +12,8 @@ Use \Carbon\Carbon;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Config;
-
+use App\Models\Requisition;
+use App\Observers\RequisitionObserver;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -44,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
             // Otherwise, use default handler
             return false;
         }, E_WARNING);
+
+        Requisition::observe(RequisitionObserver::class);
 }
 
 
