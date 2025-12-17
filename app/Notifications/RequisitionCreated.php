@@ -23,10 +23,10 @@ class RequisitionCreated extends Notification
     public function via($notifiable)
     {
 
-        dd(app(\Illuminate\Notifications\ChannelManager::class)->getDrivers());
+        // dd(app(\Illuminate\Notifications\ChannelManager::class)->getDrivers());
           return [WebPushChannel::class];
 
-        // return ['webpush'];
+        return ['webpush'];
     }
 
     // public function toWebPush($notifiable, $notification)

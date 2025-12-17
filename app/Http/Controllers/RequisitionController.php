@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\RequisitionStatusChangedMail;
 use Illuminate\Support\Facades\Mail;
-use App\Events\RequisitionCreated;
+use App\Notifications\RequisitionCreated;
 use App\Events\RequisitionStatusUpdated;
 use Illuminate\Support\Facades\Notification;
 class RequisitionController extends Controller
@@ -299,7 +299,7 @@ public function validateAjax(Request $request)
         DB::commit();
         
   $users = User::whereHas('roles', function ($q) {
-        $q->whereIn('name', ['Admin', 'transport']);
+        $q->whereIn('name', ['Super Admin', 'transport']);
     })
     ->whereHas('pushSubscriptions')
     ->get();
@@ -307,7 +307,7 @@ public function validateAjax(Request $request)
 Notification::send($users, new RequisitionCreated($requisition));
 
 
-    event(new RequisitionCreated($requisition));
+    // event(new RequisitionCreated($requisition));
 
         return response()->json([
             'status' => 'success',
