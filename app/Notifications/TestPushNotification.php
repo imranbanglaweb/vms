@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\DatabaseMessage;
 use NotificationChannels\WebPush\WebPushMessage;
-
+use NotificationChannels\WebPush\WebPushChannel;
 class TestPushNotification extends Notification
 {
      use Queueable;
@@ -33,7 +33,8 @@ class TestPushNotification extends Notification
 // }
 
         // dd( app(\Illuminate\Notifications\ChannelManager::class)->getDrivers() );
-        return ['webpush'];
+        // return ['webpush'];
+         return [WebPushChannel::class];
     }
 
     public function toDatabase($notifiable)
