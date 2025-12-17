@@ -298,19 +298,19 @@ public function validateAjax(Request $request)
     ->whereHas('pushSubscriptions')
     ->get();
 
-    Notification::send($users, new RequisitionCreated($requisition));
+    // Notification::send($users, new RequisitionCreated($requisition));
 
         DB::commit();
         
-   sendNotification(
-        1,
-        "New Requisition Submitted",
-        "A new requisition has been created by ".Auth::user()->name,
-        "warning",
-        route('requisitions.index')
-    );
+//    sendNotification(
+//         1,
+//         "New Requisition Submitted",
+//         "A new requisition has been created by ".Auth::user()->name,
+//         "warning",
+//         route('requisitions.index')
+//     );
 
-    event(new RequisitionCreated($requisition));
+    // event(new RequisitionCreated($requisition));
 
         return response()->json([
             'status' => 'success',
