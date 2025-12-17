@@ -127,7 +127,7 @@ Route::get('maintenance-schedules/server/load', [MaintenanceScheduleController::
 
 
 Route::group(['middleware' => ['auth']], function() {
-// Route::redirect('/', 'login');
+Route::redirect('/', 'login');
 
   // DataTables AJAX
 Route::get('roles/data', [RoleController::class, 'data'])->name('roles.data');
