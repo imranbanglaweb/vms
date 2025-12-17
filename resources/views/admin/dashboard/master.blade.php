@@ -407,18 +407,34 @@
 
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+	const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: vapidPublicKey
+});
+
+await fetch('/push/subscribe', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify(subscription)
+});
+
+</script>
 	<script>
-// if ('serviceWorker' in navigator) {
-//     window.addEventListener('load', function () {
-//         navigator.serviceWorker.register('/public/sw.js')
-//             .then(function (reg) {
-//                 console.log('✅ SW registered:', reg.scope);
-//             })
-//             .catch(function (err) {
-//                 console.error('❌ SW failed:', err);
-//             });
-//     });
-// }
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/public/sw.js')
+            .then(function (reg) {
+                console.log('✅ SW registered:', reg.scope);
+            })
+            .catch(function (err) {
+                console.error('❌ SW failed:', err);
+            });
+    });
+}
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/public/service-worker.js')

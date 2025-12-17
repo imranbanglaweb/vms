@@ -56,6 +56,7 @@ use App\Http\Controllers\MaintenanceCategoryController;
 use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\RoleController;
 use App\Notifications\TestPushNotification;  
+use NotificationChannels\WebPush\PushSubscriptionController;
 
 
 
@@ -212,10 +213,16 @@ Route::get('/test-push', function () {
 
 
 
-Route::post('/push-subscribe', function(Request $request) {
-    Auth::user()->updatePushSubscription($request->endpoint, $request->keys['p256dh'], $request->keys['auth']);
-    return response()->json(['success' => true]);
+// Route::post('/push-subscribe', function(Request $request) {
+//     Auth::user()->updatePushSubscription($request->endpoint, $request->keys['p256dh'], $request->keys['auth']);
+//     return response()->json(['success' => true]);
+// });
+
+Route::middleware('auth')->group(function () {
+    Route::post('/push/subscribe', [PushSubscriptionController::class, 'store']);
+    Route::post('/push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
 });
+
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 

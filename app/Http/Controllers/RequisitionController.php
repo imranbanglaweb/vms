@@ -292,25 +292,22 @@ public function validateAjax(Request $request)
         }
 
 
-    $users = User::whereHas('roles', function ($q) {
-        $q->whereIn('name', ['Admin', 'transport']);
-    })
-    ->whereHas('pushSubscriptions')
-    ->get();
+
 
     // Notification::send($users, new RequisitionCreated($requisition));
 
         DB::commit();
         
-//    sendNotification(
-//         1,
-//         "New Requisition Submitted",
-//         "A new requisition has been created by ".Auth::user()->name,
-//         "warning",
-//         route('requisitions.index')
-//     );
+  $users = User::whereHas('roles', function ($q) {
+        $q->whereIn('name', ['Admin', 'transport']);
+    })
+    ->whereHas('pushSubscriptions')
+    ->get();
 
-    // event(new RequisitionCreated($requisition));
+Notification::send($users, new RequisitionCreated($requisition));
+
+
+    event(new RequisitionCreated($requisition));
 
         return response()->json([
             'status' => 'success',
