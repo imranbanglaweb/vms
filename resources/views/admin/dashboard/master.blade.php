@@ -410,10 +410,8 @@
 <script>
 if ('serviceWorker' in navigator && 'PushManager' in window) {
 
-    // navigator.serviceWorker.register('public/sw.js')
-	// navigator.serviceWorker.register('/VMS/sw.js');
-navigator.serviceWorker.register('/sw.js');
-
+    navigator.serviceWorker.register('/sw.js')
+	
         .then(function (registration) {
 
             return Notification.requestPermission().then(function (permission) {
