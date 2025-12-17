@@ -12,44 +12,49 @@ use NotificationChannels\WebPush\WebPushMessage;
 class RequisitionCreated extends Notification
 {
      use Queueable;
+    protected $title;
+    protected $message;
+    protected $link;
+    protected $type;
 
-    protected $requisition;
-
-    public function __construct($requisition)
-    {
-        $this->requisition = $requisition;
-    }
+    // public function __construct($title, $message = null, $type = 'info', $link = null)
+    // {
+    //     $this->title = $title;
+    //     $this->message = $message;
+    //     $this->type = $type;
+    //     $this->link = $link;
+    // }
 
     public function via($notifiable)
     {
+//         try {
+//     app(\Illuminate\Notifications\ChannelManager::class)->driver('webpush');
+//     dd('webpush driver loaded');
+// } catch (\Exception $e) {
+//     dd($e->getMessage());
+// }
 
-        // dd(app(\Illuminate\Notifications\ChannelManager::class)->getDrivers());
-        // dd(app(\Illuminate\Notifications\ChannelManager::class)->getDrivers());
-
-
-          return [WebPushChannel::class];
-
+        // dd( app(\Illuminate\Notifications\ChannelManager::class)->getDrivers() );
         // return ['webpush'];
+         return [WebPushChannel::class];
     }
 
-    // public function toWebPush($notifiable, $notification)
-    // {
-    //     return (new WebPushMessage)
-    //         ->title('New Requisition Created')
-    //         ->body('Requisition #' . $this->requisition->id . ' has been created')
-    //         ->icon('/icon-192.png')
-    //         ->data([
-    //             'url' => url('/requisitions/' . $this->requisition->id)
-    //         ])
-    //         ->action('View', 'open_requisition');
-    // }
-      public function toWebPush($notifiable, $notification)
+    public function toDatabase($notifiable)
     {
-      // dd('toWebPush triggered');
-        return (new WebPushMessage)
-            ->title('New Requisition Submitted')
-            ->body('A new requisition has been created')
-            ->icon('/icon-192x192.png')
-            ->action('View', route('requisitions.index'));
+        return [
+            'title' => $this->title,
+            'message' => $this->message,
+            'type' => $this->type,
+            'link' => $this->link,
+        ];
+    }
+
+    public function toWebPush($notifiable, $notification)
+    {
+       return (new WebPushMessage)
+        ->title('VMS Notification')
+        ->body('Web push is working successfully')
+        ->icon('/icon.png')
+        ->action('Open App', url('/dashboard'));
     }
 }
