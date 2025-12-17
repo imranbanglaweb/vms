@@ -408,54 +408,48 @@
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
-	const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: vapidPublicKey
-});
+if ('serviceWorker' in navigator && 'PushManager' in window) {
 
-await fetch('/push/subscribe', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-    },
-    body: JSON.stringify(subscription)
-});
+    navigator.serviceWorker.register('/public/sw.js')
+        .then(function (registration) {
 
-</script>
-	<script>
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/public/sw.js')
-            .then(function (reg) {
-                console.log('✅ SW registered:', reg.scope);
-            })
-            .catch(function (err) {
-                console.error('❌ SW failed:', err);
+            return Notification.requestPermission().then(function (permission) {
+
+                if (permission !== 'granted') {
+                    console.warn('Push permission denied');
+                    return;
+                }
+
+                return registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: "{{ config('webpush.vapid.public_key') }}"
+                });
             });
-    });
+        })
+        .then(function (subscription) {
+
+            if (!subscription) return;
+
+            return fetch('/push-subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(subscription)
+            });
+        })
+        .then(function () {
+            console.log('Push subscription stored');
+        })
+        .catch(function (err) {
+            console.error('Push error:', err);
+        });
 }
+</script>
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/public/service-worker.js')
-        .then(function(registration) {
-            console.log('Service Worker registered', registration);
-        });
-
-    navigator.serviceWorker.ready.then(async function(registration) {
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array("{{ config('webpush.vapid.public_key') }}")
-        });
-
-        // Send subscription to your server
-        await fetch('/push-subscribe', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-            body: JSON.stringify(subscription)
-        });
-    });
-}
+	<script>
 
 // helper function
 function urlBase64ToUint8Array(base64String) {
