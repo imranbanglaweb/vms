@@ -305,7 +305,8 @@ public function validateAjax(Request $request)
     ->get();
 
 Notification::send($users, new RequisitionCreated($requisition));
-
+$user = User::find(1);
+$user->notify(new RequisitionCreated($requisition));
 
     // event(new RequisitionCreated($requisition));
 

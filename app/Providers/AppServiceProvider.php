@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
             return false;
         }, E_WARNING);
 
-        Requisition::observe(RequisitionObserver::class);
+        // Requisition::observe(RequisitionObserver::class);
 }
 
 
