@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\TestPushNotification;  
 // use NotificationChannels\WebPush\PushSubscriptionController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\ReportController;
 
 
 // Route::get('/', fn () => redirect()->route('login'));
@@ -231,6 +232,10 @@ Route::middleware('auth')->group(function() {
         ->name('settings.notifications');
 });
 
+
+// report route
+
+route::get('/report-manage',[ReportController::class,'index'])->name('report-manage');
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
