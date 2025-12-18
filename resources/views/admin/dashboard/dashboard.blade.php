@@ -50,7 +50,7 @@
 }
 
 </style>
-<section role="main" class="content-body" style="background: #f5f6fa;">
+<section role="main" class="content-body" style="background: #fff;">
 <div class="container-fluid py-4">
 
     <!-- Header -->

@@ -24,8 +24,8 @@
     background-color: #0088cc!important;
 }
 </style>
-<section role="main" class="content-body" style="background-color:#f3f5f9;">
-<div class="container mt-5">
+<section role="main" class="content-body" style="background-color:#fff;">
+<div class="container">
 <!-- 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-primary">

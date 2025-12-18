@@ -46,6 +46,13 @@ class SettingController extends Controller
 
     }
 
+    public function notification()
+    {
+
+        return view('admin.dashboard.settings.notifications');
+
+    }
+
     /**
      * Show the form for creating a new resource.
      *

@@ -225,8 +225,10 @@ Route::get('/test-push', function () {
 // // });
 
 Route::middleware('auth')->group(function() {
-    Route::post('/push-subscribe', [PushSubscriptionController::class, 'store']);
-    Route::post('/push-unsubscribe', [PushSubscriptionController::class, 'destroy']);
+    Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe.store');
+    Route::post('/push-unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push-subscribe.unsubscribe');
+    Route::get('/settings/notifications', [SettingController::class, 'notification'])
+        ->name('settings.notifications');
 });
 
 

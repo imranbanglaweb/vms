@@ -1,0 +1,110 @@
+@extends('admin.dashboard.master')
+
+@section('main_content')
+<br>
+<section role="main" class="content-body" style="background-color:#fff">
+<div class="container">
+
+    <h4 class="fw-bold text-primary mb-3">
+        <i class="bi bi-bell-fill"></i> Notification Settings
+    </h4>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <p id="push-status" class="text-muted mb-3">
+                Checking notification status...
+            </p>
+
+            <button id="btn-subscribe" class="btn btn-success d-none">
+                <i class="fa  fa-bell"></i> Enable Notifications
+            </button>
+
+            <button id="btn-unsubscribe" class="btn btn-danger d-none">
+                <i class="fa fa-bell-slash"></i> Disable Notifications
+            </button>
+
+        </div>
+    </div>
+
+</div>
+</section>
+
+<script>
+const vapidPublicKey = "{{ config('webpush.vapid.public_key') }}";
+const csrfToken = "{{ csrf_token() }}";
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        document.getElementById('push-status').innerText =
+            'Push notifications are not supported in this browser.';
+        return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+        document.getElementById('btn-unsubscribe').classList.remove('d-none');
+        document.getElementById('push-status').innerText =
+            'Push notifications are enabled.';
+    } else {
+        document.getElementById('btn-subscribe').classList.remove('d-none');
+        document.getElementById('push-status').innerText =
+            'Push notifications are disabled.';
+    }
+});
+
+/* Subscribe */
+document.getElementById('btn-subscribe')?.addEventListener('click', async () => {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        });
+
+        await fetch("{{ route('push-subscribe.store') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify(subscription)
+        });
+
+        location.reload();
+    } catch (e) {
+        alert('Permission denied or subscription failed.');
+    }
+});
+
+/* Unsubscribe */
+document.getElementById('btn-unsubscribe')?.addEventListener('click', async () => {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+        await subscription.unsubscribe();
+        await fetch("{{ route('push-subscribe.unsubscribe') }}", {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+    }
+
+    location.reload();
+});
+</script>
+@endsection
