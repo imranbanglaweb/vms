@@ -431,7 +431,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 
             if (!subscription) return;
 
-            return fetch('push-subscribe', {
+            return fetch('/push-subscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
