@@ -75,4 +75,11 @@ class User extends Authenticatable
         
         return [$this->email => $this->name];
     }
+
+    // App\Models\User.php
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(\NotificationChannels\WebPush\PushSubscription::class);
+    }
+
 }

@@ -219,10 +219,15 @@ Route::get('/test-push', function () {
 // });
 
 // Route::middleware('auth')->group(function () {
-Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])
-     ->middleware('auth');
-    Route::post('push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
-// });
+// Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])
+//      ->middleware('auth');
+//     Route::post('push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
+// // });
+
+Route::middleware('auth')->group(function() {
+    Route::post('/push-subscribe', [PushSubscriptionController::class, 'store']);
+    Route::post('/push-unsubscribe', [PushSubscriptionController::class, 'destroy']);
+});
 
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');

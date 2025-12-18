@@ -3,24 +3,21 @@
 self.addEventListener('push', function(event) {
     console.log('Push received:', event.data ? event.data.text() : 'No data');
 
-    // Default notification
     let data = {
-        title: 'Notification',
+        title: 'VMS Notification',
         body: 'You have a new message',
         icon: '/icon-192x192.png',
-        data: { url: '/' }  // default click URL
+        data: { url: '/' } // default click URL
     };
 
     if (event.data) {
         try {
-            // Try parsing as JSON (Laravel WebPush sends JSON)
             const jsonData = event.data.json();
             data.title = jsonData.title || data.title;
             data.body = jsonData.body || data.body;
             data.icon = jsonData.icon || data.icon;
             data.data = jsonData.data || data.data;
         } catch (err) {
-            // If not JSON, fallback to plain text
             data.body = event.data.text();
         }
     }
@@ -36,19 +33,13 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-
-    // Open URL from notification or default
     const clickUrl = event.notification.data.url || '/';
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
             for (let client of windowClients) {
-                if (client.url === clickUrl && 'focus' in client) {
-                    return client.focus();
-                }
+                if (client.url === clickUrl && 'focus' in client) return client.focus();
             }
-            if (clients.openWindow) {
-                return clients.openWindow(clickUrl);
-            }
+            if (clients.openWindow) return clients.openWindow(clickUrl);
         })
     );
 });

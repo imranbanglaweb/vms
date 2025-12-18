@@ -51,10 +51,15 @@ class RequisitionCreated extends Notification
 
     public function toWebPush($notifiable, $notification)
     {
-       return (new WebPushMessage)
+        
+     return (new WebPushMessage)
         ->title('VMS Notification')
-        ->body('Web push is working successfully')
-        ->icon('/icon.png')
-        ->action('Open App', url('/dashboard'));
+        ->body('New requisition created')
+        ->icon(asset('icon-192x192.png'))
+        ->data([
+            'title' => 'VMS Notification',
+            'body'  => 'New requisition created',
+            'url'   => route('requisitions.index')
+        ]);
     }
 }
