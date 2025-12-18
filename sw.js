@@ -4,10 +4,10 @@ self.addEventListener('push', function(event) {
     console.log('Push received:', event.data ? event.data.text() : 'No data');
 
     let data = {
-        title: 'VMS Notification',
+        title: 'Notification',
         body: 'You have a new message',
         icon: '/icon-192x192.png',
-        data: { url: '/' } // default click URL
+        data: { url: '/' }
     };
 
     if (event.data) {

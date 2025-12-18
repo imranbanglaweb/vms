@@ -46,6 +46,17 @@ class MaintenanceRequisition extends Model
     {
         return $this->hasMany(MaintenanceRequisitionItem::class, 'requisition_id');
     }
+    
+    public function getRequestedByNameAttribute()
+    {
+        return $this->requestedBy->name ?? 'Unknown';
+    }
+
+    public function requestedBy()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
    
 
     

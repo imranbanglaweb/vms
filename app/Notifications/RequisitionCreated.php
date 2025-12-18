@@ -4,62 +4,44 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
 
-class RequisitionCreated extends Notification
+class RequisitionCreated extends Notification implements ShouldQueue
 {
-     use Queueable;
-    protected $title;
-    protected $message;
-    protected $link;
-    protected $type;
+    use Queueable;
 
-    // public function __construct($title, $message = null, $type = 'info', $link = null)
-    // {
-    //     $this->title = $title;
-    //     $this->message = $message;
-    //     $this->type = $type;
-    //     $this->link = $link;
-    // }
+    protected $requisition;
+
+    public function __construct($requisition)
+    {
+        $this->requisition = $requisition;
+    }
 
     public function via($notifiable)
     {
-//         try {
-//     app(\Illuminate\Notifications\ChannelManager::class)->driver('webpush');
-//     dd('webpush driver loaded');
-// } catch (\Exception $e) {
-//     dd($e->getMessage());
-// }
+        return [WebPushChannel::class];
+    }
 
-        // dd( app(\Illuminate\Notifications\ChannelManager::class)->getDrivers() );
-        // return ['webpush'];
-         return [WebPushChannel::class];
+    public function toWebPush($notifiable, $notification)
+    {
+        return (new WebPushMessage)
+            ->title("New Requisition: {$this->requisition->requisition_number}")
+            ->icon('/icon-192x192.png') // put your professional icon here
+            ->body("A new requisition has been created by {$this->requisition->requested_by_name}. Click to view details.")
+            ->action('View Requisition', route('requisitions.show', $this->requisition->id))
+            ->data([
+                'url' => route('requisitions.show', $this->requisition->id)
+            ]);
     }
 
     public function toDatabase($notifiable)
     {
         return [
-            'title' => $this->title,
-            'message' => $this->message,
-            'type' => $this->type,
-            'link' => $this->link,
+            'title' => "New Requisition: {$this->requisition->requisition_number}",
+            'message' => "A new requisition has been created by {$this->requisition->requested_by_name}.",
+            'url' => route('requisitions.show', $this->requisition->id)
         ];
-    }
-
-    public function toWebPush($notifiable, $notification)
-    {
-        
-     return (new WebPushMessage)
-        ->title('VMS Notification')
-        ->body('New requisition created')
-        ->icon(asset('icon-192x192.png'))
-        ->data([
-            'title' => 'VMS Notification',
-            'body'  => 'New requisition created',
-            'url'   => route('requisitions.index')
-        ]);
     }
 }
