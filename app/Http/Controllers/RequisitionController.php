@@ -329,7 +329,7 @@ foreach ($users as $user) {
 
 // Send notification to these users
 if ($users->isNotEmpty()) {
-    Notification::send($users, new TestPushNotification($requisition));
+    Notification::send($users, new RequisitionCreated($requisition));
 } else {
     Log::warning('No users found with roles and push subscriptions.');
 }
@@ -337,7 +337,7 @@ if ($users->isNotEmpty()) {
 // Also try sending directly to Super Admin (ID 1)
 $user = User::find(1);
 if ($user) {
-    $user->notify(new TestPushNotification($requisition));
+    $user->notify(new RequisitionCreated($requisition));
     Log::info('Direct notification sent to User ID 1.');
 } else {
     Log::warning('User ID 1 not found.');
