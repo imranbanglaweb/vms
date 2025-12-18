@@ -90,7 +90,7 @@ public const STATUS_COMPLETED = 'Completed';
       // Relationship with Unit
     public function unit()
     {
-        return $this->belongsTo(unit::class, 'unit_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 
      // Relationship with Employee
