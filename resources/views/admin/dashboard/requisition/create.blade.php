@@ -246,6 +246,7 @@
 
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 $(function () {
@@ -387,6 +388,18 @@ $('#requisitionForm').submit(function (e) {
             }
 
             if (res.status === "success") {
+                 Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK',
+                        timer: 2500,
+                        timerProgressBar: true
+                    }).then(() => {
+                        if (res.redirect_url) {
+                            window.location.href = res.redirect_url;
+                        }
+                    });
                 $('#formMessage')
                     .removeClass('d-none alert-danger')
                     .addClass('alert-success')
@@ -396,7 +409,7 @@ $('#requisitionForm').submit(function (e) {
                 // Reset form on success
                 setTimeout(function() {
                     if (res.redirect_url) {
-                        // window.location.href = res.redirect_url;
+                        window.location.href = res.redirect_url;
                     } else {
                         form.reset();
                         // Reset passenger table

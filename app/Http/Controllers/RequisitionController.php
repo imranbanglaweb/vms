@@ -369,7 +369,7 @@ if ($user) {
      */
     public function show($id)
     {
-        $requisition = Requisition::with(['requestedBy', 'vehicle', 'driver', 'passengers.employee'])
+        $requisition = Requisition::with(['requestedBy', 'vehicle', 'driver', 'unit', 'passengers.employee'])
                                   ->findOrFail($id);
 
         return view('admin.dashboard.requisition.show', compact('requisition'));
