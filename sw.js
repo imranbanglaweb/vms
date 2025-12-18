@@ -6,7 +6,7 @@ self.addEventListener('push', function(event) {
     let data = {
         title: 'Notification',
         body: 'You have a new message',
-        icon: '/icon-192x192.png',
+        icon: 'https://tms.nextdigihome.com/public/admin_resource/assets/images/icons.png',
         data: { url: '/' }
     };
 

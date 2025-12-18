@@ -27,13 +27,13 @@ class RequisitionCreated extends Notification implements ShouldQueue
     public function toWebPush($notifiable, $notification)
     {
         return (new WebPushMessage)
-            ->title("New Requisition: {$this->requisition->requisition_number}")
-            ->icon('/icon-192x192.png') // put your professional icon here
-            ->body("A new requisition has been created by {$this->requisition->requested_by_name}. Click to view details.")
-            ->action('View Requisition', route('requisitions.show', $this->requisition->id))
-            ->data([
-                'url' => route('requisitions.show', $this->requisition->id)
-            ]);
+        >title('New Requisition: ' . $this->requisition->requisition_number)
+        ->body('A new requisition has been submitted. Click to view details.')
+        ->icon('https://tms.nextdigihome.com/public/admin_resource/assets/images/icons.png')
+        ->data([
+            'url' => route('requisitions.show', $this->requisition->id)
+        ])
+        ->action('View Requisition', route('requisitions.show', $this->requisition->id));
     }
 
     public function toDatabase($notifiable)
