@@ -18,8 +18,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\RequisitionStatusChangedMail;
 use Illuminate\Support\Facades\Mail;
 use App\Notifications\RequisitionCreated;
+use App\Notifications\TestPushNotification;
 use App\Events\RequisitionStatusUpdated;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 class RequisitionController extends Controller
 {
    
@@ -298,22 +300,57 @@ public function validateAjax(Request $request)
 
         DB::commit();
         
-  $users = User::whereHas('roles', function ($q) {
-        $q->whereIn('name', ['Super Admin', 'transport']);
-    })
-    ->whereHas('pushSubscriptions')
-    ->get();
+//   $users = User::whereHas('roles', function ($q) {
+//         $q->whereIn('name', ['Super Admin', 'Demo Role']);
+//     })
+//     ->whereHas('pushSubscriptions')
+//     ->get();
 
-Notification::send($users, new RequisitionCreated($requisition));
+// Notification::send($users, new TestPushNotification($requisition));
+// $user = User::find(1);
+// $user->notify(new TestPushNotification($requisition));
+
+
+
+
+// Get users with specific roles AND push subscriptions
+$users = User::whereHas('roles', function ($q) {
+        $q->whereIn('name', ['Super Admin', 'Demo Role']);
+    })
+    // ->whereHas('pushSubscriptions')
+    ->get();
+    // dd($users);
+
+// Log the users we found
+Log::info('Push notification target users count: ' . $users->count());
+foreach ($users as $user) {
+    Log::info('User ID: ' . $user->id . ', Email: ' . $user->email);
+}
+
+// Send notification to these users
+if ($users->isNotEmpty()) {
+    Notification::send($users, new TestPushNotification($requisition));
+} else {
+    Log::warning('No users found with roles and push subscriptions.');
+}
+
+// Also try sending directly to Super Admin (ID 1)
 $user = User::find(1);
-$user->notify(new RequisitionCreated($requisition));
+if ($user) {
+    $user->notify(new TestPushNotification($requisition));
+    Log::info('Direct notification sent to User ID 1.');
+} else {
+    Log::warning('User ID 1 not found.');
+}
 
     // event(new RequisitionCreated($requisition));
 
         return response()->json([
             'status' => 'success',
             'message' => 'Requisition created successfully!',
-            'redirect_url' => route('requisitions.index')
+            'redirect_url' => route('requisitions.index'),
+            'users_found' => $users->pluck('id'),
+             'direct_user' => $user ? $user->id : null,
         ], 200);
         
 
