@@ -410,7 +410,7 @@
 <script>
 if ('serviceWorker' in navigator && 'PushManager' in window) {
 
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/vms/sw.js')
 	
         .then(function (registration) {
 
@@ -430,8 +430,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
         .then(function (subscription) {
 
             if (!subscription) return;
-
-            return fetch('/push-subscribe', {
+			    fetch("{{ route('push.subscribe') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

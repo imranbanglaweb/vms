@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -277,5 +278,107 @@ class UserController extends Controller
 
             return response()->json(['success'=>'User deleted successfully']);
         }
+
+       public function userprofile()
+        {
+            $user = Auth::user();
+            $roles = Role::pluck('name')->all();
+            $userRole = $user->roles->pluck('name','name')->all();
+            $employees = Employee::orderBy('employee_order','ASC')->get();
+
+            return view(
+                'admin.dashboard.users.user-profile',
+                compact('user','roles','userRole','employees')
+            );
+        }
+        public function updateProfile(Request $request)
+            {
+                $user = Auth::user();
+
+                // VALIDATION
+                $request->validate([
+                    'user_name'  => 'required|string|max:255',
+                    'email'      => 'required|email|unique:users,email,' . $user->id,
+                    'phone'      => 'nullable|string|max:20',
+                    'password'   => 'nullable|min:6|same:confirm-password',
+                    'user_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+                ]);
+
+                // BASIC UPDATE
+                $user->name       = $request->user_name;
+                $user->email      = $request->email;
+                $user->cell_phone = $request->phone;
+
+                // OPTIONAL PASSWORD UPDATE
+                if (!empty($request->password)) {
+                    $user->password = Hash::make($request->password);
+                }
+
+                // IMAGE UPDATE
+                if ($request->hasFile('user_image')) {
+
+                    // DELETE OLD IMAGE
+                    if (!empty($user->user_image)) {
+                        $oldPath = public_path(
+                            'admin_resource/assets/images/user_image/' . $user->user_image
+                        );
+
+                        if (file_exists($oldPath)) {
+                            unlink($oldPath);
+                        }
+                    }
+
+                    // SAVE NEW IMAGE
+                    $file = $request->file('user_image');
+                    $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                    $file->move(
+                        public_path('admin_resource/assets/images/user_image'),
+                        $fileName
+                    );
+
+                    $user->user_image = $fileName;
+                }
+
+                $user->save();
+
+                return response()->json([
+                    'status'  => 'success',
+                    'message' => 'Profile updated successfully'
+                ]);
+            }
+            public function profilepasswordupdate(Request $request)
+            {
+
+                $request->validate([
+                    'password' => 'required|min:6|same:confirm-password',
+                ]);
+
+                $user = Auth::user();
+
+                // UPDATE PASSWORD
+                $user->password = Hash::make($request->password);
+                $user->save();
+
+                // FORCE LOGOUT (SECURITY)
+                Auth::logout();
+
+                // INVALIDATE SESSION
+                $request->session()->invalidate();
+
+                // REGENERATE CSRF TOKEN
+                $request->session()->regenerateToken();
+
+                return response()->json([
+                    'status'   => 'logout',
+                    'message'  => 'Password changed successfully. Please login again.',
+                    'redirect' => route('login')   // ✅ route-based redirect
+                ]);
+            }
+
+
+
+        
+        
 
 }

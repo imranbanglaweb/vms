@@ -226,8 +226,8 @@ Route::get('/test-push', function () {
 // // });
 
 Route::middleware('auth')->group(function() {
-    Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe.store');
-    Route::post('/push-unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push-subscribe.unsubscribe');
+    Route::post('push-subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::post('push-unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
     Route::get('/settings/notifications', [SettingController::class, 'notification'])
         ->name('settings.notifications');
 });
@@ -420,7 +420,7 @@ Route::any('pendingsupport', [SupportController::class,'pendingsupport'])->name(
         Route::resource('support_type', \App\Http\Controllers\SupportTypeController::class);
     }
     Route::get('user-profile', [UserController::class,'userprofile'])->name('user-profile');
-    Route::post('profile-update', [UserController::class,'profileupdate'])->name('profile-update');
+    Route::post('profile-update', [UserController::class,'updateProfile'])->name('profile-update');
     Route::post('profile-password-update', [UserController::class,'profilepasswordupdate'])->name('profile-password-update');
     Route::resource('units', UnitController::class);
    

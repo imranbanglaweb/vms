@@ -29,7 +29,8 @@
 
 </div>
 </section>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 const vapidPublicKey = "{{ config('webpush.vapid.public_key') }}";
 const csrfToken = "{{ csrf_token() }}";
@@ -70,13 +71,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('btn-subscribe')?.addEventListener('click', async () => {
     try {
         const registration = await navigator.serviceWorker.ready;
+        alert(registration);
 
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
         });
 
-        await fetch("{{ route('push-subscribe.store') }}", {
+        await fetch("{{ route('push.subscribe') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -98,7 +100,7 @@ document.getElementById('btn-unsubscribe')?.addEventListener('click', async () =
 
     if (subscription) {
         await subscription.unsubscribe();
-        await fetch("{{ route('push-subscribe.unsubscribe') }}", {
+        await fetch("{{ route('push.unsubscribe') }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': csrfToken }
         });
