@@ -31,9 +31,14 @@
 </section>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 const vapidPublicKey = "{{ config('webpush.vapid.public_key') }}";
 const csrfToken = "{{ csrf_token() }}";
+
+const btnSubscribe = document.getElementById('btn-subscribe');
+const btnUnsubscribe = document.getElementById('btn-unsubscribe');
+const statusText = document.getElementById('push-status');
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -45,33 +50,36 @@ function urlBase64ToUint8Array(base64String) {
     return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
 
+function setEnabledUI() {
+    btnSubscribe.classList.add('d-none');
+    btnUnsubscribe.classList.remove('d-none');
+    statusText.innerHTML = `<i class="fa fa-check-circle text-success"></i> Push notifications are enabled.`;
+}
+
+function setDisabledUI() {
+    btnSubscribe.classList.remove('d-none');
+    btnUnsubscribe.classList.add('d-none');
+    statusText.innerHTML = `<i class="fa fa-times-circle text-danger"></i> Push notifications are disabled.`;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
 
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        document.getElementById('push-status').innerText =
-            'Push notifications are not supported in this browser.';
+        statusText.innerHTML =
+            `<i class="fa fa-exclamation-triangle text-warning"></i> Push notifications are not supported in this browser.`;
         return;
     }
 
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
 
-    if (subscription) {
-        document.getElementById('btn-unsubscribe').classList.remove('d-none');
-        document.getElementById('push-status').innerText =
-            'Push notifications are enabled.';
-    } else {
-        document.getElementById('btn-subscribe').classList.remove('d-none');
-        document.getElementById('push-status').innerText =
-            'Push notifications are disabled.';
-    }
+    subscription ? setEnabledUI() : setDisabledUI();
 });
 
-/* Subscribe */
-document.getElementById('btn-subscribe')?.addEventListener('click', async () => {
+/* ✅ Subscribe */
+btnSubscribe?.addEventListener('click', async () => {
     try {
         const registration = await navigator.serviceWorker.ready;
-        alert(registration);
 
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
@@ -87,26 +95,49 @@ document.getElementById('btn-subscribe')?.addEventListener('click', async () => 
             body: JSON.stringify(subscription)
         });
 
-        location.reload();
+        setEnabledUI();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Notifications Enabled',
+            text: 'You will now receive real-time notifications.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
     } catch (e) {
-        alert('Permission denied or subscription failed.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Permission Denied',
+            text: 'Please allow notification permission from browser settings.'
+        });
     }
 });
 
-/* Unsubscribe */
-document.getElementById('btn-unsubscribe')?.addEventListener('click', async () => {
+/* ❌ Unsubscribe */
+btnUnsubscribe?.addEventListener('click', async () => {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
         await subscription.unsubscribe();
+
         await fetch("{{ route('push.unsubscribe') }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': csrfToken }
         });
     }
 
-    location.reload();
+    setDisabledUI();
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Notifications Disabled',
+        text: 'You will no longer receive notifications.',
+        timer: 2000,
+        showConfirmButton: false
+    });
 });
 </script>
+
 @endsection

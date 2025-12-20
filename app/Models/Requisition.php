@@ -104,6 +104,10 @@ public const STATUS_COMPLETED = 'Completed';
 public function assignedVehicle() { return $this->belongsTo(\App\Models\Vehicle::class,'assigned_vehicle_id'); }
 public function assignedDriver() { return $this->belongsTo(\App\Models\Driver::class,'assigned_driver_id'); }
 
+
+public function vehicleType() {
+    return $this->belongsTo(VehicleType::class, 'vehicle_type');
+}
     
 
     

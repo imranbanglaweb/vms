@@ -58,8 +58,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\TestPushNotification;  
 // use NotificationChannels\WebPush\PushSubscriptionController;
 use App\Http\Controllers\PushSubscriptionController;
-use App\Http\Controllers\ReportController;
-
+use App\Http\Controllers\Reports\ReportController;
+use App\Http\Controllers\Reports\RequisitionReportController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -230,12 +230,32 @@ Route::middleware('auth')->group(function() {
     Route::post('push-unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
     Route::get('/settings/notifications', [SettingController::class, 'notification'])
         ->name('settings.notifications');
+    Route::get('/admin/push-subscribers', [PushSubscriptionController::class, 'index'])
+        ->name('admin.push.subscribers');
 });
 
 
 // report route
 
 route::get('/report-manage',[ReportController::class,'index'])->name('report-manage');
+Route::prefix('reports')->middleware(['auth'])->group(function () {
+    Route::get('requisitions', [ReportController::class, 'requisitions'])->name('reports.requisitions');
+    Route::get('requisitions/pdf', [ReportController::class, 'requisitionsPdf'])->name('reports.requisitions.pdf');
+    Route::get('requisitions/excel', [ReportController::class, 'requisitionsExcel'])->name('reports.requisitions.excel');
+});
+
+
+Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
+
+    Route::get('requisitions', [RequisitionReportController::class, 'index'])
+        ->name('reports.requisitions');
+
+    Route::get('requisitions/excel', [RequisitionReportController::class, 'exportExcel'])
+        ->name('reports.requisitions.excel');
+
+    Route::get('requisitions/pdf', [RequisitionReportController::class, 'exportPdf'])
+        ->name('reports.requisitions.pdf');
+});
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
