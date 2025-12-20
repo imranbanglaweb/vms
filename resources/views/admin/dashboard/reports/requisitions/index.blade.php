@@ -75,11 +75,11 @@
                         <i class="fa fa-filter"></i> Apply
                     </button>
                     <button type="button" id="resetBtn" class="btn btn-secondary btn-sm">
-                       <i class="fa fa-reload"></i>  Reset
                     </button>
                 </div>
 
-            </form>
+            </form>                       <i class="fa fa-reload"></i>  Reset
+
         </div>
     </div>
 
