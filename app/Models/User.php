@@ -30,6 +30,7 @@ class User extends Authenticatable
         'cell_phone',
         'unit_id',
         'company_id',
+        'push_subscription',
         'department_id',
         'location_id',
     ];

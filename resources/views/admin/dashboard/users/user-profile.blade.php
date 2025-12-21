@@ -68,7 +68,7 @@
                                                 <div class="form-group">
                                                     <label class="col-md-3 control-label" for="profileFirstName"> Name</label>
                                                     <div class="col-md-8">
-                                                        <input type="text" class="form-control" id="profileFirstName" name="name" value="{{Auth::user()->name}}">
+                                                        <input type="text" class="form-control" id="profileFirstName" name="user_name" value="{{Auth::user()->name}}">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -83,7 +83,7 @@
                                                         <input type="file" class="form-control" id="profileLastName" name="user_image" onchange="previewFile(this);">
                                                     </div>
 
-                                                     <img id="previewImg" src="{{ asset('admin_resource/assets/images/'.Auth::user()->user_image)}}" width="100" height="100">
+                                                     <img id="previewImg" src="{{ asset('public/admin_resource/assets/images/user_image/'.Auth::user()->user_image)}}" width="100" height="100">
                                                 </div>
                                              
                                             </fieldset>
@@ -275,7 +275,8 @@ else{
             }).then((data) => {
                    if(data){
                      // Do Stuff here for success
-                     location.reload();
+                    //  location.reload();
+                     window.location.href = response.redirect;
                    }else{
                     // something other stuff
                    }

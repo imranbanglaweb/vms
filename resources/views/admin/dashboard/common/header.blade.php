@@ -92,7 +92,7 @@
 						<a href="#" data-toggle="dropdown">
 							<figure class="profile-picture">
 								@if(!empty(Auth::user()->user_image))
-<img src="{{ asset('public/admin_resource/assets/images/'.Auth::user()->user_image)}}" alt="Joseph Doe" class="img-circle" data-lock-picture="assets/images/!logged-user.jpg" />
+<img src="{{ asset('public/admin_resource/assets/images/user_image/'.Auth::user()->user_image)}}" alt="Joseph Doe" class="img-circle" data-lock-picture="assets/images/!logged-user.jpg" />
 @else
 
 <i class="fa fa-user"></i>
