@@ -74,11 +74,13 @@
                     <button type="submit" class="btn btn-primary btn-sm">
                         <i class="fa fa-filter"></i> Apply
                     </button>
-                    <button type="button" id="resetBtn" class="btn btn-secondary btn-sm">
+                    <button type="button" id="resetBtn" class="btn btn-info btn-sm">
+                        <i class="fa fa-refresh"></i>  Reset
                     </button>
                 </div>
 
-            </form>                       <i class="fa fa-reload"></i>  Reset
+            </form> 
+            
 
         </div>
     </div>

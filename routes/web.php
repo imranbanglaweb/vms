@@ -60,6 +60,7 @@ use App\Notifications\TestPushNotification;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Reports\RequisitionReportController;
+use App\Http\Controllers\Reports\MaintenanceReportController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -256,6 +257,28 @@ Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
     Route::get('requisitions/pdf', [RequisitionReportController::class, 'exportPdf'])
         ->name('reports.requisitions.pdf');
 });
+
+// Route::middleware(['auth','role:Super Admin,Admin,Manager'])->group(function () {
+
+    Route::get('/reports/maintenance',
+        [MaintenanceReportController::class, 'index']
+    )->name('reports.maintenance.index');
+
+    Route::get('/reports/maintenance/ajax',
+        [MaintenanceReportController::class, 'ajax']
+    )->name('reports.maintenance.ajax');
+
+    Route::get('/reports/maintenance/excel',
+        [MaintenanceReportController::class, 'excel']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.maintenance.excel');
+
+    Route::get('/reports/maintenance/pdf',
+        [MaintenanceReportController::class, 'pdf']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.maintenance.pdf');
+// });
+
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
