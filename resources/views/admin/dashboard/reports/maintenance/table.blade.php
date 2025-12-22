@@ -14,14 +14,14 @@
 @forelse($records as $r)
 <tr>
     <td>{{ $loop->iteration }}</td>
-    <td>{{ $r->vehicle->vehicle_name }}</td>
-    <td>{{ $r->type->name }}</td>
+    <td>{{ $r->vehicle->vehicle_name ?? 'N/A' }}</td>
+    <td>{{ $r->maintenanceType->name ?? 'N/A' }}</td>
     <td>{{ $r->vendor->name ?? 'N/A' }}</td>
-    <td>{{ $r->maintenance_date }}</td>
-    <td>{{ number_format($r->cost,2) }}</td>
+    <td>{{ $r->maintenance_date ?? 'N/A' }}</td>
+    <td>{{ number_format($r->total_cost ?? 0, 2) }}</td>
     <td>
         <span class="badge bg-{{ $r->status == 'Completed' ? 'success':'warning' }}">
-            {{ $r->status }}
+            {{ $r->status ?? 'N/A' }}
         </span>
     </td>
 </tr>
@@ -31,4 +31,5 @@
 </tr>
 @endforelse
 </tbody>
+
 </table>
