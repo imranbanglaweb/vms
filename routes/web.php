@@ -238,12 +238,12 @@ Route::middleware('auth')->group(function() {
 
 // report route
 
-route::get('/report-manage',[ReportController::class,'index'])->name('report-manage');
-Route::prefix('reports')->middleware(['auth'])->group(function () {
-    Route::get('requisitions', [ReportController::class, 'requisitions'])->name('reports.requisitions');
-    Route::get('requisitions/pdf', [ReportController::class, 'requisitionsPdf'])->name('reports.requisitions.pdf');
-    Route::get('requisitions/excel', [ReportController::class, 'requisitionsExcel'])->name('reports.requisitions.excel');
-});
+// route::get('/report-manage',[ReportController::class,'index'])->name('report-manage');
+// Route::prefix('reports')->middleware(['auth'])->group(function () {
+//     Route::get('requisitions', [ReportController::class, 'requisitions'])->name('reports.requisitions');
+//     Route::get('requisitions/pdf', [ReportController::class, 'requisitionsPdf'])->name('reports.requisitions.pdf');
+//     Route::get('requisitions/excel', [ReportController::class, 'requisitionsExcel'])->name('reports.requisitions.excel');
+// });
 
 
 Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
@@ -260,23 +260,18 @@ Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
 
 // Route::middleware(['auth','role:Super Admin,Admin,Manager'])->group(function () {
 
-    Route::get('/reports/maintenance',
-        [MaintenanceReportController::class, 'index']
+    Route::get('/reports/maintenance',[MaintenanceReportController::class, 'index']
     )->name('reports.maintenance.index');
 
-    Route::get('/reports/maintenance/ajax',
-        [MaintenanceReportController::class, 'ajax']
+    Route::get('/reports/maintenance/ajax',[MaintenanceReportController::class, 'ajax']
     )->name('reports.maintenance.ajax');
 
-    Route::get('/reports/maintenance/excel',
-        [MaintenanceReportController::class, 'excel']
+    Route::get('/reports/maintenance/excel',[MaintenanceReportController::class, 'excel']
     )->middleware('role:Super Admin,Admin')
     ->name('reports.maintenance.excel');
 
-    Route::get('/reports/maintenance/pdf',
-        [MaintenanceReportController::class, 'pdf']
-    )->middleware('role:Super Admin,Admin')
-    ->name('reports.maintenance.pdf');
+    Route::get('/reports/maintenance/pdf', [MaintenanceReportController::class, 'pdf']
+    )->middleware('role:Super Admin,Admin')->name('reports.maintenance.pdf');
 // });
 
 

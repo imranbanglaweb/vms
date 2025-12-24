@@ -7,11 +7,12 @@
 <br>
 
 <div class="d-flex justify-content-between mb-3">
-    <h4 class="fw-bold">Vehicle Maintenance Report</h4>
+    <h3 class="fw-bold">Vehicle Maintenance Report</h3>
+    <br>
     @if(auth()->user()->hasRole(['Super Admin','Admin']))
     <div>
-        <a href="{{ route('reports.maintenance.excel') }}" class="btn btn-success btn-sm">Excel</a>
-        <a href="{{ route('reports.maintenance.pdf') }}" class="btn btn-danger btn-sm">PDF</a>
+        <a href="{{ route('reports.maintenance.excel') }}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel</a>
+        <a href="{{ route('reports.maintenance.pdf') }}" class="btn btn-danger btn-sm"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</a>
     </div>
     @endif
 </div>
@@ -63,14 +64,24 @@
 </div>
 </section>
 
+@endsection
 
-
+@push('scripts')
 <script>
-$('#filterForm').on('submit', function(e){
-    e.preventDefault();
-    $.get("{{ route('reports.maintenance.ajax') }}", $(this).serialize(), function(data){
-        $('#reportTable').html(data);
+$(document).ready(function(){
+    loadData();
+
+    $('#filterForm').on('submit', function(e){
+        e.preventDefault();
+        loadData();
     });
+
+    function loadData(){
+        $.get("{{ route('reports.maintenance.ajax') }}", $('#filterForm').serialize(), function(data){
+            $('#reportTable').html(data);
+        });
+    }
 });
 </script>
-@endsection
+
+@endpush
