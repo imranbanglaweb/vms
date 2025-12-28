@@ -119,6 +119,13 @@
 									<a role="menuitem" tabindex="-1" href="{{ route('user-profile')}}">
 										<i class="fa fa-user"></i> My Profile</a>
 								</li>
+
+								<li>
+									<a  href="{{ route('pricing')}}">
+										<i class="fa fa-credit-card"></i>
+							Our Plans Price
+										</a>
+								</li>
 								
 								<li>
 									

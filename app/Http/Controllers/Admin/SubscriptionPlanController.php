@@ -21,20 +21,26 @@ class SubscriptionPlanController extends Controller
 
     public function store(Request $request)
     {
-        SubscriptionPlan::create([
-            'name' => $request->name,
-            'slug' => strtolower($request->slug),
-            'price' => $request->price,
-            'billing_cycle' => $request->billing_cycle,
-            'vehicle_limit' => $request->vehicle_limit,
-            'user_limit' => $request->user_limit,
-            'features' => $request->features,
-            'is_popular' => $request->is_popular ?? false,
-            'is_active' => true
+        $data = $request->validate([
+            'name' => 'required|string|max:100',
+            'slug' => 'required|unique:subscription_plans,slug',
+            'price' => 'required|numeric|min:0',
+            'billing_cycle' => 'required|in:monthly,yearly',
+            'vehicle_limit' => 'nullable|integer',
+            'user_limit' => 'nullable|integer',
+            'features' => 'nullable|array'
         ]);
 
-        return redirect()->route('admin.plans.index')->with('success','Plan created');
+        $data['features'] = array_values(array_filter($data['features'] ?? []));
+
+        SubscriptionPlan::create($data);
+
+        return response()->json([
+            'success' => true,
+            'redirect' => route('admin.plans.index')
+        ]);
     }
+
 
     public function edit(SubscriptionPlan $plan)
     {
@@ -45,5 +51,18 @@ class SubscriptionPlanController extends Controller
     {
         $plan->update($request->all());
         return redirect()->route('admin.dashboard.plans.index')->with('success','Plan updated');
+    }
+
+    // Public pricing page
+      public function price()
+    {
+        // Fetch all active plans
+        $plans = SubscriptionPlan::where('is_active', true)
+                    ->orderBy('id', 'desc')
+                    ->orderBy('price', 'asc')
+                    ->get();
+
+        // Pass to view
+        return view('admin.dashboard.public.pricing', compact('plans'));
     }
 }

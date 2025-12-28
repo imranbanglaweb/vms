@@ -2,7 +2,7 @@
 
 @section('main_content')
 <br>
-<section role="main" class="content-body" style=background-color: #fff;>
+<section role="main" class="content-body" style="background-color: #fff;">
 <div class="container-fluid">
 
 <h4 class="fw-bold mb-3">Subscription Plans</h4>
@@ -41,7 +41,7 @@
         </span>
     </td>
     <td>
-        <a href="{{ route('plans.edit',$plan) }}" class="btn btn-sm btn-warning">Edit</a>
+        <a href="{{ route('admin.plans.edit',$plan) }}" class="btn btn-sm btn-warning">Edit</a>
     </td>
 </tr>
 @endforeach

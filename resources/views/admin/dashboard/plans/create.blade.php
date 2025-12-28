@@ -19,7 +19,7 @@
     </a>
 </div>
 
-<form method="POST" action="{{ route('admin.plans.store') }}">
+<form id="planForm" method="POST" action="{{ route('admin.plans.store') }}">
 @csrf
 
 <div class="card border-0 shadow-sm rounded-4">
@@ -32,21 +32,21 @@
     <label class="form-label fw-semibold fs-5">Plan Name</label>
     <input type="text" name="name"
            class="form-control form-control-xl"
-           placeholder="Business Plan" required>
+           placeholder="Business Plan">
 </div>
 
 <div class="col-md-4">
     <label class="form-label fw-semibold fs-5">Slug</label>
     <input type="text" name="slug"
            class="form-control form-control-xl"
-           placeholder="business-plan" required>
+           placeholder="business-plan">
 </div>
 
 <div class="col-md-4">
     <label class="form-label fw-semibold fs-5">Price (৳)</label>
     <input type="number" name="price"
            class="form-control form-control-xl"
-           placeholder="5000" required>
+           placeholder="5000">
 </div>
 
 <div class="col-md-4">
@@ -109,7 +109,7 @@
     </div>
 
     <button type="button"
-            class="btn btn-info btn-md"
+            class="btn btn-info btn-md pull-right mt-3"
             onclick="addFeature()">
         <i class="bi bi-plus-circle"></i> Add Feature
     </button>
@@ -118,13 +118,23 @@
 </div>
 </div>
 <br>
+
+<div id="form-errors" class="alert alert-danger d-none"></div>
+
 <!-- FOOTER -->
-<div class="card-footer bg-white border-0 pull-right">
+
+<button type="submit" class="btn btn-primary btn-xl px-5">
+    <span class="btn-text">
+        <i class="bi bi-save"></i> Save Plan
+    </span>
+    <span class="spinner-border spinner-border-sm d-none" id="btnLoader"></span>
+</button>
+<!-- <div class="card-footer bg-white border-0 pull-right">
     <button class="btn btn-primary btn-xl shadow-sm"> 
         <i class="bi bi-save"></i> Save Plan
     </button>
     <br>
-</div>
+</div> -->
 <br>
 </div>
 </form>
@@ -187,6 +197,67 @@
     color:#000
 }
 </style>
+<script>
+document.getElementById('planForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const url = form.action;
+    const formData = new FormData(form);
+
+    const errorBox = document.getElementById('form-errors');
+    const btnLoader = document.getElementById('btnLoader');
+    const btnText = document.querySelector('.btn-text');
+
+    // Reset UI
+    errorBox.classList.add('d-none');
+    errorBox.innerHTML = '';
+    btnLoader.classList.remove('d-none');
+    btnText.classList.add('d-none');
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value
+        },
+        body: formData
+    })
+    .then(async response => {
+        btnLoader.classList.add('d-none');
+        btnText.classList.remove('d-none');
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw data;
+        }
+        return response.json();
+    })
+    .then(data => {
+        // SUCCESS
+        window.location.href = data.redirect ?? "{{ route('admin.plans.index') }}";
+    })
+    .catch(err => {
+        btnLoader.classList.add('d-none');
+        btnText.classList.remove('d-none');
+
+        errorBox.classList.remove('d-none');
+
+        if (err.errors) {
+            let html = '<ul class="mb-0">';
+            Object.values(err.errors).forEach(messages => {
+                messages.forEach(msg => {
+                    html += `<li>${msg}</li>`;
+                });
+            });
+            html += '</ul>';
+            errorBox.innerHTML = html;
+        } else {
+            errorBox.innerHTML = 'Something went wrong. Please try again.';
+        }
+    });
+});
+</script>
 
 <script>
 function addFeature() {

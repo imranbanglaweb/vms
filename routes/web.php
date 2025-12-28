@@ -291,10 +291,8 @@ Route::middleware(['auth'])->prefix('admin')->as('admin.')->group(function () {
             ->except(['show','destroy']);
     });
 
-
-Route::get('/pricing', function () {
-    return view('admin.dashboard.public.pricing');
-})->name('pricing');
+// pricing page route
+Route::get('/pricing', [SubscriptionPlanController::class, 'price'])->name('pricing');
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 

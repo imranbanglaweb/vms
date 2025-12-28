@@ -29,80 +29,48 @@
 <!-- PRICING -->
 <div class="container">
 <div class="row g-5 justify-content-center">
+    @foreach($plans as $plan)
+    <div class="col-lg-4">
+        <div class="pricing-card dark {{ $plan->is_popular ? 'popular' : '' }}">
+            @if($plan->is_popular)
+            <span class="badge-popular">MOST POPULAR</span>
+            @endif
 
-<!-- STARTER -->
-<div class="col-lg-4">
-<div class="pricing-card dark">
-<h5 class="plan-name">Starter</h5>
+            <h5 class="plan-name">{{ $plan->name }}</h5>
 
-<div class="price" data-monthly="2000" data-yearly="19200">
-    ৳<span>2000</span>
-</div>
-<div class="billing-text">per month</div>
+            <div class="price" 
+                 data-monthly="{{ $plan->billing_cycle == 'monthly' ? $plan->price : 0 }}"
+                 data-yearly="{{ $plan->billing_cycle == 'yearly' ? $plan->price : $plan->price * 12 }}">
+                {{ $plan->price ? '৳' : '' }}<span>{{ $plan->price }}</span>
+            </div>
+            <div class="billing-text">
+                {{ $plan->price ? 'per '.$plan->billing_cycle : 'Let’s Talk' }}
+            </div>
 
-<ul class="features">
-    <li>✔ Up to 5 Vehicles</li>
-    <li>✔ 3 Users</li>
-    <li>✔ Fuel & Maintenance</li>
-    <li class="muted">✖ API Access</li>
-</ul>
+            <ul class="features">
+                @if($plan->features)
+                    @foreach($plan->features as $feature)
+                        <li>✔ {{ $feature }}</li>
+                    @endforeach
+                @endif
 
-<a href="{{ route('register') }}" class="btn btn-outline-light w-100">
-    Start Free Trial
-</a>
-</div>
-</div>
+                @if($plan->vehicle_limit)
+                    <li>✔ Up to {{ $plan->vehicle_limit }} Vehicles</li>
+                @endif
+                @if($plan->user_limit)
+                    <li>✔ {{ $plan->user_limit }} Users</li>
+                @endif
+            </ul>
 
-<!-- BUSINESS -->
-<div class="col-lg-4">
-<div class="pricing-card dark popular">
-<span class="badge-popular">MOST POPULAR</span>
-
-<h5 class="plan-name">Business</h5>
-
-<div class="price" data-monthly="5000" data-yearly="48000">
-    ৳<span>5000</span>
-</div>
-<div class="billing-text">per month</div>
-
-<ul class="features">
-    <li>✔ Up to 25 Vehicles</li>
-    <li>✔ 10 Users</li>
-    <li>✔ Advanced Reports</li>
-    <li>✔ Priority Support</li>
-</ul>
-
-<a href="{{ route('register') }}" class="btn btn-primary w-100">
-    Get Started
-</a>
-</div>
+            <a href="{{ $plan->price ? route('register') : '#' }}" 
+               class="btn btn-{{ $plan->is_popular ? 'primary' : 'outline-light' }} w-100">
+               {{ $plan->price ? ($plan->is_popular ? 'Get Started' : 'Start Free Trial') : 'Contact Sales' }}
+            </a>
+        </div>
+    </div>
+    @endforeach
 </div>
 
-<!-- ENTERPRISE -->
-<div class="col-lg-4">
-<div class="pricing-card dark">
-<h5 class="plan-name">Enterprise</h5>
-
-<div class="price custom">
-    Custom
-</div>
-<div class="billing-text">Let’s Talk</div>
-
-<ul class="features">
-    <li>✔ Unlimited Vehicles</li>
-    <li>✔ Unlimited Users</li>
-    <li>✔ API & Integrations</li>
-    <li>✔ Dedicated Manager</li>
-</ul>
-
-<a href="#" class="btn btn-dark w-100">
-    Contact Sales
-</a>
-</div>
-</div>
-
-</div>
-</div>
 
 </section>
 </section>
