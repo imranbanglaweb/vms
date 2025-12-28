@@ -264,6 +264,7 @@ public function validateAjax(Request $request)
     try {
         $requisition = Requisition::create([
             'requested_by' => $request->employee_id,
+            'company_id' => auth()->user()->company_id,
             'vehicle_id' => $request->vehicle_id ?? null,
             'department_id' => $request->department_id,
             'unit_id'       => $request->unit_id,

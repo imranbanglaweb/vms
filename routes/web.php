@@ -61,6 +61,7 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Reports\RequisitionReportController;
 use App\Http\Controllers\Reports\MaintenanceReportController;
+use App\Http\Controllers\Admin\SubscriptionPlanController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -274,6 +275,26 @@ Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
     )->middleware('role:Super Admin,Admin')->name('reports.maintenance.pdf');
 // });
 
+
+// route group with subscription check
+Route::middleware(['auth', 'subscription.active'])->group(function () {
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('drivers', DriverController::class);
+    Route::resource('trips', TripController::class);
+});
+
+// Admin Subscription Plan Management
+
+
+Route::middleware(['auth'])->prefix('admin')->as('admin.')->group(function () {
+        Route::resource('plans', SubscriptionPlanController::class)
+            ->except(['show','destroy']);
+    });
+
+
+Route::get('/pricing', function () {
+    return view('admin.dashboard.public.pricing');
+})->name('pricing');
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 

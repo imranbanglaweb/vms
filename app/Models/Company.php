@@ -14,4 +14,7 @@ class Company extends Model
     public function departments() { return $this->hasMany(Department::class); }
     public function employees() { return $this->hasMany(Employee::class); }
     public function vehicles() { return $this->hasMany(Vehicle::class); }
+    public function users(){ return $this->hasMany(User::class);}
+    public function subscription(){ return $this->hasOne(Subscription::class);}
+
 }
