@@ -62,6 +62,11 @@ use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Reports\RequisitionReportController;
 use App\Http\Controllers\Reports\MaintenanceReportController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
+use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Payment\StripeController;
+use App\Http\Controllers\Payment\ManualPaymentController;
+use App\Http\Controllers\Admin\SubscriptionApprovalController;
+use App\Http\Controllers\Admin\AdminPaymentController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -291,8 +296,87 @@ Route::middleware(['auth'])->prefix('admin')->as('admin.')->group(function () {
             ->except(['show','destroy']);
     });
 
-// pricing page route
+// Subscription pricing page route
 Route::get('/pricing', [SubscriptionPlanController::class, 'price'])->name('pricing');
+
+// Subscription Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/subscribe/{slug}', [SubscriptionController::class, 'select'])
+        ->name('subscription.select');
+
+    Route::post('/subscribe', [SubscriptionController::class, 'store'])
+        ->name('subscription.store');
+});
+
+// Subscription management routes
+Route::middleware(['auth'])->group(function () {
+
+    // Route::get('/subscription/plans', [SubscriptionController::class,'plans'])
+    //     ->name('subscription.plans');
+
+    Route::get('/subscription-expired', [SubscriptionController::class,'expired'])
+        ->name('subscription.expired');
+
+    // Stripe
+    // Route::post('/stripe/pay', [StripeController::class,'pay'])
+    //     ->name('stripe.pay');
+
+    Route::get('/payment/stripe', [StripeController::class,'pay'])
+    ->name('payment.stripe');
+
+        // Manual
+    Route::get('/payment/manual/{plan}', [ManualPaymentController::class, 'form'])
+    ->name('payment.manual');
+    
+    // AJAX store for manual payment
+    Route::post('/manual-payment/ajax-store', [ManualPaymentController::class, 'ajaxStore'])
+    ->name('manual.payment.ajax');
+
+    Route::get('/invoice/{payment}', [ManualPaymentController::class, 'invoice'])
+        ->name('invoice.download');
+
+
+    Route::get('/stripe/success', [StripeController::class,'success'])
+        ->name('stripe.success');
+
+
+
+    Route::post('/manual-payment/store', [ManualPaymentController::class,'store']);
+});
+
+// Admin Payment Approval
+// Route::get('/admin/payments/pending', [AdminPaymentController::class, 'pending'])->name('admin.payments.pending');
+// Route::get('/admin/payments/paid', [AdminPaymentController::class, 'paid']);
+Route::get('/admin/revenue/plans', [AdminRevenueController::class, 'byPlan']);
+Route::get('/admin/subscriptions/expiring', [AdminSubscriptionController::class, 'expiring']);
+
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::get('payments/pending', [AdminPaymentController::class, 'pending'])
+        ->name('payments.pending');
+
+    Route::get('payments/paid', [AdminPaymentController::class, 'paid'])
+        ->name('payments.paid');
+
+          Route::post('/payments/approve/{payment}', [AdminPaymentController::class, 'approve'])
+        ->name('payments.approve');
+
+    // Route::post('payments/{payments}/reject', [AdminPaymentController::class, 'reject'])
+    //     ->name('payments.reject');
+
+        Route::post('payments/reject/{payment}',[PaymentController::class,'reject'])->name('payments.reject');
+
+
+});
+
+Route::middleware(['auth','role:Admin'])->prefix('admin')->group(function () {
+    Route::get('/subscriptions/pending',
+        [SubscriptionApprovalController::class,'pending']);
+
+    Route::post('/subscriptions/approve/{payment}',
+        [SubscriptionApprovalController::class,'approve']);
+});
 
 Route::get('/get-employee-details/{id}', [EmployeeController::class, 'getEmployeeDetails'])->name('employee.details');
 
