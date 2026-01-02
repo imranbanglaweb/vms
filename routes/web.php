@@ -61,6 +61,9 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Reports\RequisitionReportController;
 use App\Http\Controllers\Reports\MaintenanceReportController;
+use App\Http\Controllers\Reports\TripFuelReportController;
+use App\Http\Controllers\Reports\VehicleUtilizationReportController;
+use App\Http\Controllers\Reports\DriverPerformanceReportController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -256,6 +259,72 @@ Route::middleware(['auth'])->prefix('admin/reports')->group(function () {
 
     Route::get('requisitions/pdf', [RequisitionReportController::class, 'exportPdf'])
         ->name('reports.requisitions.pdf');
+});
+
+// report Trip & Fuel Consumption Report
+Route::middleware(['auth','permission:Trip Fuel Consumption Report'])->group(function () {
+
+    Route::get('/reports/trips-fuel',
+        [TripFuelReportController::class, 'index']
+    )->name('reports.trips_fuel.index');
+
+    Route::get('/reports/trips-fuel/ajax',
+        [TripFuelReportController::class, 'ajax']
+    )->name('reports.trips_fuel.ajax');
+
+    Route::get('/reports/trips-fuel/excel',
+        [TripFuelReportController::class, 'excel']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.trips_fuel.excel');
+
+    Route::get('/reports/trips-fuel/pdf',
+        [TripFuelReportController::class, 'pdf']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.trips_fuel.pdf');
+});
+
+// ✅ Vehicle Utilization Report Route
+Route::middleware(['auth','permission:Vehicle Utilization Report'])->group(function () {
+    Route::get('/reports/vehicle-utilization',
+        [VehicleUtilizationReportController::class, 'index']
+    )->name('reports.vehicle_utilization.index');
+
+    Route::get('/reports/vehicle-utilization/ajax',
+        [VehicleUtilizationReportController::class, 'ajax']
+    )->name('reports.vehicle_utilization.ajax');
+
+    Route::get('/reports/vehicle-utilization/excel',
+        [VehicleUtilizationReportController::class, 'excel']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.vehicle_utilization.excel');
+
+    Route::get('/reports/vehicle-utilization/pdf',
+        [VehicleUtilizationReportController::class, 'pdf']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.vehicle_utilization.pdf');
+});
+
+
+// ✅ Driver Performance Report
+Route::middleware(['auth','permission:Driver Performance Report'])->group(function () {
+
+    Route::get('/reports/driver-performance',
+        [DriverPerformanceReportController::class, 'index']
+    )->name('reports.driver_performance.index');
+
+    Route::get('/reports/driver-performance/ajax',
+        [DriverPerformanceReportController::class, 'ajax']
+    )->name('reports.driver_performance.ajax');
+
+    Route::get('/reports/driver-performance/excel',
+        [DriverPerformanceReportController::class, 'excel']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.driver_performance.excel');
+
+    Route::get('/reports/driver-performance/pdf',
+        [DriverPerformanceReportController::class, 'pdf']
+    )->middleware('role:Super Admin,Admin')
+    ->name('reports.driver_performance.pdf');
 });
 
 // Route::middleware(['auth','role:Super Admin,Admin,Manager'])->group(function () {
