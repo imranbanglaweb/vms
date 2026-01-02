@@ -83,4 +83,9 @@ class User extends Authenticatable
         return $this->hasMany(\NotificationChannels\WebPush\PushSubscription::class);
     }
 
+     public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
 }

@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
          'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
           'role' => \App\Http\Middleware\CheckRole::class,
+            'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,
     ];
 }

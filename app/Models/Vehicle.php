@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Scopes\CompanyScope;
 
 class Vehicle extends Model
 {
@@ -93,6 +94,11 @@ class Vehicle extends Model
             'busy'      => 'warning',   // yellow
             'on_leave'  => 'danger',    // red
         ][$this->availability_status] ?? 'secondary';
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CompanyScope);
     }
 
 

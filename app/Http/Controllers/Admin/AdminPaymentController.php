@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+use App\Models\Payment;
+use App\Models\Subscription;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+class AdminPaymentController extends Controller
+{
+    
+    public function pending(Request $request)
+    {
+        if ($request->ajax()) {
+
+            $payments = Payment::with(['subscriptionPlan'])
+                ->where('status','pending');
+
+            return DataTables::of($payments)
+                ->addIndexColumn()
+
+                ->addColumn('company', fn($p) =>
+                    $p->company->name ?? 'N/A'
+                )
+
+                // ->addColumn('plan', function ($p) {
+                //     return $p->plan
+                //         ? '<span class="badge bg-primary">'.$p->plan->name.'</span>'
+                //         : '<span class="badge bg-secondary">N/A</span>';
+                // })
+                ->addColumn('plan', function ($p) {
+                    return $p->subscriptionPlan
+                        ? '<span class="badge bg-primary btn-small">'.$p->subscriptionPlan->name.'</span>'
+                        : '<span class="badge bg-secondary">N/A</span>';
+                })
+                ->addColumn('amount', fn($p) =>
+                    '<strong>'.number_format($p->amount,2).'</strong>'
+                )
+
+                ->addColumn('method', fn() =>
+                    '<span class="badge bg-warning">Manual</span>'
+                )
+
+                ->addColumn('created_at', fn($p) =>
+                    $p->created_at->format('d M Y')
+                )
+
+                ->addColumn('action', fn($p) => '
+                    <button class="btn btn-success btn-sm approveBtn" data-id="'.$p->id.'">
+                        <i class="fa fa-check"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm rejectBtn" data-id="'.$p->id.'">
+                        <i class="fa fa-times"></i>
+                    </button>
+                ')
+
+                ->rawColumns(['plan','amount','method','action'])
+                ->make(true);
+        }
+
+        return view('admin.dashboard.plans.subscriptions.payments.pending');
+    }
+    public function paid()
+    {
+        $payments = Payment::with(['company','plan'])
+            ->where('status','paid')
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.dashboard.plans.subscriptions.payments.paid', compact('payments'));
+    }
+
+    public function approve(Payment $payment)
+    {
+        if ($payment->status !== 'pending') {
+            return back()->with('error','Payment already processed');
+        }
+
+        // Mark payment as paid
+        $payment->update([
+            'status'   => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        // Activate / extend subscription
+        Subscription::updateOrCreate(
+            ['company_id' => $payment->company_id],
+            [
+                'plan_id'   => $payment->plan_id,
+                'starts_at' => now(),
+                'ends_at'   => now()->addDays($payment->plan->duration_days),
+                'status'    => 'active',
+            ]
+        );
+
+        // return back()->with('success','Payment approved & subscription activated');
+            return response()->json([
+            'success' => true,
+            'message' => 'Payment approved successfully'
+        ]);
+
+    }
+
+        public function reject(Payment $payment)
+        {
+            if ($payment->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment already processed'
+                ], 422);
+            }
+
+            $payment->update([
+                'status' => 'rejected'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment rejected successfully'
+            ]);
+        }
+
+
+}

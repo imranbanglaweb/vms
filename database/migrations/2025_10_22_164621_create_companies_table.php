@@ -18,8 +18,11 @@ class CreateCompaniesTable extends Migration
             $table->string('name');
             $table->string('address')->nullable();
             $table->string('email', 100)->nullable();
+            $table->string('slug')->unique();
             $table->string('phone', 50)->nullable();
             $table->softDeletes(); // Add this line
+            $table->string('logo')->nullable();
+            $table->enum('status',['active','suspended'])->default('active');
             $table->timestamps();
         });
     }

@@ -129,6 +129,14 @@ class VehicleController extends Controller
             'seat_capacity' => 'required|integer|min:1',
         ]);
 
+
+        $company = auth()->user()->company;
+        $limit = $company->subscription->plan->max_vehicles;
+
+        if ($limit && $company->vehicles()->count() >= $limit) {
+            abort(403, 'Vehicle limit reached. Upgrade plan.');
+        }
+
         $vehicle = Vehicle::create(array_merge($request->all(), [
             'created_by' => Auth::id(),
         ]));
