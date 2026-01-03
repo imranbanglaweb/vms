@@ -10,7 +10,7 @@ class SubscriptionPlanController extends Controller
 {
     public function index()
     {
-        $plans = SubscriptionPlan::latest()->get();
+        $plans = SubscriptionPlan::latest()->orderBy('name', 'asc')->get();
         return view('admin.dashboard.plans.index', compact('plans'));
     }
 
@@ -58,7 +58,7 @@ class SubscriptionPlanController extends Controller
     {
         // Fetch all active plans
         $plans = SubscriptionPlan::where('is_active', true)
-                    ->orderBy('id', 'desc')
+                    ->orderBy('id', 'asc')
                     ->orderBy('price', 'asc')
                     ->get();
 

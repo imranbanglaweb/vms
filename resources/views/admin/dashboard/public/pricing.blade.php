@@ -64,7 +64,11 @@
 
             <a href="{{ $plan->price ? route('register') : '#' }}" 
                class="btn btn-{{ $plan->is_popular ? 'primary' : 'outline-light' }} w-100">
+               <i class="fa fa-user-plus"></i>&nbsp;
                {{ $plan->price ? ($plan->is_popular ? 'Get Started' : 'Start Free Trial') : 'Contact Sales' }}
+            </a>
+            <a href="{{ route('subscription.select',$plan->slug) }}" class="btn btn-warning w-100">
+            <i class="fa fa-check-circle"></i>&nbsp; Subscribe
             </a>
         </div>
     </div>

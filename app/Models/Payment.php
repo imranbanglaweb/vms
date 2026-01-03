@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     use HasFactory;
-      protected $table = 'payments';
-        protected $fillable = [
-        'id',
-        'company_id', 
+
+    protected $table = 'payments';
+
+    protected $fillable = [
+        'company_id',
         'user_id',
-        'subscription_id',
         'plan_id',
+        'subscription_id',
         'method',
         'amount',
         'currency',
@@ -24,17 +25,22 @@ class Payment extends Model
         'created_by',
     ];
 
-      public function subscription()
+    public function subscription()
     {
         return $this->belongsTo(Subscription::class);
     }
-     public function user()
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
-
-      public function subscriptionPlan()
+     public function plan()
     {
-          return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
+        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
     }
 }

@@ -13,15 +13,34 @@ class CreateSubscriptionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+      Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('plan_id')->constrained();
-            $table->date('starts_at');
-            $table->date('ends_at');
-            $table->enum('status',['active','expired','suspended','pending']);
+
+            // Company
+            $table->foreignId('company_id')
+                  ->constrained()
+                  ->cascadeOnDelete();
+
+            // User (nullable if needed)
+            $table->foreignId('user_id')
+                  ->nullable()
+                  ->constrained()
+                  ->nullOnDelete();
+
+            // Plan → now correctly references subscription_plans table
+            $table->foreignId('plan_id')
+                  ->constrained('subscription_plans') // ✅ FIXED
+                  ->cascadeOnDelete();
+
+            $table->date('starts_at')->nullable();
+            $table->date('ends_at')->nullable();
+
+            $table->enum('status', ['active','expired','suspended','pending'])
+                  ->default('pending');
+
             $table->string('payment_method')->nullable(); // manual / stripe
             $table->string('transaction_ref')->nullable();
+
             $table->timestamps();
         });
     }

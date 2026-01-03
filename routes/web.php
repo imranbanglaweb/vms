@@ -61,18 +61,15 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Reports\RequisitionReportController;
 use App\Http\Controllers\Reports\MaintenanceReportController;
-<<<<<<< HEAD
 use App\Http\Controllers\Reports\TripFuelReportController;
 use App\Http\Controllers\Reports\VehicleUtilizationReportController;
 use App\Http\Controllers\Reports\DriverPerformanceReportController;
-=======
 use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Payment\StripeController;
 use App\Http\Controllers\Payment\ManualPaymentController;
 use App\Http\Controllers\Admin\SubscriptionApprovalController;
 use App\Http\Controllers\Admin\AdminPaymentController;
->>>>>>> a45ed9a2afa10d7455a738bdeba19c09beb54833
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -397,8 +394,7 @@ Route::middleware(['auth'])->group(function () {
     ->name('payment.stripe');
 
         // Manual
-    Route::get('/payment/manual/{plan}', [ManualPaymentController::class, 'form'])
-    ->name('payment.manual');
+    Route::get('/payment/manual/{plan}', [ManualPaymentController::class, 'form'])->name('payment.manual');
     
     // AJAX store for manual payment
     Route::post('/manual-payment/ajax-store', [ManualPaymentController::class, 'ajaxStore'])
@@ -430,6 +426,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::get('payments/paid', [AdminPaymentController::class, 'paid'])
         ->name('payments.paid');
+        
+// DataTables AJAX
+Route::get('admin/payments/paid/data', [AdminPaymentController::class, 'paidData'])
+    ->name('payments.paid.data');
+
+Route::get('admin/payments/{payment}/invoice',[ManualPaymentController::class, 'invoice'])->name('payments.invoice');
 
           Route::post('/payments/approve/{payment}', [AdminPaymentController::class, 'approve'])
         ->name('payments.approve');

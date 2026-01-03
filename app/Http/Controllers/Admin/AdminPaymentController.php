@@ -13,7 +13,7 @@ class AdminPaymentController extends Controller
     {
         if ($request->ajax()) {
 
-            $payments = Payment::with(['subscriptionPlan'])
+            $payments = Payment::with(['plan'])
                 ->where('status','pending');
 
             return DataTables::of($payments)
@@ -29,8 +29,8 @@ class AdminPaymentController extends Controller
                 //         : '<span class="badge bg-secondary">N/A</span>';
                 // })
                 ->addColumn('plan', function ($p) {
-                    return $p->subscriptionPlan
-                        ? '<span class="badge bg-primary btn-small">'.$p->subscriptionPlan->name.'</span>'
+                    return $p->plan
+                        ? '<span class="badge bg-primary btn-small">'.$p->plan->name.'</span>'
                         : '<span class="badge bg-secondary">N/A</span>';
                 })
                 ->addColumn('amount', fn($p) =>
@@ -62,6 +62,7 @@ class AdminPaymentController extends Controller
     }
     public function paid()
     {
+
         $payments = Payment::with(['company','plan'])
             ->where('status','paid')
             ->latest()
@@ -69,6 +70,50 @@ class AdminPaymentController extends Controller
 
         return view('admin.dashboard.plans.subscriptions.payments.paid', compact('payments'));
     }
+
+    public function paidData()
+{
+    $query = Payment::with(['company', 'plan'])
+        ->where('status', 'paid')
+        ->select('payments.*');
+
+    return DataTables::of($query)
+        ->addIndexColumn()
+
+        ->addColumn('company', fn ($p) =>
+            $p->company->name ?? 'N/A'
+        )
+
+        ->addColumn('plan', fn ($p) =>
+            '<span class="badge bg-primary">'.$p->plan->name.'</span>'
+        )
+
+        ->addColumn('amount', fn ($p) =>
+            number_format($p->amount, 2)
+        )
+
+        ->addColumn('method', fn ($p) =>
+            '<span class="badge bg-info text-dark">'.$p->method.'</span>'
+        )
+
+        ->addColumn('paid_at', fn ($p) =>
+            $p->updated_at->format('d M Y')
+        )
+
+        ->addColumn('status', fn () =>
+            '<span class="badge bg-success">Paid</span>'
+        )
+
+        ->addColumn('invoice', fn ($p) =>
+            '<a href="'.route('admin.payments.invoice',$p->id).'"
+                class="btn btn-sm btn-outline-primary" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i>
+             </a>'
+        )
+
+        ->rawColumns(['plan','method','status','invoice'])
+        ->make(true);
+}
 
     public function approve(Payment $payment)
     {
