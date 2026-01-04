@@ -99,7 +99,7 @@ class ManualPaymentController extends Controller
         ]);
 
         $pdf = PDF::loadView(
-            'admin.dashboard.invoice.pdf',
+            'admin.dashboard.plans.subscriptions.payments.invoice.pdf',
             compact('payment')
         )->setPaper('A4');
 

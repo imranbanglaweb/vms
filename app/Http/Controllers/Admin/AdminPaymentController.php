@@ -106,8 +106,8 @@ class AdminPaymentController extends Controller
 
         ->addColumn('invoice', fn ($p) =>
             '<a href="'.route('admin.payments.invoice',$p->id).'"
-                class="btn btn-sm btn-outline-primary" target="_blank">
-                <i class="bi bi-file-earmark-pdf"></i>
+                class="btn btn-sm btn-dark">
+                <i class="fa fa-file"></i> Invoice
              </a>'
         )
 
