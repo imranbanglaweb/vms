@@ -165,5 +165,30 @@ class AdminPaymentController extends Controller
             ]);
         }
 
+        public function byPlan()
+            {
+                $revenue = Payment::selectRaw('plan_id, SUM(amount) as total')
+                    ->where('status','paid')
+                    ->groupBy('plan_id')
+                    ->with('plan')
+                    ->get();
+
+                $totalRevenue = Payment::where('status','paid')->sum('amount');
+
+                return view('admin.saas.revenue.by_plan', compact('revenue','totalRevenue'));
+            }
+
+        public function expiring()
+        {
+            $subscriptions = Subscription::with('company','plan')
+                ->where('status','active')
+                ->whereDate('ends_at','<=', now()->addDays(7))
+                ->orderBy('ends_at')
+                ->get();
+
+            return view('admin.dashboard.plans.subscriptions.paymentsexpiring', compact('subscriptions'));
+        }
+
+
 
 }

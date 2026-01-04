@@ -433,14 +433,18 @@ Route::get('admin/payments/paid/data', [AdminPaymentController::class, 'paidData
 
 Route::get('admin/payments/{payment}/invoice',[ManualPaymentController::class, 'invoice'])->name('payments.invoice');
 
-          Route::post('/payments/approve/{payment}', [AdminPaymentController::class, 'approve'])
-        ->name('payments.approve');
+    Route::post('/payments/approve/{payment}', [AdminPaymentController::class, 'approve'])
+->name('payments.approve');
 
-    // Route::post('payments/{payments}/reject', [AdminPaymentController::class, 'reject'])
-    //     ->name('payments.reject');
+// Route::post('payments/{payments}/reject', [AdminPaymentController::class, 'reject'])
+//     ->name('payments.reject');
 
-        Route::post('payments/reject/{payment}',[PaymentController::class,'reject'])->name('payments.reject');
+Route::post('payments/reject/{payment}',[PaymentController::class,'reject'])->name('payments.reject');
 
+        // Admin Subscription Expiring
+Route::get('/admin/subscriptions/expiring', [AdminPaymentController::class, 'expiring']);
+
+Route::get('/admin/revenue/plans', [AdminPaymentController::class, 'byPlan']);
 
 });
 
