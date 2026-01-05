@@ -8,7 +8,7 @@
     <br>
 <div class="container">
     <h3>Departments Manage</h3>
-    <button class="btn btn-success mb-3" id="addNew">Add Department</button>
+    <button class="btn btn-success mb-3" id="addNew"><i class="fa fa-plus"></i> Add Department</button>
 <table id="departmentsTable" class="table table-bordered table-striped">
     <thead>
         <tr>
@@ -31,7 +31,8 @@
       <form id="deptForm">
         <div class="modal-header">
           <h5 class="modal-title">Department</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close pull-right btn-danger" data-bs-dismiss="modal">Close</button>
+          <br>
         </div>
         <div class="modal-body">
             <input type="hidden" name="id" id="deptId">
@@ -88,7 +89,9 @@
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+ <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Script -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 <script>
 $(function(){
     var table = $('#departmentsTable').DataTable({

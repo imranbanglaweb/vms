@@ -9,10 +9,11 @@
         <i class="fa fa-list"></i> Maintenance Categories
     </h3>
 
-    <button class="btn btn-dark mb-3" id="addNew">
+    <button class="btn btn-dark mb-3 pull-right" id="addNew">
         <i class="fa fa-plus"></i> Add New
     </button>
-
+<br>
+<br>
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <table class="table table-bordered table-striped" id="categoryTable">

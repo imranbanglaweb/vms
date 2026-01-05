@@ -30,14 +30,14 @@
 <div class="pull-left">
   <br>
   <h2>Employee Manage</h2>
-
+<!-- 
   <div>
     <select class="form-control select_employee_file">
       <option>Select Employee Export/Import</option>
       <option value="Import">Import</option>
       <option value="Export">Export</option>
     </select>
-  </div>
+  </div> -->
 
   <br>
 

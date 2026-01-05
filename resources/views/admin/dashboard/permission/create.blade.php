@@ -76,7 +76,7 @@
                                            placeholder="Enter key"
                                            value="{{ old('key') }}">
                                     <label for="key" class="form-label">
-                                        <i class="fa fa-code me-2"></i>Key
+                                        <i class="fa fa-code me-2"></i> Key
                                     </label>
                                     <div class="form-text">Optional: Internal reference key</div>
                                     <div class="invalid-feedback" id="key-error"></div>

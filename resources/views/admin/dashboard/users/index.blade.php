@@ -1,21 +1,21 @@
 @extends('admin.dashboard.master')
 
 @section('main_content')
-<section role="main" class="content-body" style="background-color: #f8f9fa; padding: 20px;">
+<section role="main" class="content-body" style="background-color: #fff; padding: 10px;">
 
 <div class="row">
     <div class="col-md-4">
-        <h4>User Upload</h4>
+        <!-- <h4>User Upload</h4>
         <div class="form-group">
             <select class="form-control select_employee_file">
                 <option>Select User Export/Import</option>
                 <option value="Import">Import</option>
                 <option value="Export">Export</option>
             </select>
-        </div>
+        </div> -->
 
         <!-- Import -->
-        <div id="showImport" class="myDiv" style="display:none;">
+        <!-- <div id="showImport" class="myDiv" style="display:none;">
             <form action="{{ route('employee.importuser')}}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
@@ -23,7 +23,7 @@
                 </div>
                 <button class="btn btn-info"><i class="fa fa-download"></i> Import</button>
             </form>
-        </div>
+        </div> -->
 
        
     </div>
@@ -75,11 +75,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Delete User</h5>
-                <button class="close" data-dismiss="modal">&times;</button>
+                <button class="close" data-bs-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">Are you sure you want to delete this user?</div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" method="POST">
                     @csrf
                     @method('DELETE')

@@ -59,14 +59,17 @@
                     @method('DELETE')
                     <div class="modal-header">
                         <h4 class="modal-title text-center">Delete Menu</h4>
-                        <button type="button" class="close" data-dismiss="modal">×</button>
+                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal">×</button>
+
                     </div>
                     <div class="modal-body">
                         <h5 class="text-danger text-center">Are you sure you want to delete this menu?</h5>
                         <input type="hidden" name="menu_id" id="menu_id">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </div>
                 </form>
@@ -86,6 +89,7 @@
 
 <!-- Toastr JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -160,5 +164,7 @@ $(document).ready(function() {
     });
 
 });
+
+
 </script>
 @endpush

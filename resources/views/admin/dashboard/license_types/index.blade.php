@@ -34,7 +34,7 @@
             <form id="licenseTypeForm">
                 <div class="modal-header">
                     <h5 class="modal-title">License Type</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close pull-right" data-bs-dismiss="modal">Close</button>
                 </div>
 
                 <div class="modal-body">

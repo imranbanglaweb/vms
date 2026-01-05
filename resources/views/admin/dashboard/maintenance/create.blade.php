@@ -95,7 +95,7 @@ input.border-danger, select.border-danger {
         {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold text-primary"><i class="fa fa-tools me-2"></i> Create Maintenance Requisition</h3>
-            <a href="{{ route('requisitions.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('maintenance.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="fa fa-arrow-left me-1"></i> Back
             </a>
         </div>
@@ -105,7 +105,7 @@ input.border-danger, select.border-danger {
             @csrf
             <div class="card shadow-sm rounded-3 border-0">
                 <div class="card-header py-3">
-                    <h5 class="mb-0 fw-bold">Requisition Details</h5>
+                    <h4 class="mb-0 fw-bold"><strong>Requisition Details</strong></h4>
                 </div>
                 <div class="card-body">
 
@@ -113,7 +113,7 @@ input.border-danger, select.border-danger {
 
                         {{-- Left Column --}}
                         <div class="col-md-6">
-                            <div class="form-floating mb-3">
+                            <div class="form-floating">
                                 <select name="requisition_type" class="form-select  select2" id="requisitionType">
                                     <option value="">Select Type</option>
                                     <option value="Maintenance">Maintenance</option>
@@ -394,7 +394,7 @@ $(document).ready(function () {
 
                 // Reload or redirect
                 setTimeout(() => {
-                    window.location.href = "{{ route('requisitions.index') }}";
+                    window.location.href = "{{ route('maintenance.index') }}";
                 }, 1500);
             },
             error: function (xhr) {

@@ -147,31 +147,52 @@ class VehicleController extends Controller
         ]);
     }
 
+    // public function edit(Vehicle $vehicle)
+    // {
+    //     return view('admin.dashboard.vehicles.edit', compact('vehicle'));
+    // }
     public function edit(Vehicle $vehicle)
     {
-        return view('admin.dashboard.vehicles.edit', compact('vehicle'));
-    }
-
-    public function update(Request $request, Vehicle $vehicle)
-    {
-        $request->validate([
-            'vehicle_name' => 'required|string|max:255',
-            'department' => 'required|string|max:255',
-            'registration_date' => 'required|date',
-            'license_plate' => 'required|string|max:50',
-            'alert_cell_number' => 'required|string|max:20',
-            'ownership' => 'required|string|max:100',
-            'vehicle_type' => 'required|string|max:100',
-            'rta_office' => 'required|string|max:100',
-            'driver' => 'required|string|max:100',
-            'vendor' => 'required|string|max:100',
-            'seat_capacity' => 'required|integer|min:1',
+           $ownerships = [
+            'Owned' => 'Owned',
+            'Rented' => 'Rented',
+            'Leased'  => 'Leased',
+        ];
+        return view('admin.dashboard.vehicles.edit', [
+            'vehicle'       => $vehicle,
+            'departments'   => Department::pluck('department_name', 'id'),
+            'vehicleTypes'  => VehicleType::pluck('name', 'id'),
+            'drivers'       => Driver::pluck('driver_name', 'id'),
+            'vendors'       => Vendor::pluck('name', 'id'),
+            'ownerships'       => $ownerships,
         ]);
-
-        $vehicle->update($request->all());
-
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle updated successfully!');
     }
+
+
+    
+    public function update(Request $request, Vehicle $vehicle)
+        {
+            $validated = $request->validate([
+                'vehicle_name'        => 'required|string|max:255',
+                'department_id'       => 'required|exists:departments,id',
+                'registration_date'   => 'required|date',
+                'license_plate'       => 'required|string|max:50|unique:vehicles,license_plate,' . $vehicle->id,
+                'alert_cell_number'   => 'required|string|max:20',
+                'ownership'           => 'required',
+                'vehicle_type_id'     => 'required|exists:vehicle_types,id',
+                'driver_id'           => 'required|exists:drivers,id',
+                'vendor_id'           => 'required|exists:vendors,id',
+                'seat_capacity'       => 'required|integer|min:1',
+            ]);
+
+            $vehicle->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vehicle updated successfully',
+            ]);
+        }
+
 
     public function destroy(Vehicle $vehicle)
     {

@@ -32,6 +32,7 @@
 @php
     $children = DB::table('menus')
         ->where('menu_parent', $menu->id)
+        ->orderBy('id', 'DESC')
         ->get();
 
     $hasChildren = $children->count() > 0;
