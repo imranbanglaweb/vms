@@ -11,7 +11,15 @@
         font-size: 1.7rem;
         font-weight: 600;
     }
+.card {
+        border-radius: 16px;
+        overflow: hidden;
+    }
 
+    .card-header {
+        background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+        border-bottom: 0;
+    }
     .form-control-lg, .form-select-lg {
         font-size: 1.5rem;
         padding: 10px 14px;
@@ -27,6 +35,16 @@
         font-weight: 500;
         transition: all 0.3s;
         animation: fadeIn 0.5s;
+    }
+     @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(-4px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    .btn-lg {
+        border-radius: 30px;
+        padding: 10px 28px;
+        font-size: 1.45rem;
     }
 </style>
 
@@ -148,18 +166,24 @@
 
                     <div class="col-md-3">
                         <label class="form-label"><i class="fa fa-clock text-primary me-1"></i> Pickup Time</label>
-                        <input type="datetime-local" name="travel_date" class="form-control form-control-lg">
+                        <input type="text" name="travel_date" class="form-control datetimepicker"
+       placeholder="Select pickup date & time">
+
                         <small class="text-danger error-text travel_date_error"></small>
                     </div>
 
                     <div class="col-md-3">
                         <label class="form-label"><i class="fa fa-calendar-check text-primary me-1"></i> Return Time</label>
-                        <input type="datetime-local" name="return_date" class="form-control form-control-lg">
+                   
+                        <input type="text" name="return_date" class="form-control datetimepicker"
+       placeholder="Select return date & time">
+
                     </div>
 
                 </div>
 
-                <hr>
+              <div class="my-4 border-top"></div>
+
 
                 <!-- ============================ -->
                 <!-- PURPOSE & PASSENGERS COUNT -->
@@ -179,8 +203,9 @@
                     </div>
 
                 </div>
+                
+<div class="my-4 border-top"></div>
 
-                <hr>
 
                 <!-- ============================ -->
                 <!-- PASSENGERS -->
@@ -245,12 +270,24 @@
 @endsection
 
 
+
+
 @push('scripts')
+{{-- Flatpickr --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    
 $(function () {
-
+// Flatpickr (Date + Time)
+$('.datetimepicker').flatpickr({
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true,
+    minuteIncrement: 5
+});
     // ================= AUTO-FILL MAIN EMPLOYEE =================
     $('#employee_id').on('change', function() {
         let empId = $(this).val();
