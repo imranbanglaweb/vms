@@ -652,6 +652,23 @@ Notification.requestPermission().then(function(permission) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
+	<!-- NiceScroll -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
+<script>
+$(document).ready(function () {
+    $("body").niceScroll({
+        cursorcolor: "#000",   // scrollbar color
+        cursorwidth: "10px",
+        cursorborder: "2px solid #666",
+        cursorborderradius: "6px",
+        background: "#f6f6f6", // scrollbar track color
+        autohidemode: true,
+        smoothscroll: true,
+        scrollspeed: 60,
+        mousescrollstep: 40
+    });
+});
+</script>
 
 	</body>
 </html>
