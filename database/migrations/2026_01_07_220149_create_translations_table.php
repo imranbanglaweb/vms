@@ -15,7 +15,12 @@ class CreateTranslationsTable extends Migration
     {
         Schema::create('translations', function (Blueprint $table) {
             $table->id();
+            $table->string('group', 50)->default('frontend');
+            $table->string('key');
+            $table->text('text')->nullable()->comment('Default/fallback translation');
             $table->timestamps();
+            $table->unique(['group', 'key']);
+            $table->index('group');
         });
     }
 

@@ -70,6 +70,8 @@ use App\Http\Controllers\Payment\StripeController;
 use App\Http\Controllers\Payment\ManualPaymentController;
 use App\Http\Controllers\Admin\SubscriptionApprovalController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\TranslationController;
+use App\Http\Controllers\LanguageController;
 
 // Route::get('/', fn () => redirect()->route('login'));
 
@@ -772,3 +774,23 @@ Route::get('/transport/approvals/ajax', [TransportApprovalController::class, 'aj
     ->name('transport.approvals.ajax');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+
+// Localization Routes for language management
+// No need for locale prefix in routes
+// Language switching route
+Route::post('/language/switch', [LanguageController::class, 'switch'])->name('admin.language.switch');
+Route::get('/language/current', [LanguageController::class, 'current'])->name('language.current');
+Route::get('/language/list', [LanguageController::class, 'list'])->name('language.list');
+
+Route::get('/test-lang', function () {
+    return available_languages();
+});
+
+// Admin routes for managing translations
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/translations', [TranslationController::class, 'index'])->name('admin.translations');
+    Route::post('/translations/update', [TranslationController::class, 'update'])->name('translations.update');
+    Route::post('/translations/auto-translate', [TranslationController::class, 'autoTranslate'])->name('admin.translations.auto');
+});

@@ -66,8 +66,9 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
-         'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
-          'role' => \App\Http\Middleware\CheckRole::class,
-            'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,
+        'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
+        'role' => \App\Http\Middleware\CheckRole::class,
+        'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,
+        'LanguageSwitcher' => \App\Http\Middleware\LanguageSwitcher::class,
     ];
 }

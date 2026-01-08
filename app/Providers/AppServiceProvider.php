@@ -14,6 +14,7 @@ use Auth;
 use Illuminate\Support\Facades\Config;
 use App\Models\Requisition;
 use App\Observers\RequisitionObserver;
+use Illuminate\Support\Facades\Blade;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -92,5 +93,24 @@ $sidebar_menus = Menu::orderBy('id','ASC')->where('menu_parent',0)->get();
         // Configure mail theme
         Config::set('mail.markdown.theme', 'default');
         Config::set('mail.markdown.paths', [resource_path('views/vendor/mail')]);
+
+
+              // Custom blade directive for database translation
+            Blade::directive('trans', function ($expression) {
+                return "<?php echo trans_db({$expression}); ?>";
+            });
+            
+            Blade::directive('transchoice', function ($expression) {
+                return "<?php echo trans_db({$expression}); ?>";
+            });
+            
+            // RTL/LTR directive
+            Blade::if('rtl', function () {
+                return session('direction', 'ltr') === 'rtl';
+            });
+    
+            Blade::if('ltr', function () {
+                return session('direction', 'ltr') === 'ltr';
+            });
     }
 }
