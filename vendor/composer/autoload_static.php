@@ -125,6 +125,7 @@ class ComposerStaticInitf8af71234490361c3f31c1742b101a5b
         '0b47d6d4a00ca9112ba3953b49e7c9a4' => __DIR__ . '/..' . '/yajra/laravel-datatables-oracle/src/helper.php',
         'b28282bf56ed60c93bfbfb861c9643eb' => __DIR__ . '/../..' . '/app/Helpers/Notify.php',
         'c71260c1cf084f756474d36b60f4fe08' => __DIR__ . '/../..' . '/app/Helpers/MenuHelper.php',
+        '557e26c73f986d249da869ad418687a3' => __DIR__ . '/../..' . '/app/Helpers/TranslationHelpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -1086,6 +1087,7 @@ class ComposerStaticInitf8af71234490361c3f31c1742b101a5b
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',
         'App\\Providers\\EventServiceProvider' => __DIR__ . '/../..' . '/app/Providers/EventServiceProvider.php',
         'App\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/app/Providers/RouteServiceProvider.php',
+        'App\\Services\\CustomTranslationLoader' => __DIR__ . '/../..' . '/app/Services/CustomTranslationLoader.php',
         'App\\Services\\TranslationService' => __DIR__ . '/../..' . '/app/Services/TranslationService.php',
         'Asm89\\Stack\\Cors' => __DIR__ . '/..' . '/asm89/stack-cors/src/Cors.php',
         'Asm89\\Stack\\CorsService' => __DIR__ . '/..' . '/asm89/stack-cors/src/CorsService.php',

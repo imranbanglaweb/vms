@@ -339,6 +339,7 @@
 	</div>
 
 	<!-- Core JS Files - Use only one version of jQuery -->
+	<script src="{{ asset('public/admin_resource/assets/vendor/jquery/jquery.js') }}"></script>
 	<script src="{{ asset('public/admin_resource/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js') }}"></script>
 	<!-- Popper (CDN; integrity removed because some installs reported SRI mismatch). If CDN fails, fallback to local copy. -->
 	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous" onerror="(function(){var s=document.createElement('script');s.src='{{ asset('public/admin_resource/assets/vendor/popper/popper.min.js') }}';s.crossOrigin='anonymous';document.head.appendChild(s);})();"></script>
@@ -649,6 +650,8 @@ Notification.requestPermission().then(function(permission) {
 	 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
 	<!-- NiceScroll -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
 <script>
@@ -666,8 +669,6 @@ $(document).ready(function () {
     });
 });
 </script>
-
-@yield('scripts')
 
 	</body>
 </html>

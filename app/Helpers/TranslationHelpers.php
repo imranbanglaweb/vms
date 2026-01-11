@@ -36,14 +36,28 @@ if (!function_exists('language_direction')) {
     }
 }
 
-if (!function_exists('trans_db')) {
-    function trans_db($key, $parameters = [], $group = 'frontend', $locale = null)
+if (!function_exists('ensure_menu_translation')) {
+    function ensure_menu_translation($menuName)
     {
-        try {
-            $translationService = app(App\Services\TranslationService::class);
-            return $translationService->get($key, $group, $parameters, $locale);
-        } catch (\Exception $e) {
-            return $key;
+        $key = strtolower($menuName);
+        $group = 'backend';
+        
+        // Check if translation exists
+        $translation = \DB::table('translations')
+            ->where('group', $group)
+            ->where('key', $key)
+            ->first();
+            
+        if (!$translation) {
+            // Create translation for all active languages
+            $languages = available_languages();
+            $translationService = app(\App\Services\TranslationService::class);
+            
+            foreach ($languages as $language) {
+                $translationService->set($key, $menuName, $group, $language->code);
+            }
         }
+        
+        return 'backend.' . $key;
     }
 }

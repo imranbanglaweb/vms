@@ -40,9 +40,9 @@ class SettingController extends Controller
 
          // $menus = Menu::orderBy('menu_oder','ASC')->paginate(100);
 
-
         $settings = DB::table('settings')->where('id',1)->first();
-        return view('admin.dashboard.settings.index',compact('settings'));
+        $languages = DB::table('languages')->orderBy('name')->get();
+        return view('admin.dashboard.settings.index', compact('settings', 'languages'));
 
     }
 
@@ -77,12 +77,9 @@ class SettingController extends Controller
                     // "site_description" => "required",
         ]);
 
-        //   return dd($request->site_title);
-
-        // if ($validator->fails()) {
-        //       return redirect()->back()->withErrors($validator->errors());
-        //     // return response()->json(['errors' => $validator->errors()->all()], 400);
-        // }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()->all()], 400);
+        }
 
           if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()->all()], 400);
@@ -130,6 +127,11 @@ class SettingController extends Controller
         $setting->admin_title = $request->admin_title;
         $setting->admin_description = $request->admin_description;
 
+        // Language Settings
+        $setting->default_language = $request->default_language ?? 'en';
+        $setting->available_languages = $request->available_languages ? json_encode($request->available_languages) : json_encode(['en']);
+        $setting->auto_translate = $request->auto_translate ? 1 : 0;
+        $setting->translation_cache_duration = $request->translation_cache_duration ?? 60;
 
         if (!empty($admin_logo)) {
             
@@ -146,6 +148,83 @@ class SettingController extends Controller
         $setting->save();
 
         return response()->json('Settings Updated Successfully');
+    }
+
+    /**
+     * Clear translation cache
+     */
+    public function clearTranslationCache()
+    {
+        try {
+            Cache::forget('translations');
+            Cache::forget('translation_keys');
+            
+            // Also clear any language-specific caches
+            $languages = ['en', 'ar', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'];
+            foreach ($languages as $lang) {
+                Cache::forget("translations_{$lang}");
+            }
+            
+            return response()->json(['success' => true, 'message' => 'Translation cache cleared successfully']);
+        } catch (\Exception $e) {
+            Log::error('Failed to clear translation cache: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to clear translation cache'], 500);
+        }
+    }
+
+    /**
+     * Sync languages
+     */
+    public function syncLanguages()
+    {
+        try {
+            // Get available languages from settings
+            $settings = DB::table('settings')->where('id', 1)->first();
+            $availableLanguages = json_decode($settings->available_languages ?? '["en"]', true);
+            
+            // Ensure all available languages exist in languages table
+            foreach ($availableLanguages as $langCode) {
+                DB::table('languages')->updateOrInsert(
+                    ['code' => $langCode],
+                    [
+                        'name' => $this->getLanguageName($langCode),
+                        'is_active' => 1,
+                        'is_default' => ($langCode === ($settings->default_language ?? 'en')),
+                        'updated_at' => now()
+                    ]
+                );
+            }
+            
+            // Clear translation cache to force reload
+            $this->clearTranslationCache();
+            
+            return response()->json(['success' => true, 'message' => 'Languages synchronized successfully']);
+        } catch (\Exception $e) {
+            Log::error('Failed to sync languages: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to sync languages'], 500);
+        }
+    }
+
+    /**
+     * Get language name from code
+     */
+    private function getLanguageName($code)
+    {
+        $languages = [
+            'en' => 'English',
+            'ar' => 'العربية',
+            'fr' => 'Français',
+            'es' => 'Español',
+            'de' => 'Deutsch',
+            'it' => 'Italiano',
+            'pt' => 'Português',
+            'ru' => 'Русский',
+            'zh' => '中文',
+            'ja' => '日本語',
+            'ko' => '한국어'
+        ];
+        
+        return $languages[$code] ?? ucfirst($code);
     }
 
     /**

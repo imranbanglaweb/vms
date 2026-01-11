@@ -124,4 +124,5 @@ return array(
     '0b47d6d4a00ca9112ba3953b49e7c9a4' => $vendorDir . '/yajra/laravel-datatables-oracle/src/helper.php',
     'b28282bf56ed60c93bfbfb861c9643eb' => $baseDir . '/app/Helpers/Notify.php',
     'c71260c1cf084f756474d36b60f4fe08' => $baseDir . '/app/Helpers/MenuHelper.php',
+    '557e26c73f986d249da869ad418687a3' => $baseDir . '/app/Helpers/TranslationHelpers.php',
 );

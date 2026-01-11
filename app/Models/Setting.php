@@ -23,5 +23,9 @@ class Setting extends Model
         'admin_logo',
         'status',
         'created_by',
+        'default_language',
+        'available_languages',
+        'auto_translate',
+        'translation_cache_duration',
     ];
 }

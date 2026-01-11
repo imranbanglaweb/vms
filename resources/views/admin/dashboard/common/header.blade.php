@@ -40,6 +40,8 @@
 
 		<!-- Head Libs -->
 		<script src="{{ asset('public/admin_resource/')}}/assets/vendor/modernizr/modernizr.js"></script>
+		<script src="{{ asset('public/admin_resource/assets/vendor/jquery/jquery.js') }}"></script>
+		<script src="{{ asset('public/admin_resource/assets/vendor/bootstrap/js/bootstrap.js') }}"></script>
     <!-- Flag Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/6.6.6/css/flag-icons.min.css">
 <style>
@@ -59,8 +61,13 @@
             margin-right: 8px;
         }
         
+        .language-dropdown {
+            display: inline-block;
+        }
+        
         .language-dropdown .dropdown-menu {
             min-width: 200px;
+            z-index: 1000;
         }
         
         .language-item {
@@ -115,6 +122,8 @@
 			
 					<span class="separator"></span>
 			
+					<!-- Language Switcher -->
+					@include('admin.dashboard.languages.language-switcher')
 			
 					<span class="separator"></span>
 			
@@ -156,8 +165,6 @@
 							Our Plans Price
 										</a>
 								</li>
-								  <!-- Language Switcher -->
-                @include('admin.dashboard.languages.language-switcher')
 								<li>
 									
 

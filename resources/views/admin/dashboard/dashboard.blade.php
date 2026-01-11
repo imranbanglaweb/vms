@@ -55,13 +55,18 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-primary"><i class="fa fa-tachometer-alt me-2"></i>Dashboard Overview</h3>
+        <h3 class="fw-bold text-primary"><i class="fa fa-tachometer-alt me-2"></i>
+      
+        {{ trans(ensure_menu_translation('dashboard_overview')) }}
+        
+        
+    </h3>
 
         <!-- Notifications & Refresh -->
         <div class="d-flex align-items-center gap-2">
             <button id="refreshNow" class="btn btn-outline-primary btn-sm"><i class="fa fa-sync me-1"></i> Refresh</button>
             <div class="position-relative dropdown">
-                <i class="fa fa-bell fa-lg text-secondary dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer;"></i>
+                <i class="fa fa-bell fa-lg text-secondary dropdown-toggle" data-toggle="dropdown" style="cursor:pointer;"></i>
                 <span id="liveNotifCount" class="badge bg-danger position-absolute rounded-circle" style="top:-8px; right:-8px; display:none;">0</span>
                 <ul class="dropdown-menu dropdown-menu-end p-2" style="width:300px;" id="notifDropdown">
                     <li class="text-center text-muted small">No new notifications</li>
@@ -72,26 +77,16 @@
 
     <!-- Top Summary Cards -->
     <div class="row g-4 mb-4">
-        @php 
-            $cards = [
-                ['label'=>'Total', 'value'=>$total, 'color'=>'#0d6efd', 'icon'=>'fa-layer-group'],
-                ['label'=>'Pending', 'value'=>$pending, 'color'=>'#ffc107', 'icon'=>'fa-hourglass-half'],
-                ['label'=>'Approved', 'value'=>$approved, 'color'=>'#20c997', 'icon'=>'fa-check-circle'],
-                ['label'=>'Rejected', 'value'=>$rejected, 'color'=>'#dc3545', 'icon'=>'fa-times-circle'],
-                ['label'=>'Completed', 'value'=>$completed, 'color'=>'#28a745', 'icon'=>'fa-flag-checkered'],
-                ['label'=>'Cancelled', 'value'=>$cancelled ?? 0, 'color'=>'#6c757d', 'icon'=>'fa-ban'],
-            ];
-        @endphp
 
         @foreach($cards as $card)
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card card-summary shadow-sm border-0 rounded-4 text-center py-4 hover-shadow position-relative"
-                 style="transition: transform 0.3s;" data-bs-toggle="tooltip" data-bs-placement="top"
+                 style="transition: transform 0.3s;" data-toggle="tooltip" data-placement="top"
                  title="Last 7 days trend">
                 <div class="mb-2">
-                    @if($card['label'] === 'Total')
+                    @if($card['key'] === 'total')
                         <i class="fa fa-list" style="color:#0d6efd; font-size:4.2rem;"></i>
-                    @elseif($card['label'] === 'Pending')
+                    @elseif($card['key'] === 'pending')
                         <i class="fa fa-lock" style="color:#ffc107; font-size:4.2rem;"></i>
                     @else
                         <i class="fa {{ $card['icon'] }}" style="color:{{ $card['color'] }}; font-size:4.2rem;"></i>
@@ -99,7 +94,7 @@
                 </div>
                 <h4 class="fw-bold mb-1" style="color: {{ $card['color'] }}; font-size: 2.6rem;">{{ $card['value'] }}</h4>
                 <p class="fw-semibold mb-1" style="font-size: 1.3rem; color: #333;">{{ $card['label'] }}</p>
-                <canvas id="sparkline-{{ $card['label'] }}" height="40"></canvas>
+                <canvas id="sparkline-{{ $card['key'] }}" height="40"></canvas>
             </div>
         </div>
         @endforeach
@@ -109,13 +104,13 @@
     <div class="row mb-4">
         <div class="col-lg-12">
             <div class="card shadow-sm rounded-4 p-3">
-                <h6 class="fw-bold text-dark mb-3">Status Progress</h6>
+                <h6 class="fw-bold text-dark mb-3">{{ trans('backend.status_progress') }}</h6>
                 <div class="row g-3">
                     @php
                         $statuses = [
-                            ['label'=>'Pending','value'=>$pending ?? 0,'color'=>'#ffc107'],
-                            ['label'=>'Approved','value'=>$approved ?? 0,'color'=>'#20c997'],
-                            ['label'=>'Completed','value'=>$completed ?? 0,'color'=>'#0d6efd'],
+                            ['label'=>trans('backend.pending'),'value'=>$pending ?? 0,'color'=>'#ffc107'],
+                            ['label'=>trans('backend.approved'),'value'=>$approved ?? 0,'color'=>'#20c997'],
+                            ['label'=>trans('backend.completed'),'value'=>$completed ?? 0,'color'=>'#0d6efd'],
                         ];
                     @endphp
                     @foreach($statuses as $status)
@@ -140,7 +135,7 @@
             <!-- Monthly Requisitions -->
             <div class="card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0 text-dark">Monthly Requisitions (Last 12 months)</h6>
+                    <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.monthly_requisitions') }} (Last 12 months)</h6>
                     <small class="text-muted">Updated live</small>
                 </div>
                 <div class="card-body">
@@ -152,7 +147,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm rounded-4 mb-4">
                         <div class="card-header bg-white border-0">
-                            <h6 class="fw-bold mb-0 text-dark">Department-wise Requests</h6>
+                            <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.department_wise_requests') }}</h6>
                         </div>
                         <div class="card-body">
                             <canvas id="deptPieChart" height="200"></canvas>
@@ -163,7 +158,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm rounded-4 mb-4">
                         <div class="card-header bg-white border-0">
-                            <h6 class="fw-bold mb-0 text-dark">Status Ratio</h6>
+                            <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.status_ratio') }}</h6>
                         </div>
                         <div class="card-body">
                             <canvas id="statusDoughnut" height="200"></canvas>
@@ -175,7 +170,7 @@
             <!-- Top Users Horizontal Chart -->
             <div class="card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-0">
-                    <h6 class="fw-bold mb-0 text-dark">Top Active Users</h6>
+                    <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.top_active_users') }}</h6>
                 </div>
                 <div class="card-body">
                     <canvas id="topUsersChart" height="80"></canvas>
@@ -188,7 +183,7 @@
             <!-- Recent Workflow Timeline -->
             <div class="card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-0">
-                    <h6 class="fw-bold mb-0 text-dark">Recent Workflow Activity</h6>
+                    <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.recent_workflow_activity') }}</h6>
                 </div>
                 <div class="card-body" id="timelineContainer" style="max-height:420px; overflow:auto;">
                     @foreach($timeline as $item)
@@ -204,16 +199,16 @@
             <!-- Latest Requisitions Table -->
             <div class="card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-0">
-                    <h6 class="fw-bold mb-0 text-dark">Latest Requisitions</h6>
+                    <h6 class="fw-bold mb-0 text-dark">{{ trans('backend.latest_requisitions') }}</h6>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-hover table-sm mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Employee</th>
-                                <th>Date</th>
-                                <th>Status</th>
+                                <th>{{ trans('backend.employee') }}</th>
+                                <th>{{ trans('backend.date') }}</th>
+                                <th>{{ trans('backend.status') }}</th>
                             </tr>
                         </thead>
                         <tbody id="latestTableBody">
@@ -264,16 +259,15 @@ h3,h4,h5,h6 { font-weight: 700; }
 $(function(){
 
     // Tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(el){ return new bootstrap.Tooltip(el); });
+    $('[data-toggle="tooltip"]').tooltip();
 
     // Top Summary Sparklines
     @foreach($cards as $card)
-    const ctx{{ $loop->index }} = document.getElementById('sparkline-{{ $card['label'] }}').getContext('2d');
+    const ctx{{ $loop->index }} = document.getElementById('sparkline-{{ $card['key'] }}').getContext('2d');
     new Chart(ctx{{ $loop->index }}, {
         type:'line',
-        data:{ labels: {!! json_encode($sparklineLabels[$card['label']] ?? []) !!}, 
-               datasets:[{ data:{!! json_encode($sparklineData[$card['label']] ?? []) !!}, 
+        data:{ labels: {!! json_encode($sparklineLabels[$card['key']] ?? []) !!}, 
+               datasets:[{ data:{!! json_encode($sparklineData[$card['key']] ?? []) !!}, 
                            borderColor:'{{ $card['color'] }}', tension:0.4, fill:false, pointRadius:0 }] },
         options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{display:false} } }
     });
@@ -282,7 +276,7 @@ $(function(){
     // Main Charts
     const monthlyChart = new Chart(document.getElementById('monthlyChart'), {
         type: 'bar',
-        data: { labels: {!! json_encode($monthLabels) !!}, datasets:[{ label:'Requisitions', data: {!! json_encode($monthlyData) !!}, backgroundColor:'#0d6efd' }] },
+        data: { labels: {!! json_encode($monthLabels) !!}, datasets:[{ label:'{{ trans('backend.requisitions') }}', data: {!! json_encode($monthlyData) !!}, backgroundColor:'#0d6efd' }] },
         options: { responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{font:{size:14}} }, x:{ticks:{font:{size:14}}} } }
     });
 

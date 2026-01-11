@@ -45,7 +45,8 @@
         },
          "files": [
                 "app/Helpers/Notify.php",
-                "app/Helpers/MenuHelper.php"
+                "app/Helpers/MenuHelper.php",
+                "app/Helpers/TranslationHelpers.php"
             ]
         
     },

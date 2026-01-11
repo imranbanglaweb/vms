@@ -1,11 +1,17 @@
 @php
     use App\Models\Language;
     use Illuminate\Support\Facades\Cache;
+    use Illuminate\Support\Facades\DB;
 
     $currentLocale = app()->getLocale();
 
-    $languages = Cache::remember('available_languages', 3600, function () {
+    // Get available languages from settings
+    $settings = DB::table('settings')->first();
+    $availableLanguageCodes = json_decode($settings->available_languages ?? '["en"]', true);
+
+    $languages = Cache::remember('available_languages_' . md5(json_encode($availableLanguageCodes)), 3600, function () use ($availableLanguageCodes) {
         return Language::where('is_active', 1)
+            ->whereIn('code', $availableLanguageCodes)
             ->orderBy('sort_order')
             ->get();
     });
@@ -15,20 +21,77 @@
         ?? $languages->first();
 @endphp
 
-@if($languages->count() > 1)
-<li class="dropdown">
+<style>
+/* Premium Modal Styles for SweetAlert */
+.premium-modal {
+    border-radius: 20px !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+    border: none !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+}
+
+.premium-modal .swal2-title {
+    color: #2c3e50 !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.premium-modal .swal2-html-container {
+    color: #495057 !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+}
+
+.premium-modal .swal2-input {
+    border: 2px solid #e9ecef !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    background: #f8f9fa !important;
+}
+
+.premium-modal .swal2-input:focus {
+    border-color: #667eea !important;
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+}
+
+.btn-secondary-premium {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-secondary-premium:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(108, 117, 125, 0.4) !important;
+}
+</style>
+
+@if($languages->count() >= 1)
+<li class="dropdown language-dropdown">
     <a href="#"
        class="dropdown-toggle"
-       data-toggle="dropdown"
        role="button"
+       aria-haspopup="true"
        aria-expanded="false">
 
         <span class="fi fi-{{ $currentLanguage->flag_icon ?? 'us' }}"></span>
         <span class="hidden-xs">{{ strtoupper($currentLocale) }}</span>
-        <i class="fa fa-angle-down"></i>
+        <span class="caret"></span>
     </a>
 
-    <ul class="dropdown-menu">
+    <ul class="dropdown-menu pull-right language-menu">
+
         <li class="dropdown-header">
             <i class="fa fa-language"></i> Select Language
         </li>
@@ -42,7 +105,9 @@
 
                         <span class="fi fi-{{ $language->flag_icon }}"></span>
                         {{ $language->native_name }}
-                        <small class="text-muted">({{ strtoupper($language->code) }})</small>
+                        <small class="text-muted">
+                            ({{ strtoupper($language->code) }})
+                        </small>
 
                         @if($language->direction === 'rtl')
                             <span class="label label-info pull-right">RTL</span>
@@ -70,22 +135,26 @@
     </ul>
 </li>
 @endif
-	<!-- Core JS Files - Use only one version of jQuery -->
-	<script src="{{ asset('public/admin_resource/assets/vendor/jquery/jquery.js') }}"></script>
-	<!-- <script src="{{ asset('public/admin_resource/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js') }}"></script> -->
+<!-- jQuery is already loaded in the master layout -->
 <script>
-$(function () {
+$(document).ready(function () {
 
-    // VERY IMPORTANT: stop Bootstrap dropdown auto-close
-    $('.dropdown-menu').on('click', function (e) {
-        e.stopPropagation();
+    // Manual dropdown toggle since Bootstrap might not be initializing properly
+    $(document).on('click', '.dropdown-toggle', function(e) {
+        e.preventDefault();
+        $(this).parent('.dropdown').toggleClass('open');
     });
 
-    // Language click
+    // Close dropdown when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.language-dropdown').length) {
+            $('.language-dropdown').removeClass('open');
+        }
+    });
+
+    // Language switch
     $(document).on('click', '.language-switch', function (e) {
         e.preventDefault();
-        e.stopPropagation();
-
         var locale = $(this).data('lang');
 
         $.ajax({
@@ -97,32 +166,50 @@ $(function () {
             },
             success: function (res) {
                 if (res.success) {
-                    notify('Language switched successfully!', 'success');
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Language switched successfully!',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'premium-modal'
+                        }
+                    });
+                    // Hide the dropdown
+                    $('.dropdown').removeClass('open');
                     setTimeout(function () {
                         location.reload();
-                    }, 600);
+                    }, 1500);
                 } else {
-                    notify(res.message || 'Failed to switch language', 'danger');
+                    Swal.fire({
+                        title: 'Error!',
+                        text: res.message || 'Failed to switch language',
+                        icon: 'error',
+                        confirmButtonColor: '#667eea',
+                        customClass: {
+                            popup: 'premium-modal'
+                        }
+                    });
                 }
             },
             error: function () {
-                notify('Server error while switching language', 'danger');
+                Swal.fire({
+                    title: 'Server Error!',
+                    text: 'An error occurred while switching language',
+                    icon: 'error',
+                    confirmButtonColor: '#667eea',
+                    customClass: {
+                        popup: 'premium-modal'
+                    }
+                });
             }
         });
     });
 
 });
 
-// Porto notify
-function notify(message, type) {
-    if ($.notify) {
-        $.notify({ message: message }, {
-            type: type,
-            delay: 2000,
-            placement: { from: "top", align: "right" }
-        });
-    } else {
-        alert(message);
-    }
-}
 </script>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

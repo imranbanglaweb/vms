@@ -727,6 +727,9 @@ Route::post('/permissions/validate', [PermissionController::class, 'validatePerm
     Route::resource('menus', MenuController::class);
     Route::get('settings', [SettingController::class,'index'])->name('settings');
     Route::post('settings/store', [SettingController::class,'store'])->name('settings.store');
+    Route::get('settings/languages', [SettingController::class,'loadLanguages'])->name('settings.languages');
+    Route::post('admin/language/clear-cache', [SettingController::class,'clearTranslationCache'])->name('admin.language.clear-cache');
+    Route::post('admin/language/sync', [SettingController::class,'syncLanguages'])->name('admin.language.sync');
 
     Route::get('users/search', [\App\Http\Controllers\UserController::class, 'search'])->name('users.search');
     // Route::delete('users/{id}', 'UserController@destroy')->name('users.destroy');
@@ -780,17 +783,17 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Localization Routes for language management
 // No need for locale prefix in routes
 // Language switching route
-Route::post('/language/switch', [LanguageController::class, 'switch'])->name('admin.language.switch');
-Route::get('/language/current', [LanguageController::class, 'current'])->name('language.current');
-Route::get('/language/list', [LanguageController::class, 'list'])->name('language.list');
-
-Route::get('/test-lang', function () {
-    return available_languages();
-});
 
 // Admin routes for managing translations
 Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::post('/language/switch', [LanguageController::class, 'switch'])->name('admin.language.switch');
+    Route::get('/language/current', [LanguageController::class, 'current'])->name('language.current');
+    Route::get('/language/list', [LanguageController::class, 'list'])->name('language.list');
     Route::get('/translations', [TranslationController::class, 'index'])->name('admin.translations');
+    Route::post('/translations', [TranslationController::class, 'store'])->name('translations.store');
     Route::post('/translations/update', [TranslationController::class, 'update'])->name('translations.update');
     Route::post('/translations/auto-translate', [TranslationController::class, 'autoTranslate'])->name('admin.translations.auto');
+    Route::get('translations/ajax', [TranslationController::class, 'ajaxTranslations'])->name('admin.translations.ajax');
+    Route::post('translations/create', [TranslationController::class, 'create'])->name('translations.create');
+
 });

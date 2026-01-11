@@ -5,6 +5,10 @@
     }
 </style>
 
+@php
+    // No need for translationService, using trans() now
+@endphp
+
 <aside id="sidebar-left" class="sidebar-left">
     <div class="sidebar-header">
         <div class="sidebar-title">
@@ -50,7 +54,7 @@
 <li class="{{ $isActive ? 'nav-active' : '' }}">
     <a href="{{ $menu->menu_url ? route($menu->menu_url) : '#' }}">
         <i class="fa {{ $menu->menu_icon }}"></i>
-        <span>{{ $menu->menu_name }}</span>
+        <span>{{ trans(ensure_menu_translation($menu->menu_name)) }}</span>
     </a>
 </li>
 
@@ -73,7 +77,7 @@
 <li class="nav-parent {{ $isParentActive ? 'nav-expanded nav-active' : '' }}">
     <a href="#">
         <i class="fa {{ $menu->menu_icon }}"></i>
-        <span>{{ $menu->menu_name }}</span>
+        <span>{{ trans(ensure_menu_translation($menu->menu_name)) }}</span>
     </a>
 
     <ul class="nav nav-children">
@@ -86,7 +90,7 @@
         <li class="{{ $isChildActive ? 'nav-active' : '' }}">
             <a href="{{ $child->menu_url ? route($child->menu_url) : '#' }}">
                 <i class="fa {{ $child->menu_icon }}"></i>
-                {{ $child->menu_name }}
+                {{ trans(ensure_menu_translation($child->menu_name)) }}
             </a>
         </li>
 
@@ -101,6 +105,9 @@
 
                 </ul>
             </nav>
+
+         
+
         </div>
     </div>
 </aside>

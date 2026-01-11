@@ -75,6 +75,8 @@ class LanguageController extends Controller
     public function list()
     {
         $languages = $this->translationService->getLanguages();
+
+        dd( $languages );
         
         return response()->json([
             'languages' => $languages

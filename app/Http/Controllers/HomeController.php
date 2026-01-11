@@ -13,16 +13,58 @@ use Auth;
 use App\Models\User;
 use App\Models\Department;
 // use Illuminate\Support\Facades\DB;
+use App\Services\TranslationService;
+
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected $translationService;
+
+    public function __construct(TranslationService $translationService)
     {
         $this->middleware('auth');
+        $this->translationService = $translationService;
+        
+        // Ensure dashboard translations exist
+        $this->ensureDashboardTranslations();
+    }
+    
+    private function ensureDashboardTranslations()
+    {
+        $languages = available_languages();
+        $translations = [
+            'total' => 'Total',
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+            'latest_requisitions' => 'Latest Requisitions',
+            'employee' => 'Employee',
+            'date' => 'Date',
+            'status' => 'Status',
+            'requisitions' => 'Requisitions',
+            'departments' => 'Departments',
+            'top_users' => 'Top Users',
+            'monthly_requisitions' => 'Monthly Requisitions',
+            'dashboard_overview' => 'Dashboard Overview',
+            'status_progress' => 'Status Progress',
+            'department_wise_requests' => 'Department-wise Requests',
+            'status_ratio' => 'Status Ratio',
+            'top_active_users' => 'Top Active Users',
+            'recent_workflow_activity' => 'Recent Workflow Activity',
+        ];
+        
+        foreach ($translations as $key => $default) {
+            $existing = \DB::table('translations')
+                ->where('group', 'backend')
+                ->where('key', $key)
+                ->first();
+            if (!$existing) {
+                foreach ($languages as $language) {
+                    $this->translationService->set($key, $default, 'backend', $language->code);
+                }
+            }
+        }
     }
 
     /**
@@ -145,6 +187,26 @@ class HomeController extends Controller
             ->get();
 
         // Build payload for view
+        $cards = [
+            ['key' => 'total', 'label' => $this->translationService->get('total', 'backend'), 'value' => $total, 'color' => '#0d6efd', 'icon' => 'fa-layer-group'],
+            ['key' => 'pending', 'label' => $this->translationService->get('pending', 'backend'), 'value' => $pending, 'color' => '#ffc107', 'icon' => 'fa-hourglass-half'],
+            ['key' => 'approved', 'label' => $this->translationService->get('approved', 'backend'), 'value' => $approved, 'color' => '#20c997', 'icon' => 'fa-check-circle'],
+            ['key' => 'rejected', 'label' => $this->translationService->get('rejected', 'backend'), 'value' => $rejected, 'color' => '#dc3545', 'icon' => 'fa-times-circle'],
+            ['key' => 'completed', 'label' => $this->translationService->get('completed', 'backend'), 'value' => $completed, 'color' => '#28a745', 'icon' => 'fa-flag-checkered'],
+            ['key' => 'cancelled', 'label' => $this->translationService->get('cancelled', 'backend'), 'value' => $cancelled, 'color' => '#6c757d', 'icon' => 'fa-ban'],
+        ];
+
+        // Sparkline data (dummy for last 7 days)
+        $sparklineLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $sparklineData = [
+            'total' => [rand(10,100), rand(10,100), rand(10,100), rand(10,100), rand(10,100), rand(10,100), rand(10,100)],
+            'pending' => [rand(5,50), rand(5,50), rand(5,50), rand(5,50), rand(5,50), rand(5,50), rand(5,50)],
+            'approved' => [rand(0,20), rand(0,20), rand(0,20), rand(0,20), rand(0,20), rand(0,20), rand(0,20)],
+            'rejected' => [rand(0,10), rand(0,10), rand(0,10), rand(0,10), rand(0,10), rand(0,10), rand(0,10)],
+            'completed' => [rand(0,30), rand(0,30), rand(0,30), rand(0,30), rand(0,30), rand(0,30), rand(0,30)],
+            'cancelled' => [rand(0,5), rand(0,5), rand(0,5), rand(0,5), rand(0,5), rand(0,5), rand(0,5)],
+        ];
+
         $payload = [
             'total' => $total,
             'pending' => $pending,
@@ -159,6 +221,9 @@ class HomeController extends Controller
             'statusCounts' => $statusCounts,
             'topUsers' => $topUsers,
             'timeline' => $timeline,
+            'cards' => $cards,
+            'sparklineLabels' => $sparklineLabels,
+            'sparklineData' => $sparklineData,
         ];
 
         // return view('admin.dashboard.dashboard', compact('stats', 'requisitions', 'user'));

@@ -63,7 +63,10 @@
     <div class="settings-container">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="settings-title">⚙️ Website Settings</h2>
+            <h2 class="settings-title">
+                ⚙️ {{ trans(ensure_menu_translation('website_settings')) }}
+                
+            </h2>
             <a class="btn btn-outline-primary" href="{{ route('home') }}">
                 <i class="fa fa-arrow-left me-1"></i> Back
             </a>
@@ -76,6 +79,9 @@
             </button>
             <button class="btn btn-light tab-btn admin_menu">
                 <i class="fa fa-user-shield me-1"></i> Admin Settings
+            </button>
+            <button class="btn btn-light tab-btn language_menu">
+                <i class="fa fa-language me-1"></i> Language Settings
             </button>
         </div>
 
@@ -137,6 +143,91 @@
 
             </div>
 
+            {{-- LANGUAGE SETTINGS CARD --}}
+            <div class="col-md-12 language_settings settings-card" style="display: none;">
+
+                <h4 class="mb-4"><i class="fa fa-language text-primary me-2"></i>Language Management</h4>
+
+                {{-- Default Language --}}
+                <div class="form-group mb-4">
+                    <label>Default Language:</label>
+                    <select name="default_language" class="form-control">
+                        @foreach($languages as $lang)
+                            <option value="{{ $lang->code }}"
+                                    {{ ($settings->default_language ?? 'en') == $lang->code ? 'selected' : '' }}>
+                                {{ $lang->native_name }} ({{ strtoupper($lang->code) }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted">This will be the fallback language for untranslated content</small>
+                </div>
+
+                {{-- Available Languages --}}
+                <div class="form-group mb-4">
+                    <label>Available Languages:</label>
+                    <div class="border rounded p-3 bg-light">
+                        @php
+                            $availableLanguages = json_decode($settings->available_languages ?? '["en"]', true);
+                        @endphp
+                        @foreach($languages as $lang)
+                            <div class="form-check d-inline-block me-4 mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       name="available_languages[]" value="{{ $lang->code }}"
+                                       id="lang_{{ $lang->code }}"
+                                       checked>
+                                <label class="form-check-label" for="lang_{{ $lang->code }}">
+                                    <span class="fi fi-{{ $lang->flag_icon ?? 'us' }} me-1"></span>
+                                    {{ $lang->native_name }} ({{ strtoupper($lang->code) }})
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                    <small class="text-muted">Select which languages users can choose from</small>
+                </div>
+
+                {{-- Auto Translation --}}
+                <div class="form-group mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="auto_translate" value="1" id="auto_translate"
+                               {{ ($settings->auto_translate ?? false) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="auto_translate">
+                            <strong>Enable Auto Translation</strong>
+                        </label>
+                    </div>
+                    <small class="text-muted">Automatically translate new content using Google Translate API</small>
+                </div>
+
+                {{-- Language Cache --}}
+                <div class="form-group mb-4">
+                    <label>Translation Cache Duration (hours):</label>
+                    {!! Form::number('cache_duration', $settings->cache_duration ?? 24, [
+                        'class'=>'form-control',
+                        'min'=>'1',
+                        'max'=>'168',
+                        'placeholder'=>'24'
+                    ]) !!}
+                    <small class="text-muted">How long to cache translations (1-168 hours)</small>
+                </div>
+
+                {{-- Quick Actions --}}
+                <div class="border-top pt-3">
+                    <h5 class="mb-3">Quick Actions</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="clearTranslationCache()">
+                            <i class="fa fa-trash me-1"></i>Clear Translation Cache
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="syncLanguages()">
+                            <i class="fa fa-sync me-1"></i>Sync Languages
+                        </button>
+                        <a href="{{ route('admin.translations') }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                            <i class="fa fa-list me-1"></i>Manage Translations
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="text-center mt-3">
                 <button type="submit" class="btn btn-primary saved">Save Changes</button>
             </div>
@@ -148,18 +239,19 @@
     </div>
 </section>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // Default: show SITE settings
     $(".admin_settings").hide();
+    $(".language_settings").hide();
 
     $(".admin_menu").click(function() {
         $(".tab-btn").removeClass("active");
         $(this).addClass("active");
 
         $(".site_settings").fadeOut(200);
+        $(".language_settings").fadeOut(200);
         $(".admin_settings").delay(200).fadeIn(200);
     });
 
@@ -168,7 +260,17 @@
         $(this).addClass("active");
 
         $(".admin_settings").fadeOut(200);
+        $(".language_settings").fadeOut(200);
         $(".site_settings").delay(200).fadeIn(200);
+    });
+
+    $(".language_menu").click(function() {
+        $(".tab-btn").removeClass("active");
+        $(this).addClass("active");
+
+        $(".site_settings").fadeOut(200);
+        $(".admin_settings").fadeOut(200);
+        $(".language_settings").delay(200).fadeIn(200);
     });
 
     // AJAX SAVE
@@ -200,6 +302,83 @@
             }
         });
     });
+
+    // Language Management Functions
+    function clearTranslationCache() {
+        Swal.fire({
+            title: 'Clear Translation Cache?',
+            text: 'This will clear all cached translations and may temporarily slow down the site.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, Clear Cache'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route("admin.language.clear-cache") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cache Cleared',
+                            text: 'Translation cache has been cleared successfully.',
+                            confirmButtonColor: '#4A90E2'
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to clear translation cache.',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function syncLanguages() {
+        Swal.fire({
+            title: 'Sync Languages?',
+            text: 'This will synchronize language settings with the database.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sync Now'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route("admin.language.sync") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Languages Synced',
+                            text: 'Language settings have been synchronized successfully.',
+                            confirmButtonColor: '#4A90E2'
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to sync languages.',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                });
+            }
+        });
+    }
 </script>
 
 @endsection

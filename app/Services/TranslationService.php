@@ -9,13 +9,19 @@ use App\Models\Language;
 
 class TranslationService
 {
-    protected string $currentLocale;
     protected ?string $fallbackLocale;
 
     public function __construct()
     {
-        $this->currentLocale = session('locale', config('app.locale', 'en'));
         $this->fallbackLocale = $this->resolveFallbackLocale();
+    }
+
+    /**
+     * Get current locale dynamically
+     */
+    protected function getCurrentLocale(): string
+    {
+        return session('locale', App::getLocale());
     }
 
     /**
@@ -23,7 +29,7 @@ class TranslationService
      */
     public function get(string $key, string $group = 'frontend', array $parameters = [], ?string $locale = null): string
     {
-        $locale = $locale ?: $this->currentLocale;
+        $locale = $locale ?: $this->getCurrentLocale();
 
         // Load all translations for locale + group
         $translations = $this->getCachedGroupTranslations($group, $locale);
@@ -55,7 +61,7 @@ class TranslationService
     /**
      * Cache translations by group + locale
      */
-    protected function getCachedGroupTranslations(string $group, string $locale): array
+    public function getCachedGroupTranslations(string $group, string $locale): array
     {
         return Cache::remember(
             "translations.{$group}.{$locale}",
@@ -98,7 +104,7 @@ class TranslationService
      */
     public function set(string $key, string $value, string $group = 'frontend', ?string $locale = null): void
     {
-        $locale = $locale ?: $this->currentLocale;
+        $locale = $locale ?: $this->getCurrentLocale();
 
         DB::transaction(function () use ($key, $value, $group, $locale) {
             $translation = DB::table('translations')
@@ -134,7 +140,8 @@ class TranslationService
      */
     protected function clearGroupCache(string $group): void
     {
-        Cache::forget("translations.{$group}.{$this->currentLocale}");
+        $currentLocale = $this->getCurrentLocale();
+        Cache::forget("translations.{$group}.{$currentLocale}");
 
         if ($this->fallbackLocale) {
             Cache::forget("translations.{$group}.{$this->fallbackLocale}");
@@ -146,7 +153,7 @@ class TranslationService
      */
     public function getAll(string $group = 'frontend', ?string $locale = null): array
     {
-        $locale = $locale ?: $this->currentLocale;
+        $locale = $locale ?: $this->getCurrentLocale();
         return $this->getCachedGroupTranslations($group, $locale);
     }
 
