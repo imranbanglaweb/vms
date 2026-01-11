@@ -37,6 +37,17 @@ button:disabled { opacity:.6; cursor:not-allowed; }
 /* Modal Footer */
 .modal-footer { display:flex; justify-content:flex-end; gap:10px; }
 @keyframes fadeIn { from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:translateY(0);} }
+.page-header{
+    /* margin-bottom:20px; */
+    padding: 0 20px;
+}
+.page-header h1{
+    font-size:28px;
+    font-weight:700;
+    color:#fff;
+    padding-top:6px;
+    margin:0;
+}
 </style>
 
 <section class="content-body">
