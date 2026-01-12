@@ -794,6 +794,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/translations/update', [TranslationController::class, 'update'])->name('translations.update');
     Route::post('/translations/auto-translate', [TranslationController::class, 'autoTranslate'])->name('admin.translations.auto');
     Route::get('translations/ajax', [TranslationController::class, 'ajaxTranslations'])->name('admin.translations.ajax');
-    Route::post('translations/create', [TranslationController::class, 'create'])->name('translations.create');
+    Route::post('translations/create', [TranslationController::class, 'store'])->name('translations.create');
 
 });

@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class Translation extends Model
 {
     protected $fillable = ['group', 'key', 'text'];
+
+    protected $casts = [
+        'values' => 'array', // automatically decode/encode JSON
+    ];
     
     public function values()
     {

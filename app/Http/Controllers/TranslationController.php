@@ -66,31 +66,60 @@ class TranslationController extends Controller
 }
 public function ajaxTranslations(Request $request)
 {
-    $query = Translation::with('values');
+    $search = $request->input('search', '');
+    $perPage = 10;
+    
+    // Base query
+    $query = \DB::table('translations');
 
-    if($request->has('search') && $request->search != ''){
-        $query->where('key', 'like', '%'.$request->search.'%');
+    if ($search) {
+        $query->where('key', 'like', "%{$search}%")
+              ->orWhere('group', 'like', "%{$search}%");
     }
 
-    $translations = $query->orderBy('id','desc')->paginate(10);
+    // Get total count for paginator
+    $total = $query->count();
 
-    $data = $translations->map(function($t){
+    // Get current page
+    $page = $request->input('page', 1);
+    $offset = ($page - 1) * $perPage;
+
+    // Get rows
+    $translations = $query->orderBy('group')->orderBy('key')
+                          ->offset($offset)->limit($perPage)
+                          ->get();
+
+    // Transform rows
+    $rows = $translations->map(function($t) {
+        $values = [];
+        foreach (available_languages() as $lang) {
+            $value = \DB::table('translation_values')
+                        ->where('translation_id', $t->id)
+                        ->where('language_code', $lang->code)
+                        ->value('value');
+            $values[$lang->code] = $value ?? '';
+        }
         return [
             'id' => $t->id,
             'key' => $t->key,
             'group' => $t->group,
-            'values' => $t->values->pluck('value','lang_code')->toArray() // assuming values relation
+            'values' => $values,
         ];
     });
 
+    // Prepare LengthAwarePaginator-like JSON
     return response()->json([
-        'translations' => $data,
+        'translations' => $rows,
         'pagination' => [
-            'current_page' => $translations->currentPage(),
-            'last_page' => $translations->lastPage(),
+            'current_page' => (int)$page,
+            'last_page' => (int)ceil($total / $perPage),
+            'per_page' => $perPage,
+            'total' => $total,
         ]
     ]);
 }
+
+
 public function create(Request $request){
     $request->validate([
         'key'=>'required|string|max:255',
@@ -120,59 +149,7 @@ public function create(Request $request){
     ]);
 }
 
-    protected function getTranslationsAjax(Request $request)
-    {
-        $search = $request->get('search');
-        $page = $request->get('page', 1);
-        $perPage = $request->get('per_page', 50);
-
-        $query = Translation::query();
-
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('key', 'like', '%' . $search . '%')
-                  ->orWhere('group', 'like', '%' . $search . '%')
-                  ->orWhere('text', 'like', '%' . $search . '%');
-            });
-        }
-
-        $translations = $query->paginate($perPage, ['*'], 'page', $page);
-
-        // Format data for AJAX response
-        $data = $translations->map(function($translation) {
-            $translationData = [
-                'id' => $translation->id,
-                'key' => $translation->key,
-                'group' => $translation->group,
-                'text' => $translation->text,
-                'values' => []
-            ];
-
-            // Get translation values for each language
-            $languages = available_languages();
-            foreach ($languages as $lang) {
-                $translationData['values'][$lang->code] = $translation->getValue($lang->code);
-            }
-
-            return $translationData;
-        });
-
-        return response()->json([
-            'translations' => $data,
-            'pagination' => [
-                'current_page' => $translations->currentPage(),
-                'last_page' => $translations->lastPage(),
-                'per_page' => $translations->perPage(),
-                'total' => $translations->total(),
-                'from' => $translations->firstItem(),
-                'to' => $translations->lastItem(),
-                'has_more_pages' => $translations->hasMorePages(),
-                'next_page_url' => $translations->nextPageUrl(),
-                'prev_page_url' => $translations->previousPageUrl(),
-            ],
-            'search' => $search
-        ]);
-    }
+   
     
    public function update(Request $request)
         {
@@ -263,37 +240,42 @@ public function create(Request $request){
 
     public function store(Request $request)
     {
+        // Validate English field only
         $request->validate([
-            'key' => 'required|string|max:255',
             'group' => 'required|string|max:255',
+            'key'   => 'required|string|max:255',
+            'values.en' => 'required|string|max:65535', // English required
+        ], [
+            'values.en.required' => 'English value is required',
         ]);
 
-        $key = $request->key;
-        $group = $request->group;
+        // Check if key already exists in the group
+        $exists = Translation::where('group', $request->group)
+                             ->where('key', $request->key)
+                             ->first();
 
-        // Check if already exists
-        $existing = Translation::where('key', $key)->where('group', $group)->first();
-        if ($existing) {
+        if($exists){
             return response()->json([
                 'success' => false,
-                'message' => 'Translation key already exists for this group.'
-            ], 400);
-        }
-
-        // Create for all active languages
-        $languages = Language::where('is_active', true)->get();
-        foreach ($languages as $lang) {
-            Translation::create([
-                'key' => $key,
-                'group' => $group,
-                'locale' => $lang->code,
-                'text' => $key, // Default to key, can be edited later
+                'message' => 'This key already exists in the selected group'
             ]);
         }
 
+        // Prepare values
+        $values = $request->values;
+
+        // Create translation
+        $translation = Translation::create([
+            'group' => $request->group,
+            'key'   => $request->key,
+            // 'text' => json_encode($values), // assuming values stored as JSON
+                'text'  => $request->values['en'] ?? '',
+        ]);
+
         return response()->json([
             'success' => true,
-            'message' => 'Translation added successfully!'
+            'message' => 'Translation added successfully',
+            'translation_id' => $translation->id,
         ]);
     }
 }
